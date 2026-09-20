@@ -98,9 +98,9 @@ export default function NewsView({
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm leading-relaxed text-stone-600">
-        ニュースの見出しを、法話の入口に変えます。見出しを選ぶと、「値上げ」「災害」「炎上」といった
-        <span className="font-bold">話題の型</span>に当てて、切り口を{COUNT}通り出します。
+      <p className="text-sm text-stone-600">
+        見出しを選ぶと、「値上げ」「災害」「炎上」などの
+        <span className="font-bold">話題の型</span>に当てて{COUNT}通り出します。
       </p>
 
       {error && (
@@ -150,10 +150,9 @@ export default function NewsView({
               className="min-h-tap w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
             />
           </div>
-          <p className="text-xs leading-relaxed text-stone-500">
-            見出しは公開中の配信（NHK・Google ニュース）から、
-            公開のたびにまとめて取り込んでいます。最終取り込み：
-            {news ? new Date(news.generatedAt).toLocaleString('ja-JP') : '—'}
+          <p className="text-xs text-stone-500">
+            NHK・Google ニュースから取り込み／
+            {news ? new Date(news.generatedAt).toLocaleString('ja-JP') : '—'} 時点
           </p>
         </section>
       )}
@@ -198,7 +197,7 @@ export default function NewsView({
 
       <section className="card flex flex-col gap-2 px-4 py-4">
         <label className="label" htmlFor="paste">
-          見出しを貼ってネタにする（取り込みが古いときや、手元の記事から作るとき）
+          見出しを貼ってネタにする
         </label>
         <textarea
           id="paste"

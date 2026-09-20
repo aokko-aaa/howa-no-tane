@@ -36,8 +36,8 @@ export default function ChartView({ tradition, savedIds, onSave }: Props) {
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm leading-relaxed text-stone-600">
-        お寺の言葉を知らなくても大丈夫です。三つ選ぶと、今の気持ちに合う話がひとつ出ます。
+      <p className="text-sm text-stone-600">
+        三つ選ぶと、今の気持ちに合う話がひとつ出ます。
       </p>
 
       <div className="flex items-center gap-1.5 text-xs text-stone-500">
@@ -127,9 +127,8 @@ export default function ChartView({ tradition, savedIds, onSave }: Props) {
               はじめから
             </button>
           </div>
-          <p className="text-xs leading-relaxed text-stone-500">
-            ここに出るのは、二千年ほど前から言われてきたことの、ごく一部です。
-            気になった言葉があれば「ことば」から引けます。
+          <p className="text-xs text-stone-500">
+            気になった言葉は「ことば」から引けます。
           </p>
         </section>
       )}

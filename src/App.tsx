@@ -119,18 +119,29 @@ export default function App() {
   return (
     <div className="mx-auto min-h-screen max-w-3xl px-4 pb-24 pt-4">
       <header className="mb-4">
-        <h1 className="text-xl font-bold tracking-wide">法話の種</h1>
-        <p className="mt-1 text-sm leading-relaxed text-stone-600">
-          日常の気持ちを入口に、切り口をまとめて出す下ごしらえ帳。
-          <br className="hidden sm:block" />
-          教義から降りていくのではなく、
-          <span className="font-bold">一般の人が実際に立ち止まる場面</span>
-          から始めて、そこから仏教へ渡します。
-          <br className="hidden sm:block" />
-          既定は<span className="font-bold">真宗大谷派</span>
-          の教え（お聖教・御文・歎異抄・報恩）を優先して出します。
-          お寺の方でなければ、<span className="font-bold">「たどる」</span>から三つ選ぶだけでも読めます。
-        </p>
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <h1 className="text-xl font-bold tracking-wide">法話の種</h1>
+          <p className="text-sm text-stone-600">気持ちから、法話の切り口を出す</p>
+        </div>
+        <details className="mt-1 text-xs text-stone-500">
+          <summary className="cursor-pointer">これは何？</summary>
+          <div className="mt-1.5 space-y-1 leading-relaxed">
+            <p>
+              教義から降りるのではなく、
+              <span className="font-bold">一般の人が立ち止まる場面</span>
+              から始めて、仏教へ渡すための下ごしらえ帳です。
+            </p>
+            <p>
+              既定は<span className="font-bold">真宗大谷派</span>
+              （お聖教・御文・歎異抄・報恩）を優先します。
+            </p>
+            <p>
+              お寺の方でなければ、
+              <span className="font-bold">「たどる」</span>から三つ選ぶだけでも読めます。
+            </p>
+            <p>引用はそのまま使わず、出典に当たってから語ってください。</p>
+          </div>
+        </details>
       </header>
 
       <nav className="mb-4 flex gap-1.5">
@@ -200,8 +211,8 @@ export default function App() {
               </div>
               <p className="mt-1.5 text-xs text-stone-500">
                 {tradition === 'otani'
-                  ? '本願・他力・聞法・報恩を軸に、お聖教の一句／御文／歎異抄／私の上に聞く、の切り口を先に回します。禅語は後ろに下げ、大谷派で避ける言い回しをカードに添えます。'
-                  : '宗派を問わない素材だけで組みます（真宗固有の切り口は出しません）。'}
+                  ? 'お聖教・御文・歎異抄を先に回し、大谷派の言い回しの注意を添えます'
+                  : '宗派を問わない素材だけで組みます'}
               </p>
             </div>
 
@@ -223,7 +234,7 @@ export default function App() {
               <p className="mt-1.5 text-xs text-stone-500">
                 {SCENES.find((x) => x.id === sceneId)?.note}
                 {(SCENES.find((x) => x.id === sceneId)?.minutes ?? 0) === 0
-                  ? '（一行と短文の形で出します）'
+                  ? '（一行と短文で出します）'
                   : `（目安 ${SCENES.find((x) => x.id === sceneId)?.minutes}分）`}
               </p>
             </div>
@@ -418,9 +429,8 @@ export default function App() {
 
           {results.length > 0 && (
             <section ref={resultsRef} className="flex flex-col gap-3 scroll-mt-3">
-              <p className="text-xs leading-relaxed text-stone-500">
-                同じ気持ちから、違う入り方を{results.length}通り。ぴんと来なければ〈出し直す〉で別の組み合わせになります。
-                引用はそのまま使わず、出典に当たってから語ってください。
+              <p className="text-xs text-stone-500">
+                違う入り方を{results.length}通り。ぴんと来なければ〈出し直す〉。
               </p>
               {results.map((n) => (
                 <div key={n.id} id={`neta-${n.id}`} className="scroll-mt-3">
@@ -457,9 +467,8 @@ export default function App() {
       {tab === 'dict' && <DictView />}
 
       <footer className="mt-10 border-t border-stone-200 pt-4 text-xs leading-relaxed text-stone-500">
-        出典は通称で記しています。人前で語る前に原典をご確認ください。
-        語源や逸話には諸説あるものが含まれます（カードの「語る前に確認」に表示されます）。
-        入力と保存したネタは、この端末のブラウザの中だけに置かれます。
+        出典は通称です。語る前に原典をご確認ください。諸説あるものはカードの「語る前に確認」に出ます。
+        入力と保存は、この端末の中だけに残ります。
       </footer>
     </div>
   )
