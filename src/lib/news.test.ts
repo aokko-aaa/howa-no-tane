@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { NEWS_CAUTION } from '../data/news'
 import { generateNeta, SECTION, type GenerateInput } from './generate'
-import { applyNewsLead, classifyHeadline, emotionsFromHeadline, parseRss, searchFeedUrl } from './news'
+import { parseRss } from '../../scripts/rss.mjs'
+import { applyNewsLead, classifyHeadline, emotionsFromHeadline, filterHeadlines } from './news'
 
 const RSS = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0"><channel>
@@ -53,9 +54,12 @@ describe('RSSの読み取り', () => {
     expect(parseRss(RSS, 1)).toHaveLength(1)
   })
 
-  it('検索用のフィードURLを組み立てられる', () => {
-    expect(searchFeedUrl('お寺')).toContain('news.google.com/rss/search')
-    expect(searchFeedUrl('お寺')).toContain(encodeURIComponent('お寺'))
+  it('取り込んだ見出しを言葉で絞れる', () => {
+    const items = parseRss(RSS)
+    expect(filterHeadlines(items, '値上げ')).toHaveLength(1)
+    expect(filterHeadlines(items, '○○新聞')).toHaveLength(1)
+    expect(filterHeadlines(items, '')).toHaveLength(2)
+    expect(filterHeadlines(items, 'そんな語はない')).toHaveLength(0)
   })
 })
 

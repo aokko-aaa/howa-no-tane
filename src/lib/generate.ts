@@ -625,7 +625,8 @@ export function generateNeta(input: GenerateInput): Neta[] {
       emotionLabels,
       primaryLabel,
       userText: input.text,
-      modern: takeUnused(rankedModerns, usedModern, rand, 8),
+      // 入口も、選んだ教義と同じ気持ちのものに寄せる
+      modern: takeUnused(alignTo(rankedModerns), usedModern, rand, 8),
       concept,
       story: (pins.storyId ? STORY_BY_ID[pins.storyId] : undefined) ?? takeUnused(alignTo(storyPool), usedStory, rand, 6),
       word: (pins.wordId ? WORD_BY_ID[pins.wordId] : undefined) ?? takeUnused(alignTo(wordPool), usedWord, rand, 6),
@@ -685,6 +686,22 @@ export function generateNeta(input: GenerateInput): Neta[] {
       cautions.push(`${ctx.occasion.name}：${ctx.occasion.caution}`)
     }
 
+    // 一覧で見比べるための要点。声に出す文ではなく、素材を名詞で並べる。
+    const outline: string[] = [
+      `入口：${ctx.modern.scene}`,
+      ...(emotionLabels.length > 0 ? [`気持ち：${emotionLabels.join('・')}`] : []),
+      `切り口：${angle.name}（${angle.aim}）`,
+      ...(built.uses.phrase ? [`一句：${short(ctx.phrase.text, 24)}／${ctx.phrase.source}`] : []),
+      ...(built.uses.word ? [`語源：${ctx.word.word}＝${nq(ctx.word.origin)}`] : []),
+      `ことば：${ctx.concept.term}＝${nq(ctx.concept.oneLine)}`,
+      `世間：${nq(ctx.concept.misread)}`,
+      `ズレ：${nq(ctx.concept.pivot)}`,
+      ...(built.uses.story ? [`喩え：${ctx.story.title}（${nq(ctx.story.point)}）`] : []),
+      ...(built.uses.occasion ? [`行事：${ctx.occasion.name}`] : []),
+      `一歩：${nq(ctx.concept.step)}`,
+      scene.minutes === 0 ? `尺：${scene.label}（一行）` : `尺：${scene.minutes}分・${scene.label}`,
+    ]
+
     const tradition: Tradition = shinshuAngle
       ? 'shinshu'
       : (built.uses.concept ? ctx.concept.tradition : undefined) ?? 'common'
@@ -697,6 +714,7 @@ export function generateNeta(input: GenerateInput): Neta[] {
       kojitsuke: angle.kojitsuke,
       title: scene.minutes === 0 ? `${ctx.concept.term} — ${ctx.modern.scene}` : built.title,
       sections,
+      outline,
       sources,
       cautions,
       materials: {

@@ -3,6 +3,9 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  # 見出しを取り込み直すために、定期的に公開し直す（UTC。3時間ごと）
+  schedule:
+    - cron: '0 */3 * * *'
   workflow_dispatch:
 
 permissions:
@@ -27,6 +30,10 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      # ニュースの見出しはここで取る。ブラウザからは CORS で読めないため、
+      # 取得はサーバー側で済ませ、public/news.json として一緒に配信する。
+      # 取得に失敗しても空のファイルを書いて続行する（貼り付け欄は使えるため）。
+      - run: node scripts/fetch-news.mjs
       - run: npm run build
       - uses: actions/configure-pages@v5
         with:

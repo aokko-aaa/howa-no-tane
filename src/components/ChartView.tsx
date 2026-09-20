@@ -110,7 +110,12 @@ export default function ChartView({ tradition, savedIds, onSave }: Props) {
           <p className="text-xs text-stone-500">
             {a?.label} → {b?.label} → {STEP3.find((x) => x.id === shape)?.label}
           </p>
-          <NetaCard neta={reading} saved={savedIds.includes(reading.id)} onSave={onSave} />
+          <NetaCard
+            neta={reading}
+            saved={savedIds.includes(reading.id)}
+            onSave={onSave}
+            defaultView="prose"
+          />
           <div className="flex flex-wrap gap-2">
             <button type="button" className="btn-ghost" onClick={() => setSeed((v) => v + 1)}>
               別の話を見る

@@ -4,7 +4,7 @@ import { CONCEPTS } from '../data/concepts'
 import { PHRASES } from '../data/shinshu/phrases'
 import { MODERNS } from '../data/modern'
 import type { EmotionId } from '../data/types'
-import { toProse, toScript } from './format'
+import { toOutline, toProse, toScript } from './format'
 import { generateNeta, SECTION, type GenerateInput } from './generate'
 import { detectEmotions } from './match'
 
@@ -135,6 +135,52 @@ describe('generateNeta', () => {
         ),
       ),
     ).toBe(true)
+  })
+})
+
+describe('要点（箇条書き）', () => {
+  it('どの案にも要点がつき、素材が名詞で並ぶ', () => {
+    for (const n of generateNeta({ ...base, count: 12 })) {
+      expect(n.outline, n.title).toBeDefined()
+      expect(n.outline!.length).toBeGreaterThanOrEqual(6)
+      for (const line of n.outline!) {
+        expect(line.trim().length).toBeGreaterThan(0)
+        expect(line).not.toMatch(/undefined|NaN/)
+        // 読み上げ文ではなく「見出し：中身」の形
+        expect(line).toContain('：')
+      }
+      const joined = n.outline!.join('\n')
+      expect(joined).toContain('入口：')
+      expect(joined).toContain('ことば：')
+      expect(joined).toContain('一歩：')
+      expect(joined).toContain('尺：')
+    }
+  })
+
+  it('使った素材だけが要点に並ぶ', () => {
+    for (const n of generateNeta({ ...base, tradition: 'otani', count: 12 })) {
+      const joined = n.outline!.join('\n')
+      expect(joined.includes('一句：')).toBe(Boolean(n.materials.phraseId))
+      expect(joined.includes('喩え：')).toBe(Boolean(n.materials.storyId))
+      expect(joined.includes('語源：')).toBe(Boolean(n.materials.wordId))
+    }
+  })
+
+  it('要点のコピーは、箇条書きと出典だけになる', () => {
+    const n = generateNeta({ ...base, count: 1 })[0]
+    const text = toOutline(n)
+    expect(text).toContain('■ ')
+    expect(text.split('\n').filter((l) => l.startsWith('・')).length).toBe(n.outline!.length)
+    expect(text).toContain('出典：')
+    // 語り手向けメモは要点に混ぜない
+    const memo = n.sections.find((x) => x.label === SECTION.memo)!
+    expect(text).not.toContain(memo.body)
+  })
+
+  it('掲示板の案にも要点がつく', () => {
+    for (const n of generateNeta({ ...base, sceneId: 'keijiban', count: 3 })) {
+      expect(n.outline!.join('\n')).toContain('尺：掲示板のことば（一行）')
+    }
   })
 })
 

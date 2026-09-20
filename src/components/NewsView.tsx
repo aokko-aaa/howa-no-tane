@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { NewsTopic } from '../data/news'
 import { NEWS_TOPICS } from '../data/news'
 import type { Neta, SceneId, TraditionMode } from '../data/types'
@@ -7,10 +7,10 @@ import {
   applyNewsLead,
   classifyHeadline,
   emotionsFromHeadline,
-  FEEDS,
-  fetchHeadlines,
-  searchFeedUrl,
-  type Headline,
+  filterHeadlines,
+  loadNews,
+  type Feed,
+  type NewsFile,
 } from '../lib/news'
 import NetaCard from './NetaCard'
 
@@ -33,42 +33,38 @@ export default function NewsView({
   savedIds,
   onSave,
 }: Props) {
-  const [feedId, setFeedId] = useState(FEEDS[0].id)
-  const [query, setQuery] = useState('')
-  const [items, setItems] = useState<Headline[]>([])
-  const [via, setVia] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [news, setNews] = useState<NewsFile | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [feedId, setFeedId] = useState<string | null>(null)
+  const [query, setQuery] = useState('')
   const [pasted, setPasted] = useState('')
   const [picked, setPicked] = useState<{ headline: string; topic?: NewsTopic } | null>(null)
   const [results, setResults] = useState<Neta[]>([])
 
-  const load = async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const url = query.trim()
-        ? searchFeedUrl(query.trim())
-        : (FEEDS.find((f) => f.id === feedId) ?? FEEDS[0]).url
-      const res = await fetchHeadlines(url)
-      setItems(res.items)
-      setVia(res.via)
-    } catch (e) {
-      setItems([])
-      setVia(null)
-      setError(e instanceof Error ? e.message : '取得できませんでした')
-    } finally {
-      setLoading(false)
-    }
-  }
+  useEffect(() => {
+    const ctrl = new AbortController()
+    loadNews(ctrl.signal)
+      .then((data) => {
+        setNews(data)
+        setFeedId((prev) => prev ?? data.feeds.find((f) => f.items.length > 0)?.id ?? null)
+      })
+      .catch((e) => {
+        if (!ctrl.signal.aborted) setError(e instanceof Error ? e.message : '読めませんでした')
+      })
+    return () => ctrl.abort()
+  }, [])
+
+  const feeds: Feed[] = news?.feeds ?? []
+  const feed = feeds.find((f) => f.id === feedId)
+  const items = useMemo(() => filterHeadlines(feed?.items ?? [], query), [feed, query])
+  const total = feeds.reduce((n, f) => n + f.items.length, 0)
 
   const makeFrom = (headline: string) => {
     const topics = classifyHeadline(headline)
     const topic = topics[0]
-    const emotions = emotionsFromHeadline(headline, topics)
     const netas = generateNeta({
       text: headline,
-      emotions,
+      emotions: emotionsFromHeadline(headline, topics),
       sceneId,
       month,
       kojitsukeMax,
@@ -83,60 +79,63 @@ export default function NewsView({
   return (
     <div className="flex flex-col gap-4">
       <p className="text-sm leading-relaxed text-stone-600">
-        いま流れているニュースを、法話の入口に変えます。見出しを選ぶと、
-        「値上げ」「災害」「炎上」といった<span className="font-bold">話題の型</span>
-        に当てて、切り口を{COUNT}通り出します。
+        ニュースの見出しを、法話の入口に変えます。見出しを選ぶと、「値上げ」「災害」「炎上」といった
+        <span className="font-bold">話題の型</span>に当てて、切り口を{COUNT}通り出します。
       </p>
-
-      <section className="card flex flex-col gap-3 px-4 py-4">
-        <div>
-          <div className="label mb-1.5">どこから</div>
-          <div className="flex flex-wrap gap-1.5">
-            {FEEDS.map((f) => (
-              <button
-                key={f.id}
-                type="button"
-                className={`chip ${feedId === f.id && !query.trim() ? 'chip-on' : ''}`}
-                onClick={() => {
-                  setFeedId(f.id)
-                  setQuery('')
-                }}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div>
-          <label className="label mb-1.5 block" htmlFor="q">
-            言葉で探す（入れるとこちらが優先されます）
-          </label>
-          <input
-            id="q"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="例：値上げ／介護／お寺"
-            className="min-h-tap w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
-          />
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <button type="button" className="btn-primary" onClick={load} disabled={loading}>
-            {loading ? '取得中…' : '見出しを取ってくる'}
-          </button>
-          {via && <span className="text-xs text-stone-500">{via} 経由で取得</span>}
-        </div>
-        <p className="text-xs leading-relaxed text-stone-500">
-          ブラウザから直接ニュースサイトを読めない決まり（CORS）があるため、
-          公開の中継サービスを経由しています。止まっていると取得できません。
-          そのときは下の貼り付け欄を使ってください。
-        </p>
-      </section>
 
       {error && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
-          <div className="label text-amber-700">取得できませんでした</div>
-          <p className="mt-0.5 whitespace-pre-wrap text-xs leading-relaxed text-amber-800">{error}</p>
+          <div className="label text-amber-700">見出しを読み込めませんでした</div>
+          <p className="mt-0.5 text-xs leading-relaxed text-amber-800">
+            {error}　下の貼り付け欄はそのまま使えます。
+          </p>
         </div>
+      )}
+
+      {news && total === 0 && !error && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-800">
+          今回の取り込みでは見出しが入っていませんでした（配信元の一時的な不調が考えられます）。
+          下の貼り付け欄をお使いください。
+        </div>
+      )}
+
+      {total > 0 && (
+        <section className="card flex flex-col gap-3 px-4 py-4">
+          <div>
+            <div className="label mb-1.5">どこから</div>
+            <div className="flex flex-wrap gap-1.5">
+              {feeds
+                .filter((f) => f.items.length > 0)
+                .map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    className={`chip ${feedId === f.id ? 'chip-on' : ''}`}
+                    onClick={() => setFeedId(f.id)}
+                  >
+                    {f.label}（{f.items.length}）
+                  </button>
+                ))}
+            </div>
+          </div>
+          <div>
+            <label className="label mb-1.5 block" htmlFor="q">
+              言葉で絞る
+            </label>
+            <input
+              id="q"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="例：値上げ／介護／地震"
+              className="min-h-tap w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+            />
+          </div>
+          <p className="text-xs leading-relaxed text-stone-500">
+            見出しは公開中の配信（NHK・Google ニュース）から、
+            公開のたびにまとめて取り込んでいます。最終取り込み：
+            {news ? new Date(news.generatedAt).toLocaleString('ja-JP') : '—'}
+          </p>
+        </section>
       )}
 
       {items.length > 0 && (
@@ -173,9 +172,13 @@ export default function NewsView({
         </section>
       )}
 
+      {total > 0 && items.length === 0 && (
+        <p className="text-sm text-stone-500">この言葉を含む見出しはありませんでした。</p>
+      )}
+
       <section className="card flex flex-col gap-2 px-4 py-4">
         <label className="label" htmlFor="paste">
-          見出しを貼ってネタにする（取得できないときも、これは必ず使えます）
+          見出しを貼ってネタにする（取り込みが古いときや、手元の記事から作るとき）
         </label>
         <textarea
           id="paste"

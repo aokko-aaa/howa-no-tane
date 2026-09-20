@@ -1,0 +1,30 @@
+{
+ "generatedAt": "2026-09-20T02:48:47.973Z",
+ "feeds": [
+  {
+   "id": "nhk",
+   "label": "NHK 主要",
+   "items": []
+  },
+  {
+   "id": "g-top",
+   "label": "総合",
+   "items": []
+  },
+  {
+   "id": "g-life",
+   "label": "暮らし",
+   "items": []
+  },
+  {
+   "id": "g-econ",
+   "label": "経済",
+   "items": []
+  },
+  {
+   "id": "g-society",
+   "label": "社会",
+   "items": []
+  }
+ ]
+}

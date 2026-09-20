@@ -12,6 +12,16 @@ export function toScript(neta: Neta): string {
   return `${head}\n\n${body}${src}${caution}\n`
 }
 
+/** 要点だけを箇条書きで */
+export function toOutline(neta: Neta): string {
+  const head = `■ ${neta.title}`
+  const body = (neta.outline ?? neta.sections.map((s) => `${s.label}：${s.body}`))
+    .map((line) => `・${line}`)
+    .join('\n')
+  const src = neta.sources.length ? `\n出典：${neta.sources.join(' / ')}` : ''
+  return `${head}\n${body}${src}\n`
+}
+
 /** 見出しと語り手向けメモを外して、そのまま読み上げられる形に */
 export function toProse(neta: Neta): string {
   return neta.sections

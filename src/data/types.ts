@@ -168,6 +168,8 @@ export type Neta = {
   kojitsuke: 1 | 2 | 3
   title: string
   sections: NetaSection[]
+  /** ひと目で中身が分かる要点。読み上げる文ではなく、名詞で並べる */
+  outline?: string[]
   sources: string[]
   cautions: string[]
   materials: {
