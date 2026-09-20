@@ -116,6 +116,27 @@ export type Occasion = {
   caution?: string
 }
 
+/** 仏教の人物の小ネタ。教義ではなく、人の話として入るための素材 */
+export type Figure = {
+  id: string
+  /** 空海（弘法大師） */
+  name: string
+  /** 774–835・平安 のような短い添え */
+  era: string
+  /** その人の、ひとことでの通り名 */
+  title: string
+  /** 小ネタ本体。そのまま語れる長さ */
+  story: string
+  /** 法話での使いどころ */
+  hook: string
+  /** いまの暮らしとの接点（たくあん・お茶・だるま…） */
+  everyday?: string
+  emotions: EmotionId[]
+  keywords?: string[]
+  caution?: string
+  tradition?: Tradition
+}
+
 /** お聖教の一句（真宗の法話は、ここから始めることが多い） */
 export type Phrase = {
   id: string
@@ -205,6 +226,7 @@ export type Neta = {
     conceptId?: string
     storyId?: string
     wordId?: string
+    figureId?: string
     modernId?: string
     occasionId?: string
     phraseId?: string

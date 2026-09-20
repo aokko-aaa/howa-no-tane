@@ -1,4 +1,5 @@
 import { CONCEPT_BY_ID } from '../data/concepts'
+import { FIGURE_BY_ID } from '../data/figures'
 import { MODERN_BY_ID } from '../data/modern'
 import { PHRASE_BY_ID } from '../data/shinshu/phrases'
 import { STORY_BY_ID } from '../data/stories'
@@ -31,6 +32,8 @@ function opening(neta: Neta): string {
 function example(neta: Neta): string {
   const story = neta.materials.storyId ? STORY_BY_ID[neta.materials.storyId] : undefined
   if (story) return `${story.title}。${story.summary}`
+  const figure = neta.materials.figureId ? FIGURE_BY_ID[neta.materials.figureId] : undefined
+  if (figure) return `${figure.name}（${figure.era}）。${figure.story}`
   const phrase = neta.materials.phraseId ? PHRASE_BY_ID[neta.materials.phraseId] : undefined
   if (phrase) return `${phrase.text}（${phrase.source}）。${phrase.gloss}`
   const word = neta.materials.wordId ? WORD_BY_ID[neta.materials.wordId] : undefined

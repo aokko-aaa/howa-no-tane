@@ -14,6 +14,8 @@ export const ANGLES: Angle[] = [
   { id: 'hanten', name: '視座の反転', aim: '世間の見方と仏の見方を並べ、落差そのものを見せる', needs: ['concept', 'story'], kojitsuke: 1 },
   { id: 'gyoji', name: '行事に寄せる', aim: '季節や法要の由来から入り、今の気持ちにつなげる', needs: ['concept'], kojitsuke: 2 },
   { id: 'itsuwa', name: '逸話まるごと', aim: '説話を最後まで語り、解説は最小限にする', needs: ['story'], kojitsuke: 1 },
+  { id: 'hito', name: '人の話から', aim: '祖師や弟子の、教科書に載らない一面から入る', needs: ['concept'], kojitsuke: 1 },
+  { id: 'yurai', name: '身のまわりの出どころ', aim: 'たくあん・お茶・だるまなど、暮らしの品の名前の由来にいる人から入る', needs: ['concept'], kojitsuke: 2 },
   { id: 'kojitsuke', name: 'こじつけ全開', aim: '語呂や見立てで強引につなぎ、笑ってもらってから本題に入る', needs: ['word', 'concept'], kojitsuke: 3 },
   // ここから下は真宗大谷派モードのときだけ出す切り口
   { id: 'shogyo', name: 'お聖教の一句から', aim: '正信偈・和讃・歎異抄の一句を先に置き、日常へ降ろす', needs: ['concept'], kojitsuke: 1, tradition: 'shinshu' },

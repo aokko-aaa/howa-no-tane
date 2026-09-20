@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { ANGLES } from '../data/angles'
 import { CONCEPTS } from '../data/concepts'
 import { EMOTIONS } from '../data/emotions'
+import { FIGURES, FIGURE_BY_ID } from '../data/figures'
 import { PHRASES } from '../data/shinshu/phrases'
 import { MODERNS } from '../data/modern'
 import { REASON_BY_ID } from '../data/reasons'
@@ -198,8 +199,10 @@ describe('書いた一件を入口にする', () => {
       expect(n.materials.modernId).toBe('typed')
       expect(n.digest!.steps.join('\n')).toContain('診察券')
       expect(n.digest!.note).toContain('ご自身が書いた一件')
-      const iriguchi = n.sections.find((x) => x.label === SECTION.iriguchi)
-      if (iriguchi) expect(iriguchi.body).toContain('診察券')
+      // 「一行から入る」のように経典の一句を先に置く切り口もあるので、
+      // 入口の欄そのものではなく、本文のどこかに書いた一件が出ていることを見る
+      const spoken = n.sections.filter((x) => x.label !== SECTION.memo)
+      expect(spoken.map((x) => x.body).join('\n'), n.angleName).toContain('診察券')
     }
   })
 
@@ -581,6 +584,71 @@ describe('真宗大谷派モード', () => {
       const memo = n.sections.find((x) => x.label === SECTION.memo)!
       expect(memo.body).toContain('大谷派の言い回し')
     }
+  })
+})
+
+describe('人の小ネタ（偉人のサイドストーリー）', () => {
+  it('「人の話から」の切り口は、人物の話を本文に入れる', () => {
+    const [n] = generateNeta({ ...base, count: 1, pins: { angleId: 'hito' } })
+    const f = FIGURE_BY_ID[n.materials.figureId!]
+    expect(f, '人物が使われている').toBeTruthy()
+    const spoken = n.sections.map((x) => x.body).join('\n')
+    expect(spoken).toContain(f.name)
+    expect(spoken).toContain(f.story)
+    expect(n.sources.some((s) => s.startsWith(f.name))).toBe(true)
+  })
+
+  it('「身のまわりの出どころ」は、暮らしの品に結びつく人物だけを引く', () => {
+    for (const n of generateNeta({ ...base, count: 4, pins: { angleId: 'yurai' } })) {
+      const f = FIGURE_BY_ID[n.materials.figureId!]
+      expect(f?.everyday, n.title).toBeTruthy()
+      expect(n.sections.map((x) => x.body).join('\n')).toContain(f.everyday!)
+    }
+  })
+
+  it('人物を名指しすると、その人物で組む', () => {
+    for (const id of ['takuan', 'eisai-cha', 'shuri-handoku']) {
+      const [n] = generateNeta({ ...base, count: 1, pins: { angleId: 'hito', figureId: id } })
+      expect(n.materials.figureId).toBe(id)
+    }
+  })
+
+  it('人物の話が、要点の筋道にも出る', () => {
+    const [n] = generateNeta({ ...base, count: 1, pins: { angleId: 'hito' } })
+    const f = FIGURE_BY_ID[n.materials.figureId!]
+    expect(n.digest!.steps.join('\n')).toContain(f.name)
+  })
+
+  it('どの気持ちでも、人物の切り口が空回りしない', () => {
+    for (const e of EMOTIONS) {
+      for (const angleId of ['hito', 'yurai']) {
+        const [n] = generateNeta({
+          ...base,
+          emotions: [e.id],
+          count: 1,
+          pins: { angleId },
+        })
+        expect(n.materials.figureId, `${e.id} / ${angleId}`).toBeTruthy()
+        for (const s of n.sections) {
+          expect(s.body).not.toMatch(/undefined|NaN/)
+        }
+      }
+    }
+  })
+
+  it('由来話には、断定しないための注意が語り手向けメモに入る', () => {
+    const [n] = generateNeta({ ...base, count: 1, pins: { angleId: 'yurai' } })
+    expect(n.sections.find((x) => x.label === SECTION.memo)!.body).toContain('諸説')
+  })
+
+  it('注意書きのある人物は、そのまま「語る前に確認」に出る', () => {
+    const withCaution = FIGURES.find((f) => f.caution)!
+    const [n] = generateNeta({
+      ...base,
+      count: 1,
+      pins: { angleId: 'hito', figureId: withCaution.id },
+    })
+    expect(n.cautions.join('\n')).toContain(withCaution.caution!)
   })
 })
 

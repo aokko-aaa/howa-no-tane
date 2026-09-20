@@ -6,6 +6,7 @@ import NetaCard from './components/NetaCard'
 import SavedView from './components/SavedView'
 import { ANGLES, SCENES } from './data/angles'
 import { CONCEPTS } from './data/concepts'
+import { FIGURES } from './data/figures'
 import { reasonsFor } from './data/reasons'
 import { PHRASES } from './data/shinshu/phrases'
 import { STORIES } from './data/stories'
@@ -392,6 +393,25 @@ export default function App() {
                         {STORIES.map((st) => (
                           <option key={st.id} value={st.id}>
                             {st.title}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="flex-1">
+                      <label className="label mb-1 block" htmlFor="pin-figure">
+                        人の小ネタ
+                      </label>
+                      <select
+                        id="pin-figure"
+                        value={pins.figureId ?? ''}
+                        onChange={(e) => setPin('figureId', e.target.value)}
+                        className="min-h-tap w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                      >
+                        <option value="">指定しない</option>
+                        {FIGURES.map((f) => (
+                          <option key={f.id} value={f.id}>
+                            {f.name}
+                            {f.everyday ? `（${f.everyday}）` : ''}
                           </option>
                         ))}
                       </select>

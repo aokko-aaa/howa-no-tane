@@ -1,6 +1,7 @@
 import { ANGLES, ANGLE_BY_ID, SCENE_BY_ID } from '../data/angles'
 import { CONCEPTS, CONCEPT_BY_ID } from '../data/concepts'
 import { EMOTION_BY_ID } from '../data/emotions'
+import { FIGURES, FIGURE_BY_ID } from '../data/figures'
 import { MODERNS, MODERN_BY_ID } from '../data/modern'
 import { REASON_BY_ID } from '../data/reasons'
 import { OCCASIONS } from '../data/occasions'
@@ -12,6 +13,7 @@ import type {
   Angle,
   Concept,
   EmotionId,
+  Figure,
   Manner,
   Phrase,
   Tradition,
@@ -34,6 +36,8 @@ export const SECTION = {
   toi: '問い',
   kotoba: '仏教のことば',
   tatoe: 'たとえ・逸話',
+  hito: '人の話（小ネタ）',
+  yurai: '身のまわりの出どころ',
   zure: '視座のズレ',
   seken: '世間の見方',
   hotoke: '仏の見方',
@@ -75,6 +79,7 @@ export type Pins = {
   phraseId?: string
   storyId?: string
   wordId?: string
+  figureId?: string
 }
 
 type Ctx = {
@@ -84,6 +89,7 @@ type Ctx = {
   modern: Modern
   concept: Concept
   story: Story
+  figure: Figure
   word: Word
   occasion: Occasion
   phrase: Phrase
@@ -101,6 +107,7 @@ type Built = {
     concept?: boolean
     story?: boolean
     word?: boolean
+    figure?: boolean
     occasion?: boolean
     phrase?: boolean
   }
@@ -116,6 +123,8 @@ const nq = (t: string) => t.replace(/。$/, '')
 
 const conceptLine = (c: Concept) =>
   `${c.term}（${c.reading}）。${c.oneLine}　【${c.source}】`
+
+const figureLine = (f: Figure) => `${f.name}（${f.era}）。${f.title}、と言われる方です。`
 
 const storyLine = (st: Story) => `${st.summary}　【${st.source}】`
 
@@ -411,6 +420,44 @@ const BUILDERS: Record<string, (c: Ctx) => Built> = {
     ],
   }),
 
+  hito: (c) => ({
+    title: `${c.figure.name} — ${c.figure.title}`,
+    uses: { concept: true, figure: true },
+    meta: [`人物の話は、えらい方の話として語ると遠くなる。困っていた側の話として語る。`],
+    sections: [
+      s(SECTION.iriguchi, c.modern.line),
+      s(SECTION.hito, `${figureLine(c.figure)}${c.figure.story}`),
+      s(SECTION.zure, `${c.figure.hook}　えらい方だから乗り越えられた、という話ではありません。つまずいたところは、私たちと同じでした。`),
+      s(SECTION.kotoba, conceptLine(c.concept)),
+      s(SECTION.otoshi, c.concept.step),
+      s(
+        SECTION.musubi,
+        `教えは、はじめから整った形であったのではありません。誰かが困ったところから、この言葉は出てきました。`,
+      ),
+    ],
+  }),
+
+  yurai: (c) => ({
+    title: `${c.figure.everyday ?? c.figure.name}の向こうに — ${c.figure.name}`,
+    uses: { concept: true, figure: true },
+    meta: ['由来話は諸説ある。「と言われています」で止めて、断定しない。'],
+    sections: [
+      s(SECTION.iriguchi, c.modern.line),
+      s(
+        SECTION.yurai,
+        `ところで、${c.figure.everyday ?? c.figure.title}。これが${c.figure.name}につながっていると申しましたら、意外に思われるでしょうか。`,
+      ),
+      s(SECTION.hito, `${figureLine(c.figure)}${c.figure.story}`),
+      s(SECTION.zure, c.figure.hook),
+      s(SECTION.kotoba, conceptLine(c.concept)),
+      s(SECTION.otoshi, c.concept.step),
+      s(
+        SECTION.musubi,
+        `身のまわりのものの出どころをたどると、たいてい誰かの困りごとに行き当たります。${c.figure.name}も、そこから始めた人でした。`,
+      ),
+    ],
+  }),
+
   kojitsuke: (c) => ({
     title: `こじつけですが — 「${c.word.word}」と${c.concept.term}`,
     uses: { word: true, concept: true },
@@ -594,6 +641,16 @@ export function generateNeta(input: GenerateInput): Neta[] {
     ),
     mode,
   )
+  const rankedFigures = weighTradition(
+    rankItems(
+      FIGURES,
+      emotions,
+      input.text,
+      (x) => x.emotions,
+      (x) => [x.name, x.everyday ?? '', ...(x.keywords ?? [])],
+    ),
+    mode,
+  )
   const rankedModerns = rankItems(
     MODERNS.filter((m) => !(m.avoidScenes ?? []).includes(scene.id)),
     emotions,
@@ -625,6 +682,10 @@ export function generateNeta(input: GenerateInput): Neta[] {
     emotions.length === 0 ||
     rankedPhrases.some((r) => r.match > 0 && r.item.source.includes(source))
   const PHRASE_SOURCE: Record<string, string> = { ofumi: '御文', tannisho: '歎異抄' }
+  // 「身のまわりの出どころ」は、暮らしの品に結びつく人物が気持ちに当たるときだけ。
+  // （無いまま出すと、由来の無い人物を由来話として語ることになる）
+  const hasFitFigure =
+    emotions.length === 0 || rankedFigures.some((r) => r.match > 0 && r.item.everyday)
 
   const usable = pinnedAngle
     ? [pinnedAngle]
@@ -632,7 +693,8 @@ export function generateNeta(input: GenerateInput): Neta[] {
         (a) =>
           a.kojitsuke <= input.kojitsukeMax &&
           (mode === 'otani' || a.tradition !== 'shinshu') &&
-          (!PHRASE_SOURCE[a.id] || hasFitPhrase(PHRASE_SOURCE[a.id])),
+          (!PHRASE_SOURCE[a.id] || hasFitPhrase(PHRASE_SOURCE[a.id])) &&
+          (a.id !== 'yurai' || hasFitFigure),
       )
   // 一句を名指しされたら、その一句を読む切り口を回す（無ければ通常どおり）
   const phraseAngles = usable.filter((a) => ['shogyo', 'ofumi', 'tannisho'].includes(a.id))
@@ -677,6 +739,7 @@ export function generateNeta(input: GenerateInput): Neta[] {
   const usedConcept = new Set<string>()
   const usedStory = new Set<string>()
   const usedWord = new Set<string>()
+  const usedFigure = new Set<string>()
   const usedModern = new Set<string>()
   const usedOccasion = new Set<string>()
   const usedPhrase = new Set<string>()
@@ -692,6 +755,13 @@ export function generateNeta(input: GenerateInput): Neta[] {
       : rankedConceptsByReason
     const wordPool = shinshuAngle ? preferShinshu(rankedWords) : rankedWords
     const storyPool = shinshuAngle ? preferShinshu(rankedStories) : rankedStories
+    // 由来の切り口では、暮らしの品に結びつく人物だけを引く
+    const figurePool =
+      angle.id === 'yurai'
+        ? orAll(rankedFigures.filter((r) => r.item.everyday), rankedFigures)
+        : shinshuAngle
+          ? preferShinshu(rankedFigures)
+          : rankedFigures
     const occasionPoolForAngle = shinshuAngle
       ? orAll(
           occasions.filter((r) => r.item.tradition === 'shinshu'),
@@ -731,6 +801,9 @@ export function generateNeta(input: GenerateInput): Neta[] {
         takeUnused(alignTo(rankedModerns), usedModern, rand, 8),
       concept,
       story: (pins.storyId ? STORY_BY_ID[pins.storyId] : undefined) ?? takeUnused(alignTo(storyPool), usedStory, rand, 6),
+      figure:
+        (pins.figureId ? FIGURE_BY_ID[pins.figureId] : undefined) ??
+        takeUnused(alignTo(figurePool), usedFigure, rand, 6),
       word: (pins.wordId ? WORD_BY_ID[pins.wordId] : undefined) ?? takeUnused(alignTo(wordPool), usedWord, rand, 6),
       occasion: takeUnused(occasionPoolForAngle, usedOccasion, rand, 6),
       phrase:
@@ -780,6 +853,10 @@ export function generateNeta(input: GenerateInput): Neta[] {
       sources.push(`${ctx.word.word}：仏教語（${ctx.word.origin}）`)
       if (ctx.word.caution) cautions.push(`${ctx.word.word}：${ctx.word.caution}`)
     }
+    if (built.uses.figure) {
+      sources.push(`${ctx.figure.name}：${ctx.figure.era}`)
+      if (ctx.figure.caution) cautions.push(`${ctx.figure.name}：${ctx.figure.caution}`)
+    }
     if (built.uses.phrase) {
       sources.push(`一句：${ctx.phrase.source}`)
       if (ctx.phrase.caution) cautions.push(`一句：${ctx.phrase.caution}`)
@@ -813,6 +890,13 @@ export function generateNeta(input: GenerateInput): Neta[] {
         : []),
       `仏教はこれを「${ctx.concept.term}」という。${nq(ctx.concept.oneLine)}。`,
       `世間では${nq(ctx.concept.misread)}。けれども、${ctx.concept.pivot}`,
+      ...(built.uses.figure
+        ? [
+            ctx.figure.everyday
+              ? `${ctx.figure.everyday}の出どころは${ctx.figure.name}。${nq(ctx.figure.title)}、という人だった。`
+              : `${ctx.figure.name}にも、同じところでのつまずきがある。${nq(ctx.figure.title)}。`,
+          ]
+        : []),
       ...(built.uses.story ? [`${ctx.story.title}の話が、そこに重なる。`] : []),
       todayStep,
     ]
@@ -850,6 +934,7 @@ export function generateNeta(input: GenerateInput): Neta[] {
         conceptId: built.uses.concept ? ctx.concept.id : undefined,
         storyId: built.uses.story ? ctx.story.id : undefined,
         wordId: built.uses.word ? ctx.word.id : undefined,
+        figureId: built.uses.figure ? ctx.figure.id : undefined,
         modernId: ctx.modern.id,
         occasionId: built.uses.occasion ? ctx.occasion.id : undefined,
         phraseId: built.uses.phrase ? ctx.phrase.id : undefined,
@@ -879,6 +964,7 @@ export function swapMaterial(
     conceptId: neta.materials.conceptId,
     storyId: neta.materials.storyId,
     wordId: neta.materials.wordId,
+    figureId: neta.materials.figureId,
     phraseId: neta.materials.phraseId,
   }
   const [out] = generateNeta({ ...base, seed, count: 1, pins })
@@ -890,4 +976,4 @@ export function swapMaterial(
   }
 }
 
-export type { Concept, Story, Word, Modern, Phrase, Manner, Scene }
+export type { Concept, Story, Word, Figure, Modern, Phrase, Manner, Scene }

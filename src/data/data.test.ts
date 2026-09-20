@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { ANGLES, SCENES } from './angles'
 import { CONCEPTS } from './concepts'
 import { EMOTIONS } from './emotions'
+import { FIGURES } from './figures'
 import { MODERNS } from './modern'
 import { OCCASIONS } from './occasions'
 import { REASONS, reasonsFor } from './reasons'
@@ -19,6 +20,7 @@ const datasets = [
   { name: 'words', items: WORDS as { id: string }[] },
   { name: 'moderns', items: MODERNS as { id: string }[] },
   { name: 'occasions', items: OCCASIONS as { id: string }[] },
+  { name: 'figures', items: FIGURES as { id: string }[] },
   { name: 'phrases', items: PHRASES as { id: string }[] },
   { name: 'manners', items: MANNERS as { id: string }[] },
   { name: 'angles', items: ANGLES as { id: string }[] },
@@ -36,6 +38,7 @@ describe('データの整合', () => {
     { name: 'stories', items: STORIES },
     { name: 'words', items: WORDS },
     { name: 'moderns', items: MODERNS },
+    { name: 'figures', items: FIGURES },
   ]
   it.each(tagged)('$name の感情タグがすべて実在する', ({ items }) => {
     const unknown = items.flatMap((x) => x.emotions.filter((e) => !emotionIds.has(e)))
@@ -44,7 +47,7 @@ describe('データの整合', () => {
 
   it('すべての感情に、素材が最低一つずつ結びついている', () => {
     const covered = new Set(
-      [...CONCEPTS, ...STORIES, ...WORDS, ...MODERNS].flatMap((x) => x.emotions),
+      [...CONCEPTS, ...STORIES, ...WORDS, ...MODERNS, ...FIGURES].flatMap((x) => x.emotions),
     )
     const missing = EMOTIONS.map((e) => e.id).filter((id) => !covered.has(id))
     expect(missing).toEqual([])
@@ -57,6 +60,26 @@ describe('データの整合', () => {
       expect(WORDS.some((w) => w.emotions.includes(e.id)), `word: ${e.id}`).toBe(true)
       expect(MODERNS.some((m) => m.emotions.includes(e.id)), `modern: ${e.id}`).toBe(true)
     }
+  })
+
+  it('どの感情にも、人の小ネタが一つはある', () => {
+    for (const e of EMOTIONS) {
+      expect(FIGURES.some((f) => f.emotions.includes(e.id)), `figure: ${e.id}`).toBe(true)
+    }
+  })
+
+  it('人の小ネタに、話と使いどころが揃っている', () => {
+    for (const f of FIGURES) {
+      expect(f.story.length, f.name).toBeGreaterThan(30)
+      expect(f.hook.length, f.name).toBeGreaterThan(0)
+      expect(f.era.length, f.name).toBeGreaterThan(0)
+      expect(f.title.length, f.name).toBeGreaterThan(0)
+    }
+  })
+
+  it('暮らしの品に結びつく人の小ネタが、いくつもある', () => {
+    // 「身のまわりの出どころ」の切り口は、ここが薄いと成り立たない
+    expect(FIGURES.filter((f) => f.everyday).length).toBeGreaterThanOrEqual(8)
   })
 
   it('お聖教の一句に、出典と意味と使いどころが揃っている', () => {

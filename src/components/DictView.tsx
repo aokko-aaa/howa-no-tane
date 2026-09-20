@@ -1,16 +1,22 @@
 import { useMemo, useState } from 'react'
 import { CONCEPTS } from '../data/concepts'
+import { FIGURES } from '../data/figures'
 import { MANNERS } from '../data/shinshu/manners'
 import { PHRASES } from '../data/shinshu/phrases'
 import { STORIES } from '../data/stories'
 import { WORDS } from '../data/words'
 
-type Kind = 'phrase' | 'manner' | 'concept' | 'word' | 'story'
+type Kind = 'phrase' | 'manner' | 'concept' | 'word' | 'story' | 'figure'
 
 const TABS: { id: Kind; label: string; note: string }[] = [
   { id: 'word', label: 'え、これも仏教語', note: '毎日使っている言葉の、もとの意味' },
   { id: 'concept', label: '仏教語', note: '世間での受け取りと、本来の意味の落差で引ける' },
   { id: 'story', label: '喩え・逸話', note: 'そのまま語れる長さにしてある' },
+  {
+    id: 'figure',
+    label: '人の小ネタ',
+    note: '偉人の、教科書に載らないほうの話。暮らしの品の名前になった人もいる',
+  },
   { id: 'phrase', label: 'お聖教', note: '正信偈・和讃・歎異抄・御文の一句。法話の頭に置く' },
   { id: 'manner', label: '大谷派の言い回し', note: '法話・挨拶でうっかり出やすい言い方と、その言い換え' },
 ]
@@ -32,6 +38,13 @@ export default function DictView() {
   )
   const stories = useMemo(
     () => STORIES.filter((s) => hit(s.title, s.summary, s.point, s.source)),
+    [q],
+  )
+  const figures = useMemo(
+    () =>
+      FIGURES.filter((f) =>
+        hit(f.name, f.title, f.story, f.hook, f.everyday ?? '', ...(f.keywords ?? [])),
+      ),
     [q],
   )
   const phrases = useMemo(
@@ -154,6 +167,34 @@ export default function DictView() {
               </p>
               <p className="mt-1 text-[15px] leading-relaxed text-stone-700">{w.gap}</p>
               {w.caution && <p className="mt-1 text-xs text-amber-700">確認：{w.caution}</p>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {kind === 'figure' && (
+        <div className="flex flex-col gap-2">
+          <p className="text-xs leading-relaxed text-stone-500">
+            伝説・俗説の混ざる話が多い領域です。「と言われています」で止めて、断定しないでおくと安全です。
+          </p>
+          {figures.map((f) => (
+            <div key={f.id} className="card px-4 py-3">
+              <div className="flex flex-wrap items-baseline gap-2">
+                <h3 className="text-base font-bold">{f.name}</h3>
+                <span className="text-xs text-stone-500">{f.era}</span>
+                {f.everyday && (
+                  <span className="rounded bg-matcha/10 px-1.5 py-0.5 text-xs text-matcha">
+                    {f.everyday}
+                  </span>
+                )}
+              </div>
+              <p className="mt-0.5 text-sm font-bold text-enji">{f.title}</p>
+              <p className="mt-1 text-[15px] leading-relaxed">{f.story}</p>
+              <p className="mt-1 text-sm text-stone-700">
+                <span className="label">使いどころ </span>
+                {f.hook}
+              </p>
+              {f.caution && <p className="mt-1 text-xs text-amber-700">確認：{f.caution}</p>}
             </div>
           ))}
         </div>
