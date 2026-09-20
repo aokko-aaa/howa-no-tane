@@ -1,12 +1,12 @@
 import { ANGLES, ANGLE_BY_ID, SCENE_BY_ID } from '../data/angles'
-import { CONCEPTS } from '../data/concepts'
+import { CONCEPTS, CONCEPT_BY_ID } from '../data/concepts'
 import { EMOTION_BY_ID } from '../data/emotions'
 import { MODERNS } from '../data/modern'
 import { OCCASIONS } from '../data/occasions'
 import { MANNERS } from '../data/shinshu/manners'
-import { PHRASES } from '../data/shinshu/phrases'
-import { STORIES } from '../data/stories'
-import { WORDS } from '../data/words'
+import { PHRASES, PHRASE_BY_ID } from '../data/shinshu/phrases'
+import { STORIES, STORY_BY_ID } from '../data/stories'
+import { WORDS, WORD_BY_ID } from '../data/words'
 import type {
   Angle,
   Concept,
@@ -60,6 +60,17 @@ export type GenerateInput = {
   tradition: TraditionMode
   seed: number
   count: number
+  /** 名指しで指定された素材・切り口（条件検索） */
+  pins?: Pins
+}
+
+/** 「この言葉で」「この一句で」「この切り口で」と指定するための条件 */
+export type Pins = {
+  angleId?: string
+  conceptId?: string
+  phraseId?: string
+  storyId?: string
+  wordId?: string
 }
 
 type Ctx = {
@@ -547,12 +558,19 @@ export function generateNeta(input: GenerateInput): Neta[] {
     mode,
   )
 
-  // 真宗の切り口は真宗モードのときだけ。しかも先に回して、最初の一巡に必ず入るようにする。
-  const usable = ANGLES.filter(
-    (a) => a.kojitsuke <= input.kojitsukeMax && (mode === 'otani' || a.tradition !== 'shinshu'),
-  )
-  const angles =
-    mode === 'otani'
+  // 切り口を名指しされたら、こじつけ度や宗派の絞り込みより指定を優先する
+  const pins = input.pins ?? {}
+  const pinnedAngle = pins.angleId ? ANGLES.find((a) => a.id === pins.angleId) : undefined
+  const usable = pinnedAngle
+    ? [pinnedAngle]
+    : ANGLES.filter(
+        (a) => a.kojitsuke <= input.kojitsukeMax && (mode === 'otani' || a.tradition !== 'shinshu'),
+      )
+  // 一句を名指しされたら、その一句を読む切り口を回す（無ければ通常どおり）
+  const phraseAngles = usable.filter((a) => ['shogyo', 'ofumi', 'tannisho'].includes(a.id))
+  const angles = pins.phraseId && !pinnedAngle && phraseAngles.length > 0
+    ? shuffle(phraseAngles, rand)
+    : mode === 'otani'
       ? [
           ...shuffle(
             usable.filter((a) => a.tradition === 'shinshu'),
@@ -591,7 +609,8 @@ export function generateNeta(input: GenerateInput): Neta[] {
           ? rankedPhrases.filter((r) => r.item.source.includes('歎異抄'))
           : rankedPhrases
 
-    const concept = takeUnused(conceptPool, usedConcept, rand, 8)
+    const pinnedConcept = pins.conceptId ? CONCEPT_BY_ID[pins.conceptId] : undefined
+    const concept = pinnedConcept ?? takeUnused(conceptPool, usedConcept, rand, 8)
     // 一句・喩え・日常語は、選んだ教義と同じ気持ちを向いているものから引く（話の筋がずれないように）
     const conceptTags = new Set(concept.emotions)
     const alignTo = <T extends { emotions: readonly EmotionId[] }>(pool: Ranked<T>[]) =>
@@ -608,10 +627,12 @@ export function generateNeta(input: GenerateInput): Neta[] {
       userText: input.text,
       modern: takeUnused(rankedModerns, usedModern, rand, 8),
       concept,
-      story: takeUnused(alignTo(storyPool), usedStory, rand, 6),
-      word: takeUnused(alignTo(wordPool), usedWord, rand, 6),
+      story: (pins.storyId ? STORY_BY_ID[pins.storyId] : undefined) ?? takeUnused(alignTo(storyPool), usedStory, rand, 6),
+      word: (pins.wordId ? WORD_BY_ID[pins.wordId] : undefined) ?? takeUnused(alignTo(wordPool), usedWord, rand, 6),
       occasion: takeUnused(occasionPoolForAngle, usedOccasion, rand, 6),
-      phrase: takeUnused(alignTo(orAll(phrasePool, rankedPhrases)), usedPhrase, rand, 4),
+      phrase:
+        (pins.phraseId ? PHRASE_BY_ID[pins.phraseId] : undefined) ??
+        takeUnused(alignTo(orAll(phrasePool, rankedPhrases)), usedPhrase, rand, 4),
       scene,
       mode,
     }

@@ -1,18 +1,26 @@
 import { useEffect, useMemo, useState } from 'react'
+import ChartView from './components/ChartView'
 import DictView from './components/DictView'
+import NewsView from './components/NewsView'
 import EmotionPicker from './components/EmotionPicker'
 import NetaCard from './components/NetaCard'
 import SavedView from './components/SavedView'
-import { SCENES } from './data/angles'
+import { ANGLES, SCENES } from './data/angles'
+import { CONCEPTS } from './data/concepts'
+import { PHRASES } from './data/shinshu/phrases'
+import { STORIES } from './data/stories'
+import { WORDS } from './data/words'
 import type { EmotionId, Neta, SceneId, TraditionMode } from './data/types'
-import { generateNeta } from './lib/generate'
+import { generateNeta, type Pins } from './lib/generate'
 import { detectEmotions } from './lib/match'
 import { savedStore } from './lib/storage'
 
-type Tab = 'make' | 'book' | 'dict'
+type Tab = 'make' | 'news' | 'chart' | 'book' | 'dict'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'make', label: 'つくる' },
+  { id: 'news', label: '話題から' },
+  { id: 'chart', label: 'たどる' },
   { id: 'book', label: 'ネタ帳' },
   { id: 'dict', label: 'ことば' },
 ]
@@ -28,6 +36,8 @@ export default function App() {
   const [tradition, setTradition] = useState<TraditionMode>('otani')
   const [month, setMonth] = useState(new Date().getMonth() + 1)
   const [results, setResults] = useState<Neta[]>([])
+  const [pins, setPins] = useState<Pins>({})
+  const [openPins, setOpenPins] = useState(false)
   const [savedIds, setSavedIds] = useState<string[]>([])
 
   useEffect(() => {
@@ -37,6 +47,10 @@ export default function App() {
   const detected = useMemo(() => detectEmotions(text), [text])
   /** 選んだ気持ちが無ければ、書かれた文から拾ったものを使う */
   const effective = emotions.length > 0 ? emotions : detected
+
+  const pinCount = Object.values(pins).filter(Boolean).length
+  const setPin = (key: keyof Pins, value: string) =>
+    setPins((prev) => ({ ...prev, [key]: value || undefined }))
 
   const toggle = (id: EmotionId) =>
     setEmotions((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
@@ -52,6 +66,7 @@ export default function App() {
       tradition,
       seed,
       count: BATCH,
+      pins,
     })
     setResults((prev) => (mode === 'more' ? [...prev, ...next] : next))
     if (mode === 'new') window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -81,6 +96,7 @@ export default function App() {
           <br className="hidden sm:block" />
           既定は<span className="font-bold">真宗大谷派</span>
           の教え（お聖教・御文・歎異抄・報恩）を優先して出します。
+          お寺の方でなければ、<span className="font-bold">「たどる」</span>から三つ選ぶだけでも読めます。
         </p>
       </header>
 
@@ -208,9 +224,147 @@ export default function App() {
               </div>
             </div>
 
+            <div>
+              <button
+                type="button"
+                className="label flex items-center gap-1 underline"
+                onClick={() => setOpenPins((v) => !v)}
+              >
+                {openPins ? '条件を閉じる' : '素材を指定して探す'}
+                {pinCount > 0 ? `（${pinCount}件 指定中）` : ''}
+              </button>
+
+              {openPins && (
+                <div className="mt-2 flex flex-col gap-3 rounded-lg bg-stone-50 px-3 py-3">
+                  <p className="text-xs leading-relaxed text-stone-500">
+                    「この言葉で」「この一句で」「この切り口で」と決めて探せます。
+                    指定しない欄は、気持ちに合わせてこちらで選びます。
+                  </p>
+
+                  <div>
+                    <label className="label mb-1 block" htmlFor="pin-concept">
+                      仏教語
+                    </label>
+                    <select
+                      id="pin-concept"
+                      value={pins.conceptId ?? ''}
+                      onChange={(e) => setPin('conceptId', e.target.value)}
+                      className="min-h-tap w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                    >
+                      <option value="">指定しない</option>
+                      <optgroup label="真宗大谷派">
+                        {CONCEPTS.filter((c) => c.tradition === 'shinshu').map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.term}（{c.oneLine}）
+                          </option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="宗派を問わない・禅">
+                        {CONCEPTS.filter((c) => c.tradition !== 'shinshu').map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.term}（{c.oneLine}）
+                          </option>
+                        ))}
+                      </optgroup>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="label mb-1 block" htmlFor="pin-phrase">
+                      お聖教の一句
+                    </label>
+                    <select
+                      id="pin-phrase"
+                      value={pins.phraseId ?? ''}
+                      onChange={(e) => setPin('phraseId', e.target.value)}
+                      className="min-h-tap w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                    >
+                      <option value="">指定しない</option>
+                      {PHRASES.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.text.slice(0, 22)}
+                          {p.text.length > 22 ? '…' : ''}／{p.source}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="label mb-1 block" htmlFor="pin-angle">
+                      切り口
+                    </label>
+                    <select
+                      id="pin-angle"
+                      value={pins.angleId ?? ''}
+                      onChange={(e) => setPin('angleId', e.target.value)}
+                      className="min-h-tap w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                    >
+                      <option value="">指定しない</option>
+                      {ANGLES.map((a) => (
+                        <option key={a.id} value={a.id}>
+                          {a.name}（{a.aim}）
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <div className="flex-1">
+                      <label className="label mb-1 block" htmlFor="pin-story">
+                        喩え・逸話
+                      </label>
+                      <select
+                        id="pin-story"
+                        value={pins.storyId ?? ''}
+                        onChange={(e) => setPin('storyId', e.target.value)}
+                        className="min-h-tap w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                      >
+                        <option value="">指定しない</option>
+                        {STORIES.map((st) => (
+                          <option key={st.id} value={st.id}>
+                            {st.title}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="flex-1">
+                      <label className="label mb-1 block" htmlFor="pin-word">
+                        日常語
+                      </label>
+                      <select
+                        id="pin-word"
+                        value={pins.wordId ?? ''}
+                        onChange={(e) => setPin('wordId', e.target.value)}
+                        className="min-h-tap w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                      >
+                        <option value="">指定しない</option>
+                        {WORDS.map((w) => (
+                          <option key={w.id} value={w.id}>
+                            {w.word}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {pinCount > 0 && (
+                    <button
+                      type="button"
+                      className="btn-ghost self-start"
+                      onClick={() => setPins({})}
+                    >
+                      条件をすべて外す
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
             <div className="flex flex-wrap items-center gap-2">
               <button type="button" className="btn-primary" onClick={() => run('new')}>
-                切り口を{results.length > 0 ? '出し直す' : '出す'}
+                {pinCount > 0
+                  ? `この条件で${results.length > 0 ? '探し直す' : '探す'}`
+                  : `切り口を${results.length > 0 ? '出し直す' : '出す'}`}
               </button>
               {results.length > 0 && (
                 <button type="button" className="btn-ghost" onClick={() => run('more')}>
@@ -245,6 +399,19 @@ export default function App() {
         </div>
       )}
 
+      {tab === 'news' && (
+        <NewsView
+          sceneId={sceneId}
+          tradition={tradition}
+          kojitsukeMax={kojitsukeMax}
+          month={month}
+          savedIds={savedIds}
+          onSave={save}
+        />
+      )}
+      {tab === 'chart' && (
+        <ChartView tradition={tradition} savedIds={savedIds} onSave={save} />
+      )}
       {tab === 'book' && <SavedView />}
       {tab === 'dict' && <DictView />}
 

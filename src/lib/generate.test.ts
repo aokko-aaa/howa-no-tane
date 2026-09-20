@@ -138,6 +138,57 @@ describe('generateNeta', () => {
   })
 })
 
+describe('条件を指定して作る', () => {
+  it('仏教語を名指しすると、すべての案がその言葉で組まれる', () => {
+    const out = generateNeta({ ...base, count: 6, pins: { conceptId: 'engi' } })
+    expect(out.every((n) => n.materials.conceptId === 'engi')).toBe(true)
+    // 切り口は変わるので、同じ言葉でも別の入り方が並ぶ
+    expect(new Set(out.map((n) => n.angleId)).size).toBeGreaterThan(1)
+  })
+
+  it('切り口を名指しすると、その切り口だけが出る', () => {
+    const out = generateNeta({ ...base, count: 5, pins: { angleId: 'gogen' } })
+    expect(out.every((n) => n.angleId === 'gogen')).toBe(true)
+  })
+
+  it('こじつけ度の上限より強い切り口でも、名指しなら出せる', () => {
+    const out = generateNeta({ ...base, kojitsukeMax: 1, count: 3, pins: { angleId: 'kojitsuke' } })
+    expect(out.every((n) => n.angleId === 'kojitsuke')).toBe(true)
+  })
+
+  it('お聖教の一句を名指しすると、その一句を読む切り口になる', () => {
+    const out = generateNeta({
+      ...base,
+      tradition: 'otani',
+      count: 4,
+      pins: { phraseId: 'tannisho-3' },
+    })
+    expect(out.every((n) => n.materials.phraseId === 'tannisho-3')).toBe(true)
+    expect(out.every((n) => ['shogyo', 'ofumi', 'tannisho'].includes(n.angleId))).toBe(true)
+  })
+
+  it('喩え話と日常語も名指しできる', () => {
+    const out = generateNeta({
+      ...base,
+      count: 4,
+      pins: { angleId: 'tatoe-swap', storyId: 'dokuya' },
+    })
+    expect(out.every((n) => n.materials.storyId === 'dokuya')).toBe(true)
+    const w = generateNeta({ ...base, count: 4, pins: { angleId: 'gogen', wordId: 'gaman' } })
+    expect(w.every((n) => n.materials.wordId === 'gaman')).toBe(true)
+  })
+
+  it('宗派を問わないモードで一句だけ指定しても落ちない', () => {
+    const out = generateNeta({
+      ...base,
+      tradition: 'any',
+      count: 3,
+      pins: { phraseId: 'tannisho-3' },
+    })
+    expect(out).toHaveLength(3)
+  })
+})
+
 describe('真宗大谷派モード', () => {
   const otani: GenerateInput = { ...base, tradition: 'otani', emotions: ['wakare', 'shi'] }
 
