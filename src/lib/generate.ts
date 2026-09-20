@@ -61,6 +61,8 @@ export type GenerateInput = {
   tradition: TraditionMode
   /** 気持ちの一段下（「なんで？」で選んだ理由） */
   reasonIds?: string[]
+  /** この言葉を前に出す（話題の型など、外から当てたいとき） */
+  preferConceptIds?: string[]
   seed: number
   count: number
   /** 名指しで指定された素材・切り口（条件検索） */
@@ -429,12 +431,22 @@ const BUILDERS: Record<string, (c: Ctx) => Built> = {
   }),
 }
 
+/** 掲示板やSNSに貼れる長さの一文を選ぶ（長い説明はそのままでは貼れない） */
+function shortLine(text: string): string {
+  const sentences = text
+    .split(/(?<=。)/)
+    .map((x) => nq(x.trim()))
+    .filter((x) => x.length >= 10)
+  if (sentences.length === 0) return nq(text)
+  return sentences.reduce((a, b) => (b.length < a.length ? b : a))
+}
+
 /** 掲示板・SNS用に短く畳み直す（一行の案を複数出す） */
 function condense(built: Built, c: Ctx): NetaSection[] {
   const hitokoto = [
-    `${nq(c.concept.oneLine)}\n　　　　—— ${c.concept.term}`,
-    `${nq(c.concept.pivot)}\n　　　　—— ${c.concept.term}`,
-    `「${c.word.word}」は、もとは${nq(c.word.origin)}\n　　　　—— 仏教語`,
+    `${shortLine(c.concept.oneLine)}\n　　　　—— ${c.concept.term}`,
+    `${shortLine(c.concept.pivot)}\n　　　　—— ${c.concept.term}`,
+    `${c.word.word}——もとの意味は、${shortLine(c.word.origin)}\n　　　　—— 仏教語`,
   ]
     .map((t, i) => `［案${i + 1}］${t}`)
     .join('\n\n')
@@ -514,6 +526,8 @@ function weighTradition<T extends { tradition?: Tradition }>(
  * （ここで真宗を優先しすぎると、「イライラする」に死に際の話が出る）
  */
 const preferShinshu = <T extends { tradition?: Tradition }>(ranked: Ranked<T>[]) => {
+  // 書かれた文や話題の型に当たっている素材があるときは、宗派より、そちらを優先する
+  if (ranked.some((r) => r.hits > 0)) return ranked
   const fit = ranked.filter((r) => r.item.tradition === 'shinshu' && r.match > 0)
   // 当たっている真宗の素材が1つしかないなら、そればかり並ぶので宗派の縛りを外す
   return fit.length >= 2 ? fit : ranked
@@ -545,7 +559,10 @@ export function generateNeta(input: GenerateInput): Neta[] {
   const emotions = Array.from(
     new Set([...input.emotions, ...reasons.flatMap((r) => r.emotions)]),
   )
+  // 理由（なんで？）に紐づく言葉は、前に出す程度の重み。
+  // 外から名指しされた言葉（話題の型など）は、文に当たったのと同じ強さで扱う。
   const preferred = new Set(reasons.flatMap((r) => r.concepts ?? []))
+  const named = new Set(input.preferConceptIds ?? [])
 
   const emotionLabels = input.emotions.map((id) => EMOTION_BY_ID[id]?.label).filter(Boolean)
   const reasonLabels = reasons.map((r) => r.label)
@@ -636,12 +653,14 @@ export function generateNeta(input: GenerateInput): Neta[] {
       : shuffle(usable, rand)
 
   const rankedConceptsByReason =
-    preferred.size > 0
+    preferred.size > 0 || named.size > 0
       ? rankedConcepts
           .map((r) =>
-            preferred.has(r.item.id)
-              ? { ...r, score: r.score + 12, match: Math.max(r.match, 1) }
-              : r,
+            named.has(r.item.id)
+              ? { ...r, score: r.score + 20, match: Math.max(r.match, 1), hits: Math.max(r.hits, 1) }
+              : preferred.has(r.item.id)
+                ? { ...r, score: r.score + 12, match: Math.max(r.match, 1) }
+                : r,
           )
           .sort((a, b) => b.score - a.score)
       : rankedConcepts

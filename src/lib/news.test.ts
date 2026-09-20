@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { NEWS_CAUTION } from '../data/news'
+import { CONCEPTS } from '../data/concepts'
+import { NEWS_CAUTION, NEWS_TOPICS } from '../data/news'
 import { generateNeta, SECTION, type GenerateInput } from './generate'
 import { parseRss } from '../../scripts/rss.mjs'
 import { applyNewsLead, classifyHeadline, emotionsFromHeadline, filterHeadlines } from './news'
@@ -141,5 +142,47 @@ describe('ニュースから法話の案にする', () => {
     const out = applyNewsLead(generateNeta(base), '何かのニュース', undefined)
     expect(out).toHaveLength(3)
     expect(out[0].cautions[0]).toBe(NEWS_CAUTION)
+  })
+})
+
+describe('話題の型と、当てる言葉', () => {
+  const base: GenerateInput = {
+    text: '',
+    emotions: [],
+    sceneId: 'howakai',
+    month: 9,
+    kojitsukeMax: 2,
+    tradition: 'otani',
+    seed: 7,
+    count: 3,
+  }
+
+  it('どの型にも、当てる言葉が決まっている', () => {
+    for (const t of NEWS_TOPICS) {
+      expect(t.concepts.length, t.label).toBeGreaterThanOrEqual(2)
+      for (const id of t.concepts) {
+        expect(CONCEPTS.some((c) => c.id === id), `${t.label} / ${id}`).toBe(true)
+      }
+    }
+  })
+
+  it('見出しから作った案に、その型の言葉が出てくる', () => {
+    for (const t of NEWS_TOPICS) {
+      const headline = `${t.keywords[0]}をめぐる動き`
+      const topics = classifyHeadline(headline)
+      const out = generateNeta({
+        ...base,
+        text: headline,
+        emotions: emotionsFromHeadline(headline, topics),
+        preferConceptIds: topics.flatMap((x) => x.concepts),
+        count: 3,
+      })
+      const ids = out.map((n) => n.materials.conceptId!)
+      // 3件のうち2件以上は、その型に当てた言葉から出す
+      expect(
+        ids.filter((id) => t.concepts.includes(id)).length,
+        `${t.label}：${ids.join(',')}`,
+      ).toBeGreaterThanOrEqual(2)
+    }
   })
 })

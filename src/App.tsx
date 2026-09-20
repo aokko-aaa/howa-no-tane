@@ -202,18 +202,30 @@ export default function App() {
             />
           </section>
 
-          <section className="card px-4 py-4">
-            <details>
-              <summary className="cursor-pointer text-sm">
-                <span className="font-bold">詳しい設定</span>
-                <span className="ml-2 text-xs text-stone-500">
-                  {tradition === 'otani' ? '真宗大谷派' : '宗派を問わない'}／
-                  {SCENES.find((x) => x.id === sceneId)?.label}／
-                  {kojitsukeMax === 1 ? '素直に' : kojitsukeMax === 2 ? 'ひとひねり' : '全開'}／{month}月
-                  {pinCount > 0 ? `／素材${pinCount}件` : ''}
-                </span>
-              </summary>
-              <div className="mt-3 flex flex-col gap-4">
+          <section className="card flex flex-col gap-4 px-4 py-4">
+            <div>
+              <div className="label mb-2">どこで使う</div>
+              <div className="flex flex-wrap gap-1.5">
+                {SCENES.map((sc) => (
+                  <button
+                    key={sc.id}
+                    type="button"
+                    className={`chip ${sceneId === sc.id ? 'chip-on' : ''}`}
+                    onClick={() => setSceneId(sc.id)}
+                    title={sc.note}
+                  >
+                    {sc.label}
+                  </button>
+                ))}
+              </div>
+              <p className="mt-1.5 text-xs text-stone-500">
+                {SCENES.find((x) => x.id === sceneId)?.note}
+                {(SCENES.find((x) => x.id === sceneId)?.minutes ?? 0) === 0
+                  ? '（一行と短文で出します）'
+                  : `（目安 ${SCENES.find((x) => x.id === sceneId)?.minutes}分）`}
+              </p>
+            </div>
+
             <div>
               <div className="label mb-2">どの教えで出す</div>
               <div className="flex flex-wrap gap-1.5">
@@ -239,29 +251,15 @@ export default function App() {
               </p>
             </div>
 
-            <div>
-              <div className="label mb-2">どこで話す</div>
-              <div className="flex flex-wrap gap-1.5">
-                {SCENES.map((sc) => (
-                  <button
-                    key={sc.id}
-                    type="button"
-                    className={`chip ${sceneId === sc.id ? 'chip-on' : ''}`}
-                    onClick={() => setSceneId(sc.id)}
-                    title={sc.note}
-                  >
-                    {sc.label}
-                  </button>
-                ))}
-              </div>
-              <p className="mt-1.5 text-xs text-stone-500">
-                {SCENES.find((x) => x.id === sceneId)?.note}
-                {(SCENES.find((x) => x.id === sceneId)?.minutes ?? 0) === 0
-                  ? '（一行と短文で出します）'
-                  : `（目安 ${SCENES.find((x) => x.id === sceneId)?.minutes}分）`}
-              </p>
-            </div>
-
+            <details>
+              <summary className="cursor-pointer text-sm">
+                <span className="font-bold">詳しい設定</span>
+                <span className="ml-2 text-xs text-stone-500">
+                  {kojitsukeMax === 1 ? '素直に' : kojitsukeMax === 2 ? 'ひとひねり' : '全開'}／{month}月
+                  {pinCount > 0 ? `／素材${pinCount}件` : ''}
+                </span>
+              </summary>
+              <div className="mt-3 flex flex-col gap-4">
             <div className="flex flex-wrap items-center gap-4">
               <div>
                 <div className="label mb-1.5">こじつけ度</div>

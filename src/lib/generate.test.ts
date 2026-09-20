@@ -68,6 +68,20 @@ describe('generateNeta', () => {
     expect(kinds.size).toBe(general.length)
   })
 
+  it('SNS・寺報を選んでも、一行と短文の形になる', () => {
+    for (const n of generateNeta({ ...base, sceneId: 'sns' })) {
+      expect(n.minutes).toBe(0)
+      expect(n.sections.map((s) => s.label)).toEqual([
+        SECTION.hitokoto,
+        SECTION.tanbun,
+        SECTION.shikomi,
+      ])
+      // 一行は、そのまま貼れる短さ
+      const hitokoto = n.sections[0].body
+      expect(hitokoto.split('\n').every((line) => line.length <= 60)).toBe(true)
+    }
+  })
+
   it('掲示板を選ぶと、一行と短文の形になる', () => {
     for (const n of generateNeta({ ...base, sceneId: 'keijiban' })) {
       expect(n.minutes).toBe(0)

@@ -11,6 +11,8 @@ export type NewsTopic = {
   tone: string
   /** 法話としてどこを見るか */
   angle: string
+  /** この話題に当てる仏教語（ここを決めないと、見出しと教えがつながらない） */
+  concepts: string[]
   caution?: string
 }
 
@@ -22,6 +24,7 @@ export const NEWS_TOPICS: NewsTopic[] = [
     emotions: ['okane', 'fuan', 'mukuwarenai'],
     tone: '数字の話として流れていくが、聞いている人の生活はその数字の内側にある。',
     angle: '足りないから欲しくなるのか、足りないと思う癖が欲しがらせるのか、という順番を見る。',
+    concepts: ['shoyoku-chisoku', 'tanin-no-takara', 'muzai-shichise'],
   },
   {
     id: 'zeikin',
@@ -30,6 +33,7 @@ export const NEWS_TOPICS: NewsTopic[] = [
     emotions: ['okane', 'fuan', 'mukuwarenai', 'shi'],
     tone: '損か得かで語られる。',
     angle: '計算でしか受け取れなくなっているものを、受けてきたものの側から数え直す。',
+    concepts: ['shoyoku-chisoku', 'engi', 'houon'],
   },
   {
     id: 'saigai',
@@ -38,6 +42,7 @@ export const NEWS_TOPICS: NewsTopic[] = [
     emotions: ['shi', 'fuan', 'wakare', 'kodoku'],
     tone: '数字と映像で伝わり、数日で流れていく。',
     angle: '順番が決まっていないという事実を、脅しにせずに置く。良寛の手紙が使える。',
+    concepts: ['shogyo-mujo', 'ojodo', 'jinen-houni'],
     caution: '被災された方が聴衆にいる前提で。教訓や意味づけを急がない。「試練」「おかげで」は言わない。',
   },
   {
@@ -47,6 +52,7 @@ export const NEWS_TOPICS: NewsTopic[] = [
     emotions: ['shi', 'urami', 'zaiakukan', 'fuan'],
     tone: '加害と被害に分けて語られ、見ている側は安全な位置に立つ。',
     angle: '自分は向こう側だと思っている、その線のほうを見る。',
+    concepts: ['inga-fumai', 'akunin-shoki', 'bonbu'],
     caution: '実名・詳細に踏み込まない。断罪の材料にしない。遺族・関係者が聴いている可能性を外さない。',
   },
   {
@@ -56,6 +62,7 @@ export const NEWS_TOPICS: NewsTopic[] = [
     emotions: ['wakare', 'shi', 'munashisa'],
     tone: '功績が並べられ、一日で終わる。',
     angle: '会ったことのない人の死が、なぜ自分にこたえるのかを見る。',
+    concepts: ['ojodo', 'gensou-ekou', 'ichigo-ichie'],
     caution: '故人の評価に立ち入らない。真宗では「ご冥福を祈る」と言わない。',
   },
   {
@@ -65,6 +72,7 @@ export const NEWS_TOPICS: NewsTopic[] = [
     emotions: ['zaiakukan', 'shounin', 'urami'],
     tone: '頭を下げ方が採点される。',
     angle: '謝っている人を見ている自分の位置を見る。裁く側は、いつも安全な椅子に座っている。',
+    concepts: ['akunin-shoki', 'bonbu', 'inga-fumai'],
     caution: '個人や団体の断罪にしない。',
   },
   {
@@ -74,6 +82,7 @@ export const NEWS_TOPICS: NewsTopic[] = [
     emotions: ['urami', 'shounin', 'iraira', 'hikaku'],
     tone: '正しさが刃物になっていく。',
     angle: '怨みは怨みによって止まず。連鎖を止められるのは、止め方を知っている側だけ。',
+    concepts: ['onmi-wa-yamazu', 'sha', 'issui-shiken'],
   },
   {
     id: 'ai',
@@ -82,6 +91,7 @@ export const NEWS_TOPICS: NewsTopic[] = [
     emotions: ['henka', 'fuan', 'mayoi', 'munashisa'],
     tone: '便利さと不安が同時に語られる。',
     angle: '答えが早く出る時代に、いちばん知りたいことだけ出てこない、というところを見る。',
+    concepts: ['makumouzou', 'monbou', 'shiki-soku-ze-ku'],
   },
   {
     id: 'hitodebusoku',
@@ -90,6 +100,7 @@ export const NEWS_TOPICS: NewsTopic[] = [
     emotions: ['tsukare', 'isogashii', 'mukuwarenai'],
     tone: '生産性の話として処理される。',
     angle: '張りすぎた弦は切れる。中道を、根性論の反対語として出す。',
+    concepts: ['chudo', 'zuisho-ni-shu', 'moko-rita'],
   },
   {
     id: 'kodokushi',
@@ -98,6 +109,7 @@ export const NEWS_TOPICS: NewsTopic[] = [
     emotions: ['kodoku', 'shi', 'kazoku', 'munashisa'],
     tone: '社会問題として数で語られる。',
     angle: '善き友は道の半ばではなく、すべて。つながりを個人の努力にしない。',
+    concepts: ['doubou', 'namuamidabutsu', 'ichinin-no-tame'],
     caution: '「かわいそう」で終わらせない。当事者が聴いている前提で。',
   },
   {
@@ -107,6 +119,7 @@ export const NEWS_TOPICS: NewsTopic[] = [
     emotions: ['kazoku', 'munashisa', 'henka', 'fuan'],
     tone: '減っていく数字として語られる。',
     angle: '続かないものを前提にした上で、今日できることへ降ろす。寺の現実とも重なる。',
+    concepts: ['shogyo-mujo', 'ichigu-wo-terasu', 'engi'],
   },
   {
     id: 'kaigo',
@@ -115,6 +128,7 @@ export const NEWS_TOPICS: NewsTopic[] = [
     emotions: ['kazoku', 'tsukare', 'shi', 'zaiakukan'],
     tone: '負担として語られる。',
     angle: '忘己利他は、倒れるまでやれという話ではない。自分の休みも同時に決める。',
+    concepts: ['moko-rita', 'houon', 'jihi'],
     caution: '介護中の方が聴いている。美談にも自己犠牲のすすめにもしない。',
   },
   {
@@ -124,6 +138,7 @@ export const NEWS_TOPICS: NewsTopic[] = [
     emotions: ['shi', 'fuan', 'kazoku'],
     tone: '希望と不安が交互に出る。',
     angle: '毒矢のたとえ。原因がすべて分かるまで抜かない、という構えを見る。',
+    concepts: ['heizei-gojou', 'shiku-hakku', 'namuamidabutsu'],
   },
   {
     id: 'juken',
@@ -132,6 +147,7 @@ export const NEWS_TOPICS: NewsTopic[] = [
     emotions: ['hajimari', 'aseri', 'kazoku', 'hikaku'],
     tone: '勝ち負けとして語られる。',
     angle: '柳は緑、花は紅。もともと別物を同じ物差しで測っていなかったか。',
+    concepts: ['yanagi-midori', 'ichinen-hokki', 'ryouji-kichijitsu'],
   },
   {
     id: 'sports',
@@ -140,6 +156,7 @@ export const NEWS_TOPICS: NewsTopic[] = [
     emotions: ['tassei', 'ochikomi', 'hikaku', 'yorokobi'],
     tone: '勝者の物語だけが残る。',
     angle: '有頂天も頂上のこと。そこから落ちる前提まで含めて仏教は見ている。',
+    concepts: ['shogyo-mujo', 'mukudoku', 'zuiki'],
   },
   {
     id: 'intai',
@@ -148,6 +165,7 @@ export const NEWS_TOPICS: NewsTopic[] = [
     emotions: ['henka', 'munashisa', 'wakare', 'mukuwarenai'],
     tone: '惜しまれながら、という枕で流れる。',
     angle: '名刺を配らなくなった日から、自己紹介の仕方がわからなくなる人がいる。',
+    concepts: ['zuisho-ni-shu', 'hisou-hizoku', 'shogyo-mujo'],
   },
   {
     id: 'senkyo',
@@ -156,6 +174,7 @@ export const NEWS_TOPICS: NewsTopic[] = [
     emotions: ['iraira', 'mayoi', 'mukuwarenai'],
     tone: '陣営に分かれて語られる。',
     angle: '一水四見。同じ出来事が、立っている場所で別のものに見えるという一点だけを扱う。',
+    concepts: ['issui-shiken', 'sha', 'engi'],
     caution: '特定の政党・候補への支持や批判にしない。寺の立場として踏み込まない。',
   },
   {
@@ -165,6 +184,7 @@ export const NEWS_TOPICS: NewsTopic[] = [
     emotions: ['urami', 'shi', 'fuan', 'kodoku'],
     tone: '遠い出来事として数字で入ってくる。',
     angle: '怨みは怨みによって止まず。遠くの話を、自分の中の同じ仕組みへ返す。',
+    concepts: ['onmi-wa-yamazu', 'jihi', 'bonbu'],
     caution: '当事国の是非に踏み込まない。抽象論で済ませない。',
   },
   {
@@ -174,6 +194,7 @@ export const NEWS_TOPICS: NewsTopic[] = [
     emotions: ['fuan', 'henka', 'tsukare'],
     tone: '記録更新として毎年繰り返される。',
     angle: '去年と同じ夏はもう来ない、という実感から無常へ。説教にしない。',
+    concepts: ['shogyo-mujo', 'shoyoku-chisoku', 'engi'],
   },
   {
     id: 'sagi',
@@ -182,6 +203,7 @@ export const NEWS_TOPICS: NewsTopic[] = [
     emotions: ['okane', 'urami', 'kazoku', 'fuan'],
     tone: '引っかかった側の不注意として語られがち。',
     angle: '人を疑えという話にせず、なぜその一言に動いてしまうのかを見る。',
+    concepts: ['bonbu', 'engi', 'sesshu-fusha'],
     caution: '被害に遭った方を責める形にしない。',
   },
   {
@@ -191,6 +213,7 @@ export const NEWS_TOPICS: NewsTopic[] = [
     emotions: ['yorokobi', 'okane', 'shitto', 'hikaku'],
     tone: 'うらやましさとセットで消費される。',
     angle: '他人の牛を数える。数えた分だけ、自分の時間が減っている。',
+    concepts: ['tanin-no-takara', 'shoyoku-chisoku', 'arigatashi'],
   },
   {
     id: 'hokkori',
@@ -199,6 +222,7 @@ export const NEWS_TOPICS: NewsTopic[] = [
     emotions: ['yorokobi', 'yasuragi', 'kansha'],
     tone: '箸休めとして流れる。',
     angle: '軽い話題こそ、ありがたさ（有り難し＝めったにない）の入口にできる。',
+    concepts: ['arigatashi', 'nichinichi-kore-koujitsu', 'wagen-aigo'],
   },
   {
     id: 'ryuukou',
@@ -207,6 +231,7 @@ export const NEWS_TOPICS: NewsTopic[] = [
     emotions: ['hikaku', 'henka', 'shounin'],
     tone: '今年の言葉、今年の顔として毎年入れ替わる。',
     angle: '入れ替わることを前提にした言葉が、毎年まじめに発表されている面白さから入る。',
+    concepts: ['shogyo-mujo', 'tanin-no-takara', 'yanagi-midori'],
   },
   {
     id: 'kaigai',
@@ -215,6 +240,7 @@ export const NEWS_TOPICS: NewsTopic[] = [
     emotions: ['okane', 'fuan', 'aseri'],
     tone: '上がった下がったで一日が終わる。',
     angle: '上下する数字を見ている時間と、手元が変わらない現実を並べる。',
+    concepts: ['shoyoku-chisoku', 'makumouzou', 'engi'],
   },
 ]
 

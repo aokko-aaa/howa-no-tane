@@ -38,6 +38,7 @@ export default function NewsView({
   const [feedId, setFeedId] = useState<string | null>(null)
   const [query, setQuery] = useState('')
   const [pasted, setPasted] = useState('')
+  const [showAll, setShowAll] = useState(false)
   const [picked, setPicked] = useState<{ headline: string; topic?: NewsTopic } | null>(null)
   const [results, setResults] = useState<Neta[]>([])
   const resultsRef = useRef<HTMLElement>(null)
@@ -57,7 +58,13 @@ export default function NewsView({
 
   const feeds: Feed[] = news?.feeds ?? []
   const feed = feeds.find((f) => f.id === feedId)
-  const items = useMemo(() => filterHeadlines(feed?.items ?? [], query), [feed, query])
+  const all = useMemo(() => filterHeadlines(feed?.items ?? [], query), [feed, query])
+  // 型の拾えない見出しからは、話がつながらない案しか出ない。既定では隠す。
+  const items = useMemo(
+    () => (showAll ? all : all.filter((h) => classifyHeadline(h.title).length > 0)),
+    [all, showAll],
+  )
+  const hidden = all.length - items.length
   const total = feeds.reduce((n, f) => n + f.items.length, 0)
 
   const makeFrom = (headline: string) => {
@@ -70,6 +77,8 @@ export default function NewsView({
       month,
       kojitsukeMax,
       tradition,
+      // 型に当てる言葉を前に出す。これを渡さないと、見出しと教えがつながらない。
+      preferConceptIds: topics.flatMap((t) => t.concepts),
       seed: Math.floor(Math.random() * 1e9),
       count: COUNT,
     })
@@ -91,7 +100,12 @@ export default function NewsView({
       kojitsukeMax,
       tradition,
     }
-    const swapped = swapMaterial(neta, base, kind, Math.floor(Math.random() * 1e9))
+    const swapped = swapMaterial(
+      { ...neta },
+      { ...base, preferConceptIds: topics.flatMap((t) => t.concepts) },
+      kind,
+      Math.floor(Math.random() * 1e9),
+    )
     const [next] = applyNewsLead([swapped], picked.headline, picked.topic)
     setResults((prev) => prev.map((n) => (n.id === neta.id ? next : n)))
   }
@@ -159,7 +173,27 @@ export default function NewsView({
 
       {items.length > 0 && (
         <section className="flex flex-col gap-2">
-          <div className="label">見出し（{items.length}件）</div>
+          <div className="flex items-center gap-2">
+            <span className="label">見出し（{items.length}件）</span>
+            {hidden > 0 && !showAll && (
+              <button
+                type="button"
+                className="ml-auto text-xs text-stone-500 underline"
+                onClick={() => setShowAll(true)}
+              >
+                型の付かない{hidden}件も見る
+              </button>
+            )}
+            {showAll && (
+              <button
+                type="button"
+                className="ml-auto text-xs text-stone-500 underline"
+                onClick={() => setShowAll(false)}
+              >
+                型の付くものだけにする
+              </button>
+            )}
+          </div>
           {items.map((h, i) => {
             const topic = classifyHeadline(h.title)[0]
             return (
@@ -168,7 +202,7 @@ export default function NewsView({
                 <p className="mt-1 text-xs text-stone-500">
                   {h.source}
                   {h.date ? ` ・ ${new Date(h.date).toLocaleString('ja-JP')}` : ''}
-                  {topic ? ` ・ 型：${topic.label}` : ' ・ 型：当てはまるものなし'}
+                  {topic ? ` ・ 型：${topic.label}` : ' ・ 型なし（つながらない案が出ます）'}
                 </p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   <button type="button" className="btn-primary" onClick={() => makeFrom(h.title)}>

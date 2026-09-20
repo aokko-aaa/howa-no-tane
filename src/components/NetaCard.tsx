@@ -39,7 +39,9 @@ export default function NetaCard({
   children,
 }: Props) {
   const hasOutline = (neta.digest?.steps.length ?? 0) > 0
-  const [view, setView] = useState<View>(hasOutline ? defaultView : 'prose')
+  // 掲示板・SNSは「一行と短文」がそのまま使うものなので、最初からそれを見せる
+  const short = neta.minutes === 0
+  const [view, setView] = useState<View>(short || !hasOutline ? 'prose' : defaultView)
   const [open, setOpen] = useState(true)
   const [copied, setCopied] = useState<string | null>(null)
 
@@ -93,14 +95,14 @@ export default function NetaCard({
               className={`chip ${view === 'outline' ? 'chip-on' : ''}`}
               onClick={() => setView('outline')}
             >
-              筋道
+              {short ? '下ごしらえ' : '筋道'}
             </button>
             <button
               type="button"
               className={`chip ${view === 'prose' ? 'chip-on' : ''}`}
               onClick={() => setView('prose')}
             >
-              話す形
+              {short ? '一行・短文' : '話す形'}
             </button>
             {STRUCTURES.map((st) => (
               <button
@@ -218,7 +220,7 @@ export default function NetaCard({
             下書きをコピー
           </button>
           <button type="button" className="btn-ghost" onClick={() => copy('prose')}>
-            通し原稿をコピー
+            {short ? '短文をコピー' : '通し原稿をコピー'}
           </button>
           {onRemove ? (
             <button
