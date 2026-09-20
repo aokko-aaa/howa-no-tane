@@ -472,8 +472,11 @@ function takeUnused<T extends { id: string }>(
   // 気持ちに当たっている素材があるうちは、その中からだけ選ぶ。
   // （score ではなく match で見る。score は宗派の加点が入っていて、
   //   気持ちに当たっていない素材でも正の値になり得るため）
+  // 書かれた文に当たった素材があれば、いちばんに採る。
+  // 次に気持ちに当たった素材。どちらも無ければ全体から。
+  const byText = ranked.filter((r) => r.hits > 0)
   const matched = ranked.filter((r) => r.match > 0)
-  const base = matched.length > 0 ? matched : ranked
+  const base = byText.length >= 2 ? byText : matched.length > 0 ? matched : ranked
   const freshBase = base.filter((r) => !used.has(r.item.id))
   // 当たっている素材が尽きたら、同じものを使い回してでも枠の外には出ない。
   // （気持ちに合わない素材を出すくらいなら、同じ言葉で切り口を変えるほうがよい）
@@ -560,7 +563,7 @@ export function generateNeta(input: GenerateInput): Neta[] {
       emotions,
       input.text,
       (x) => x.emotions,
-      (x) => [x.title],
+      (x) => [x.title, ...(x.keywords ?? [])],
     ),
     mode,
   )
@@ -592,7 +595,7 @@ export function generateNeta(input: GenerateInput): Neta[] {
   const monthly = OCCASIONS.filter((o) => o.months.includes(input.month))
   const occasionPool = monthly.length > 0 ? monthly : OCCASIONS
   const occasions = weighTradition(
-    occasionPool.map((item) => ({ item, score: 0, match: 0 })),
+    occasionPool.map((item) => ({ item, score: 0, match: 0, hits: 0 })),
     mode,
   )
 
@@ -638,6 +641,21 @@ export function generateNeta(input: GenerateInput): Neta[] {
           )
           .sort((a, b) => b.score - a.score)
       : rankedConcepts
+
+  // 自分で書いた一件があるなら、それが入口。内蔵の場面で置き換えない。
+  const typed = input.text.trim().replace(/\s+/g, ' ')
+  const typedModern: Modern | null = typed
+    ? {
+        id: 'typed',
+        scene: 'ご自身の一件',
+        line: /[。！？…]$/.test(typed)
+          ? typed.length > 160
+            ? `${typed.slice(0, 160)}…`
+            : typed
+          : `${typed.length > 160 ? `${typed.slice(0, 160)}…` : typed}。`,
+        emotions: [...emotions],
+      }
+    : null
 
   const usedConcept = new Set<string>()
   const usedStory = new Set<string>()
@@ -690,7 +708,9 @@ export function generateNeta(input: GenerateInput): Neta[] {
       userText: input.text,
       // 入口も、選んだ教義と同じ気持ちのものに寄せる
       modern:
+        (pins.modernId === 'typed' ? typedModern : undefined) ??
         (pins.modernId ? MODERN_BY_ID[pins.modernId] : undefined) ??
+        (pins.modernId ? undefined : typedModern) ??
         takeUnused(alignTo(rankedModerns), usedModern, rand, 8),
       concept,
       story: (pins.storyId ? STORY_BY_ID[pins.storyId] : undefined) ?? takeUnused(alignTo(storyPool), usedStory, rand, 6),
@@ -788,9 +808,9 @@ export function generateNeta(input: GenerateInput): Neta[] {
             }——というときに。${ctx.concept.oneLine}`
           : ctx.concept.oneLine,
       steps,
-      note: `入口：${ctx.modern.scene}（ご自身の一件に差し替え可）／${
-        scene.minutes === 0 ? scene.label : `${scene.label}・${scene.minutes}分`
-      }`,
+      note: `入口：${
+        ctx.modern.id === 'typed' ? 'ご自身が書いた一件' : `${ctx.modern.scene}（ご自身の一件に差し替え可）`
+      }／${scene.minutes === 0 ? scene.label : `${scene.label}・${scene.minutes}分`}`,
     }
 
     const tradition: Tradition = shinshuAngle

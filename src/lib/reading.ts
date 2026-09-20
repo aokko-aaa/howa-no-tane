@@ -69,6 +69,7 @@ export function buildReading(input: ReadingInput): Neta {
         return {
           item,
           match,
+          hits: 0,
           score:
             fit(item.emotions) +
             (item.tradition === 'shinshu' ? bonus : item.tradition === 'zen' ? -1 : 0),

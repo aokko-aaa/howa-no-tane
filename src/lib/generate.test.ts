@@ -175,6 +175,47 @@ describe('選んだ気持ちから外れない', () => {
   })
 })
 
+describe('書いた一件を入口にする', () => {
+  const typed =
+    '無くして探していた診察券を見つけた。自分のうっかりで諦めていたけど、探してもいない時にフッと出てきた'
+
+  it('書いた文が、そのまま入口になる', () => {
+    for (const n of generateNeta({ ...base, text: typed, emotions: ['yorokobi'], count: 6 })) {
+      expect(n.materials.modernId).toBe('typed')
+      expect(n.digest!.steps.join('\n')).toContain('診察券')
+      expect(n.digest!.note).toContain('ご自身が書いた一件')
+      const iriguchi = n.sections.find((x) => x.label === SECTION.iriguchi)
+      if (iriguchi) expect(iriguchi.body).toContain('診察券')
+    }
+  })
+
+  it('書いた文に出てくる語から、素材を選ぶ', () => {
+    const out = generateNeta({ ...base, text: typed, emotions: ['yorokobi'], count: 6 })
+    const ids = out.map((n) => n.materials.conceptId)
+    // 「諦め」「見つか」「たまたま」に当たる言葉が選ばれる
+    expect(ids.every((id) => ['akirameru', 'arigatashi', 'engi'].includes(id!))).toBe(true)
+  })
+
+  it('入口は、内蔵の場面に差し替えられる', () => {
+    const rest2 = (({ pins: _p, count: _c, seed: _s, ...r }) => r)({
+      ...base,
+      text: typed,
+      emotions: ['yorokobi'],
+    })
+    const n = generateNeta({ ...base, text: typed, emotions: ['yorokobi'], count: 1 })[0]
+    const next = swapMaterial(n, rest2, 'modern', 8)
+    expect(next.materials.modernId).not.toBe('typed')
+    expect(next.materials.conceptId).toBe(n.materials.conceptId)
+  })
+
+  it('何も書かなければ、これまでどおり内蔵の場面を使う', () => {
+    for (const n of generateNeta({ ...base, text: '', emotions: ['yorokobi'], count: 3 })) {
+      expect(n.materials.modernId).not.toBe('typed')
+      expect(n.digest!.note).toContain('差し替え可')
+    }
+  })
+})
+
 describe('気持ちの一段下（なんで？）', () => {
   it('理由を選ぶと、ひとことにそれが出る', () => {
     const n = generateNeta({

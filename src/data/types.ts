@@ -72,6 +72,8 @@ export type Story = {
   /** この話の使いどころ・落としどころ */
   point: string
   emotions: EmotionId[]
+  /** 書かれた文から拾うための語 */
+  keywords?: string[]
   caution?: string
   tradition?: Tradition
 }

@@ -21,6 +21,8 @@ export type Ranked<T> = {
   score: number
   /** 選ばれた気持ちにいくつ当たっているか。並べ替えの前に、これで足切りする */
   match: number
+  /** 書かれた文に、この素材の語がいくつ出てきたか */
+  hits: number
 }
 
 /**
@@ -42,13 +44,14 @@ export function rankItems<T>(
       // 「イライラする」で死に際の話が出る、といったズレが起きる。
       let match = 0
       for (const t of getEmotions(item)) if (sel.has(t)) match++
-      let score = match * 10
+      let hits = 0
       if (body) {
+        // 書かれた文に素材の語が出ていたら、気持ちより強い手がかりとして扱う
         for (const w of getWords(item)) {
-          if (w && body.includes(w)) score += 4
+          if (w.length >= 2 && body.includes(w)) hits++
         }
       }
-      return { item, score, match }
+      return { item, score: match * 10 + hits * 14, match: match + hits, hits }
     })
     .sort((a, b) => b.score - a.score)
 }

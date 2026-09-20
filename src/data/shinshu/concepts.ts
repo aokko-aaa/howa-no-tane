@@ -28,6 +28,7 @@ export const SHINSHU_CONCEPTS: Concept[] = [
     pivot: '親鸞聖人は「他力といふは如来の本願力なり」と定義された。他人の力ではなく、如来のはたらきのこと。誤用が広まったこと自体が、法話の入口になる。',
     step: '「他力本願」と誰かが口にしたら、本来の意味を一度だけ伝えてみる。',
     emotions: ['tsukare', 'mukuwarenai', 'jikokeno', 'ningenkankei'],
+    keywords: ['他力本願', '人任せ', '甘え'],
     tradition: 'shinshu',
   },
   {
@@ -41,6 +42,7 @@ export const SHINSHU_CONCEPTS: Concept[] = [
     pivot: '「われにまかせよ、かならず救う」という如来の喚び声が、私の口から出てくださっている——と受け取るのが真宗の領解。称えるのは、答えているということ。',
     step: '手を合わせたとき、頼みごとを言わずに、ただ称えてみる。',
     emotions: ['fuan', 'kodoku', 'shi', 'wakare', 'tsukare', 'yasuragi'],
+    keywords: ['南無阿弥陀仏', '念仏', '手を合わ', 'お参り'],
     caution: '名号の領解は先達によって言葉が異なる。自分の言葉に直して語ること。',
     tradition: 'shinshu',
   },
@@ -68,6 +70,7 @@ export const SHINSHU_CONCEPTS: Concept[] = [
     pivot: '条件は向こうが外している。逃げる者を追いかけてまでおさめ取る、という一方的なはたらき。こちらの出来不出来は問われていない。',
     step: '今日は「がんばったから認められる」という順番を、一度外して過ごす。',
     emotions: ['jikokeno', 'kodoku', 'shounin', 'fuan', 'zaiakukan'],
+    keywords: ['見捨て', '認められ', 'いい子'],
     tradition: 'shinshu',
   },
   {
@@ -94,6 +97,7 @@ export const SHINSHU_CONCEPTS: Concept[] = [
     pivot: '真宗は臨終の善し悪しを問わない。今この場ですでに定まっていると聞くから、死に方で評価されずにすむ。',
     step: '「立派に死ぬ」ではなく、「今日を普通に生きる」に目標を戻す。',
     emotions: ['shi', 'fuan', 'kazoku', 'yasuragi'],
+    keywords: ['最期', '死に方', '終活'],
     tradition: 'shinshu',
   },
   {
@@ -107,6 +111,7 @@ export const SHINSHU_CONCEPTS: Concept[] = [
     pivot: '往って生まれる、と書く。終わりの言葉ではなく、生まれるほうの言葉。使われ方がひっくり返っていること自体が、話になる。',
     step: '「往生した」と言いかけたとき、文字の意味を思い出してみる。',
     emotions: ['shi', 'wakare', 'tsukare', 'mayoi'],
+    keywords: ['往生', '立ち往生', '困っ'],
     tradition: 'shinshu',
   },
   {
@@ -120,6 +125,7 @@ export const SHINSHU_CONCEPTS: Concept[] = [
     pivot: '真宗では、亡き人は拝まれる側ではなく、私に仏法を聞かせるはたらきの側に回ると受け取る。供養する相手ではなく、私を促す先輩になる。',
     step: '亡き人なら今の自分に何と言うか、一行だけ書いてみる。',
     emotions: ['wakare', 'kazoku', 'zaiakukan', 'shi'],
+    keywords: ['見守', '仏壇', '命日', '墓参'],
     caution: '俗信（霊が見守る）と混ざりやすい。回向の主体は如来であることを外さない。',
     tradition: 'shinshu',
   },
@@ -212,6 +218,7 @@ export const SHINSHU_CONCEPTS: Concept[] = [
     pivot: '真宗の法要は、故人を助けるための追善ではなく、受けてきたものに気づいた者のお礼。差し引きではなく、気づきのほうが先にある。',
     step: '今日、返せそうにない恩を一つ数えて、そのままにしておく。',
     emotions: ['kansha', 'mukuwarenai', 'kazoku', 'wakare', 'zaiakukan'],
+    keywords: ['お礼', '恩', 'お返し', 'ありがた'],
     tradition: 'shinshu',
   },
   {
@@ -225,6 +232,7 @@ export const SHINSHU_CONCEPTS: Concept[] = [
     pivot: '真宗は、煩悩がなくなることを目標に置かない。具足＝そなわっているまま、救いの目当てにされている。直ってから来い、と言われていない。',
     step: '直らなかったことを一つ、責めずに書き留める。',
     emotions: ['jikokeno', 'zaiakukan', 'koukai', 'iraira', 'tsukare'],
+    keywords: ['また同じ', '反省', '直らな', 'つい'],
     tradition: 'shinshu',
   },
   {
@@ -238,6 +246,7 @@ export const SHINSHU_CONCEPTS: Concept[] = [
     pivot: '親鸞聖人は、吉日を選び卜占にすがる姿を「かなしきかなや」と歎かれた。作法を知らないのではなく、俗信を用いないという選択。',
     step: '日柄を気にして決めかけている用事を、都合のよい日に決め直す。',
     emotions: ['fuan', 'mayoi', 'kazoku', 'hajimari'],
+    keywords: ['仏滅', '友引', '大安', '厄年', '方角', '占い'],
     tradition: 'shinshu',
   },
   {
@@ -264,6 +273,7 @@ export const SHINSHU_CONCEPTS: Concept[] = [
     pivot: '真宗は戒を保つ道を立てないので戒名と言わず、法名という。しかも本来は生前に、帰敬式で受けるもの。死後の手続きではなく、生き方の名のり。',
     step: '帰敬式（おかみそり）の案内を、まだ元気な方にこそ伝える。',
     emotions: ['shi', 'kazoku', 'hajimari', 'wakare'],
+    keywords: ['戒名', '法名'],
     caution: '帰敬式の作法・受式の流れは本山と各寺で案内が異なる。寺の実際に合わせて話す。',
     tradition: 'shinshu',
   },
@@ -278,6 +288,7 @@ export const SHINSHU_CONCEPTS: Concept[] = [
     pivot: '真宗のお内仏の中心は阿弥陀如来。亡き人はそこへ参る手がかりで、拝む対象そのものではない。だから大谷派では位牌ではなく法名軸や過去帳を用いる。',
     step: '朝、お内仏の前に座って、お礼だけ言って立つ。',
     emotions: ['kazoku', 'wakare', 'kansha', 'yasuragi', 'hajimari'],
+    keywords: ['仏壇', '位牌', '過去帳'],
     caution: '位牌の扱いは地域と家の事情で幅がある。頭ごなしに否定せず、由来として語る。',
     tradition: 'shinshu',
   },
@@ -318,6 +329,7 @@ export const SHINSHU_CONCEPTS: Concept[] = [
     pivot: '浄土は、ご褒美としての楽園ではなく、仏になるところ。そして還ってきてはたらく場所でもある。行き先ではなく、向きの話。',
     step: '「天国」と言いかけたとき、「お浄土」と言い直してみる。',
     emotions: ['wakare', 'shi', 'kazoku', 'fuan'],
+    keywords: ['天国', 'あの世', '死んだら'],
     tradition: 'shinshu',
   },
 ]
