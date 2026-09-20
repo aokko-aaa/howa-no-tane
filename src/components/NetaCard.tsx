@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import type { Neta } from '../data/types'
-import { copyText, toOutline, toProse, toScript } from '../lib/format'
+import { copyText, toOutline, toProse, toScript, toStructured } from '../lib/format'
+import { buildStructure, STRUCTURES, type StructureId } from '../lib/structure'
 
-type View = 'outline' | 'prose'
+type View = 'outline' | 'prose' | StructureId
 
 type Props = {
   neta: Neta
@@ -42,15 +43,28 @@ export default function NetaCard({
   const [open, setOpen] = useState(true)
   const [copied, setCopied] = useState<string | null>(null)
 
-  const copy = async (kind: 'outline' | 'script' | 'prose') => {
-    const text =
-      kind === 'outline' ? toOutline(neta) : kind === 'script' ? toScript(neta) : toProse(neta)
+  const copy = async (kind: 'outline' | 'script' | 'prose' | StructureId) => {
+    const structure = STRUCTURES.find((x) => x.id === kind)
+    const text = structure
+      ? toStructured(neta, structure.id)
+      : kind === 'outline'
+        ? toOutline(neta)
+        : kind === 'script'
+          ? toScript(neta)
+          : toProse(neta)
+    const label = structure
+      ? structure.label
+      : kind === 'outline'
+        ? '筋道'
+        : kind === 'script'
+          ? '見出しつきの下書き'
+          : '通し原稿'
     const ok = await copyText(text)
-    const label =
-      kind === 'outline' ? '筋道' : kind === 'script' ? '見出しつきの下書き' : '通し原稿'
     setCopied(ok ? `${label}をコピーしました` : 'コピーできませんでした')
     setTimeout(() => setCopied(null), 2200)
   }
+
+  const structure = STRUCTURES.find((x) => x.id === view)
 
   return (
     <article className="card overflow-hidden">
@@ -88,6 +102,17 @@ export default function NetaCard({
             >
               話す形
             </button>
+            {STRUCTURES.map((st) => (
+              <button
+                key={st.id}
+                type="button"
+                className={`chip ${view === st.id ? 'chip-on' : ''}`}
+                onClick={() => setView(st.id)}
+                title={st.note}
+              >
+                {st.label}
+              </button>
+            ))}
           </div>
         )}
 
@@ -107,6 +132,18 @@ export default function NetaCard({
               ))}
             </ol>
             <p className="mt-2 text-xs text-stone-500">{neta.digest!.note}</p>
+          </div>
+        )}
+
+        {open && structure && (
+          <div className="mt-3 flex flex-col gap-3">
+            <p className="text-xs text-stone-500">{structure.note}</p>
+            {buildStructure(neta, structure.id).map((s, i) => (
+              <div key={`${s.label}-${i}`}>
+                <div className="label">{s.label}</div>
+                <p className="mt-0.5 whitespace-pre-wrap text-[15px] leading-relaxed">{s.body}</p>
+              </div>
+            ))}
           </div>
         )}
 
@@ -166,10 +203,16 @@ export default function NetaCard({
         {children}
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          {hasOutline && (
-            <button type="button" className="btn-ghost" onClick={() => copy('outline')}>
-              筋道をコピー
+          {structure ? (
+            <button type="button" className="btn-ghost" onClick={() => copy(structure.id)}>
+              {structure.label}でコピー
             </button>
+          ) : (
+            hasOutline && (
+              <button type="button" className="btn-ghost" onClick={() => copy('outline')}>
+                筋道をコピー
+              </button>
+            )
           )}
           <button type="button" className="btn-ghost" onClick={() => copy('script')}>
             下書きをコピー

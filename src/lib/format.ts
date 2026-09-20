@@ -1,5 +1,6 @@
 import type { Neta } from '../data/types'
 import { SECTION } from './generate'
+import { buildStructure, type StructureId } from './structure'
 
 /** 見出しつきの下書き（推敲用） */
 export function toScript(neta: Neta): string {
@@ -10,6 +11,15 @@ export function toScript(neta: Neta): string {
     ? `\n\n[語る前に確認]\n${neta.cautions.map((s) => `・${s}`).join('\n')}`
     : ''
   return `${head}\n\n${body}${src}${caution}\n`
+}
+
+/** 起承転結・PREP に組み直したものを書き出す */
+export function toStructured(neta: Neta, id: StructureId): string {
+  const body = buildStructure(neta, id)
+    .map((s) => `【${s.label}】\n${s.body}`)
+    .join('\n\n')
+  const src = neta.sources.length ? `\n\n[出典]\n${neta.sources.map((s) => `・${s}`).join('\n')}` : ''
+  return `■ ${neta.title}\n\n${body}${src}\n`
 }
 
 /** 要点（ひとことと筋道）だけを書き出す */

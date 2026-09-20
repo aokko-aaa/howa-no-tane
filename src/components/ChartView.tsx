@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { STEP1, STEP2, STEP3, type Shape } from '../data/paths'
+import { WORDS } from '../data/words'
+import { wordOfTheDay } from '../lib/daily'
 import type { Neta, TraditionMode } from '../data/types'
 import { buildReading } from '../lib/reading'
 import NetaCard from './NetaCard'
@@ -27,6 +29,8 @@ export default function ChartView({ tradition, savedIds, onSave }: Props) {
       ? buildReading({ primary: a.emotions, secondary: b.emotions, shape, tradition, seed })
       : null
 
+  const today = wordOfTheDay()
+
   const reset = () => {
     setS1(null)
     setS2(null)
@@ -36,8 +40,31 @@ export default function ChartView({ tradition, savedIds, onSave }: Props) {
 
   return (
     <div className="flex flex-col gap-4">
+      {/* 毎日使っている言葉が、もとは仏教語だった、という一番近いところの入口 */}
+      <section className="card px-4 py-4">
+        <div className="label">今日の一つ</div>
+        <h2 className="mt-1 text-lg font-bold">
+          「{today.word}」も、もとは仏教の言葉です
+        </h2>
+        <dl className="mt-2 space-y-1 text-[15px] leading-relaxed">
+          <div>
+            <dt className="label inline">いま </dt>
+            <dd className="inline">{today.now}</dd>
+          </div>
+          <div>
+            <dt className="label inline">もとは </dt>
+            <dd className="inline">{today.origin}</dd>
+          </div>
+        </dl>
+        <p className="mt-2 text-[15px] leading-relaxed text-stone-700">{today.gap}</p>
+        {today.caution && <p className="mt-1 text-xs text-amber-700">確認：{today.caution}</p>}
+        <p className="mt-2 text-xs text-stone-500">
+          こういう言葉が、ほかにも{WORDS.length - 1}語あります。「ことば」から引けます。
+        </p>
+      </section>
+
       <p className="text-sm text-stone-600">
-        三つ選ぶと、今の気持ちに合う話がひとつ出ます。
+        気持ちから三つ選ぶと、今の暮らしに合う話がひとつ出ます。
       </p>
 
       <div className="flex items-center gap-1.5 text-xs text-stone-500">

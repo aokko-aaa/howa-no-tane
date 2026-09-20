@@ -8,15 +8,15 @@ import { WORDS } from '../data/words'
 type Kind = 'phrase' | 'manner' | 'concept' | 'word' | 'story'
 
 const TABS: { id: Kind; label: string; note: string }[] = [
+  { id: 'word', label: 'え、これも仏教語', note: '毎日使っている言葉の、もとの意味' },
+  { id: 'concept', label: '仏教語', note: '世間での受け取りと、本来の意味の落差で引ける' },
+  { id: 'story', label: '喩え・逸話', note: 'そのまま語れる長さにしてある' },
   { id: 'phrase', label: 'お聖教', note: '正信偈・和讃・歎異抄・御文の一句。法話の頭に置く' },
   { id: 'manner', label: '大谷派の言い回し', note: '法話・挨拶でうっかり出やすい言い方と、その言い換え' },
-  { id: 'concept', label: '仏教語', note: '世間での受け取りと、本来の意味の落差で引ける' },
-  { id: 'word', label: '日常語の出どころ', note: '毎日使う言葉が、もとは仏教語だったもの' },
-  { id: 'story', label: '喩え・逸話', note: 'そのまま語れる長さにしてある' },
 ]
 
 export default function DictView() {
-  const [kind, setKind] = useState<Kind>('phrase')
+  const [kind, setKind] = useState<Kind>('word')
   const [q, setQ] = useState('')
 
   const hit = (...parts: string[]) =>

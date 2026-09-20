@@ -21,7 +21,7 @@ type Tab = 'make' | 'news' | 'chart' | 'book' | 'dict'
 const TABS: { id: Tab; label: string }[] = [
   { id: 'make', label: 'つくる' },
   { id: 'news', label: '話題から' },
-  { id: 'chart', label: 'たどる' },
+  { id: 'chart', label: 'くらし' },
   { id: 'book', label: 'ネタ帳' },
   { id: 'dict', label: 'ことば' },
 ]
@@ -133,7 +133,7 @@ export default function App() {
       <header className="mb-4">
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <h1 className="text-xl font-bold tracking-wide">法話の種</h1>
-          <p className="text-sm text-stone-600">気持ちから、法話の切り口を出す</p>
+          <p className="text-sm text-stone-600">その気持ちに、仏教はもう名前をつけている</p>
         </div>
         <details className="mt-1 text-xs text-stone-500">
           <summary className="cursor-pointer">これは何？</summary>
@@ -148,8 +148,8 @@ export default function App() {
               （お聖教・御文・歎異抄・報恩）を優先します。
             </p>
             <p>
-              お寺の方でなければ、
-              <span className="font-bold">「たどる」</span>から三つ選ぶだけでも読めます。
+              お寺の方でなければ、<span className="font-bold">「くらし」</span>
+              へ。毎日使っている言葉の出どころと、いまの気持ちに合う話が読めます。
             </p>
             <p>引用はそのまま使わず、出典に当たってから語ってください。</p>
           </div>
