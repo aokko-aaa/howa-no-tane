@@ -56,6 +56,13 @@ export type Concept = {
   step: string
   emotions: EmotionId[]
   keywords?: string[]
+  /**
+   * 話の大きさ。入口の場面と桁が合っていないと、こじつけ以前に届かない。
+   * 1=今日の暮らしの寸法（足元・言葉づかい・段取り）
+   * 2=人生の局面（関係・立場・変わり目）
+   * 3=いのち・救い・往生（語るのに場が要る）
+   */
+  scale?: 1 | 2 | 3
   /** 出典や扱いに注意がいる場合のメモ */
   caution?: string
   tradition?: Tradition

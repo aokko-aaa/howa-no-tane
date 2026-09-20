@@ -8,7 +8,9 @@ import { MODERNS } from '../data/modern'
 import { REASON_BY_ID } from '../data/reasons'
 import type { EmotionId } from '../data/types'
 import { toOutline, toProse, toScript } from './format'
-import { generateNeta, SECTION, swapMaterial, type GenerateInput } from './generate'
+import { CONCEPT_BY_ID } from '../data/concepts'
+import { SCENE_BY_ID } from '../data/angles'
+import { generateNeta, SECTION, swapMaterial, targetScale, type GenerateInput } from './generate'
 import { detectEmotions } from './match'
 
 const base: GenerateInput = {
@@ -649,6 +651,86 @@ describe('人の小ネタ（偉人のサイドストーリー）', () => {
       pins: { angleId: 'hito', figureId: withCaution.id },
     })
     expect(n.cautions.join('\n')).toContain(withCaution.caution!)
+  })
+})
+
+describe('話の大きさ（入口の桁に、仏教語の桁を合わせる）', () => {
+  const scaleOf = (n: { materials: { conceptId?: string } }) =>
+    CONCEPT_BY_ID[n.materials.conceptId!]?.scale ?? 2
+
+  it('書かれた文が暮らしの話なら、暮らしの寸法に決まる', () => {
+    const scene = SCENE_BY_ID.howakai
+    expect(targetScale('auto', '家事子育てに追われて自分とは何かがわからなくなる', ['fuan'], scene)).toBe(1)
+    expect(targetScale('auto', '満員電車で足を踏まれて舌打ちされた', ['iraira'], scene)).toBe(1)
+  })
+
+  it('書かれた文がいのちの話なら、大きいほうに決まる', () => {
+    const scene = SCENE_BY_ID.howakai
+    expect(targetScale('auto', '余命を告げられた父と、何を話せばいいか分からない', ['fuan'], scene)).toBe(3)
+    // 気持ちに死別があれば、文が無くても大きい
+    expect(targetScale('auto', '', ['wakare'], scene)).toBe(3)
+  })
+
+  it('通夜・葬儀のあとは、場のほうが大きさを決める', () => {
+    expect(targetScale('auto', '満員電車で足を踏まれた', ['iraira'], SCENE_BY_ID.sougo)).toBe(3)
+  })
+
+  it('手で選べば、そちらが優先される', () => {
+    const scene = SCENE_BY_ID.sougo
+    expect(targetScale('kurashi', '', ['wakare'], scene)).toBe(1)
+    expect(targetScale('inochi', '家事に追われて', ['iraira'], SCENE_BY_ID.howakai)).toBe(3)
+  })
+
+  it('暮らしの一件に、往生や臨終の語を返さない', () => {
+    const out = generateNeta({
+      ...base,
+      text: '家事子育てに追われて自分とは何かがわからなくなる',
+      emotions: ['fuan'],
+      tradition: 'otani',
+      count: 6,
+    })
+    for (const n of out) {
+      expect(scaleOf(n), `${n.title} / ${CONCEPT_BY_ID[n.materials.conceptId!]?.term}`).toBeLessThanOrEqual(2)
+    }
+  })
+
+  it('ひと回しの中で、同じ大きさの話ばかりにならない', () => {
+    // 真宗モードでは救い・往生の語がまとめて上位に来る。
+    // 放っておくと6案すべてが「いのちの話」になっていた。
+    const out = generateNeta({ ...base, emotions: ['fuan'], tradition: 'otani', count: 6 })
+    expect(new Set(out.map(scaleOf)).size).toBeGreaterThan(1)
+  })
+
+  it('大きさの好みは、選んだ気持ちより前に出ない', () => {
+    // 「暮らしの寸法で」と指定しても、死別の気持ちから外れた言葉は出さない
+    for (const e of ['shi', 'wakare'] as const) {
+      const out = generateNeta({ ...base, emotions: [e], scale: 'kurashi', tradition: 'otani', count: 6 })
+      for (const n of out) {
+        const c = CONCEPT_BY_ID[n.materials.conceptId!]
+        expect(c.emotions, `${e} / ${c.term}`).toContain(e)
+      }
+    }
+  })
+
+  it('大きさの好みは、書かれた文に当たった言葉より前に出ない', () => {
+    // 「天国のおじいちゃん」はお浄土の話。暮らしの寸法を指定しても外さない
+    const out = generateNeta({
+      ...base,
+      text: '天国のおじいちゃんに会いたい、と子どもが言う',
+      emotions: [],
+      scale: 'kurashi',
+      count: 6,
+    })
+    expect(out.map((n) => n.materials.conceptId)).toContain('ojodo')
+  })
+
+  it('いのちの話を指定すれば、大きい語が前に出る', () => {
+    const out = generateNeta({ ...base, emotions: ['fuan'], scale: 'inochi', tradition: 'otani', count: 6 })
+    expect(out.filter((n) => scaleOf(n) === 3).length).toBeGreaterThan(0)
+  })
+
+  it('どの仏教語にも大きさがついている', () => {
+    for (const c of CONCEPTS) expect(c.scale, c.term).toBeDefined()
   })
 })
 

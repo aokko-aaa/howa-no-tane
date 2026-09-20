@@ -63,6 +63,8 @@ export type GenerateInput = {
   kojitsukeMax: 1 | 2 | 3
   /** 'otani' で真宗大谷派の素材と切り口を優先する */
   tradition: TraditionMode
+  /** 話の大きさ。'auto' は書かれた文・気持ち・場面から決める */
+  scale?: ScaleMode
   /** 気持ちの一段下（「なんで？」で選んだ理由） */
   reasonIds?: string[]
   seed: number
@@ -80,6 +82,56 @@ export type Pins = {
   storyId?: string
   wordId?: string
   figureId?: string
+}
+
+/**
+ * 話の大きさ。
+ * 「家事子育てに追われて自分が分からない」という一件に、
+ * 往生や臨終の話を返すと、こじつけ以前に届かない。
+ * 入口の桁に、仏教語の桁を合わせるための目盛り。
+ */
+export type ScaleMode = 'kurashi' | 'auto' | 'inochi'
+
+/** 暮らしの側の言葉。書かれた文にこれがあれば、話は小さいほうへ寄せる */
+const KURASHI_WORDS = [
+  '家事', '子育て', '育児', '子ども', '保育', '学校', '宿題', '仕事', '職場', '上司', '同僚',
+  '通勤', '残業', '締切', '会議', '買い物', '洗濯', '掃除', '料理', '皿', 'ゴミ', '片づけ',
+  '寝不足', 'スマホ', 'SNS', '既読', '近所', '当番', '順番', '渋滞', '電車',
+]
+/** いのちの側の言葉。これがあれば、大きい話が要る */
+const INOCHI_WORDS = [
+  '死', '亡く', '余命', '末期', '危篤', '臨終', '看取', '葬儀', '通夜', '納骨', '遺骨',
+  '闘病', 'がん', '余命', 'いのち', '命日', '一周忌', '三回忌',
+]
+
+/** 気持ちの、ふだんの大きさ */
+const EMOTION_SCALE: Record<string, 1 | 2 | 3> = {
+  iraira: 1, aseri: 1, isogashii: 1, hikaku: 1, okane: 1, kazoku: 1, ningenkankei: 1,
+  yorokobi: 1, tassei: 1, hajimari: 1, shitto: 1, urami: 1, shounin: 1,
+  fuan: 2, ochikomi: 2, tsukare: 2, koukai: 2, zaiakukan: 2, jikokeno: 2, kodoku: 2,
+  munashisa: 2, mayoi: 2, henka: 2, mukuwarenai: 2, kansha: 2, yasuragi: 2,
+  shi: 3, wakare: 3,
+}
+
+/**
+ * 今日の話をどの大きさで組むか。
+ * 書かれた文がいちばん確かな手がかりなので、そこを最優先にする。
+ */
+export function targetScale(
+  mode: ScaleMode,
+  text: string,
+  emotions: EmotionId[],
+  scene: Scene,
+): 1 | 2 | 3 {
+  if (mode === 'kurashi') return 1
+  if (mode === 'inochi') return 3
+  // 通夜・葬儀のあとは、場そのものが大きい話を求めている
+  if (scene.id === 'sougo') return 3
+  if (INOCHI_WORDS.some((w) => text.includes(w))) return 3
+  if (KURASHI_WORDS.some((w) => text.includes(w))) return 1
+  const fromEmotions = emotions.map((e) => EMOTION_SCALE[e] ?? 2)
+  // いちばん重い気持ちに合わせる（軽いほうに合わせると、死別が軽く扱われる）
+  return (fromEmotions.length > 0 ? (Math.max(...fromEmotions) as 1 | 2 | 3) : 2)
 }
 
 type Ctx = {
@@ -525,6 +577,12 @@ function takeUnused<T extends { id: string }>(
   used: Set<string>,
   rand: Rand,
   window = 6,
+  /**
+   * 同じ優先度の中での好み。前のものから順に試し、
+   * まだ使っていない候補が残るあいだだけ効かせる。
+   * 気持ち・書かれた文の一致より前に出してはいけない。
+   */
+  prefers: ((item: T) => boolean)[] = [],
 ): T {
   // 順番に見る。
   // 1) 書かれた文に当たった素材があるなら、1つでもそこからだけ選ぶ
@@ -534,7 +592,17 @@ function takeUnused<T extends { id: string }>(
   // 3) それも無ければ全体から
   const byText = ranked.filter((r) => r.hits > 0)
   const matched = ranked.filter((r) => r.match > 0)
-  const base = byText.length > 0 ? byText : matched.length > 0 ? matched : ranked
+  const tier = byText.length > 0 ? byText : matched.length > 0 ? matched : ranked
+  // 好みは、この層の中だけで効かせる。
+  // （層をまたいで絞ると、書いた一件や選んだ気持ちから外れた言葉が出る）
+  let base = tier
+  for (const prefer of prefers) {
+    const narrowed = base.filter((r) => prefer(r.item))
+    if (narrowed.some((r) => !used.has(r.item.id))) {
+      base = narrowed
+      break
+    }
+  }
   const freshBase = base.filter((r) => !used.has(r.item.id))
   // 当たっている素材が尽きたら、同じものを使い回してでも枠の外には出ない。
   // （気持ちに合わない素材を出すくらいなら、同じ言葉で切り口を変えるほうがよい）
@@ -574,8 +642,9 @@ const preferShinshu = <T extends { tradition?: Tradition }>(ranked: Ranked<T>[])
   // 書かれた文や話題の型に当たっている素材があるときは、宗派より、そちらを優先する
   if (ranked.some((r) => r.hits > 0)) return ranked
   const fit = ranked.filter((r) => r.item.tradition === 'shinshu' && r.match > 0)
-  // 当たっている真宗の素材が1つしかないなら、そればかり並ぶので宗派の縛りを外す
-  return fit.length >= 2 ? fit : ranked
+  // 当たっている真宗の素材が少ないと、そればかり繰り返し並ぶので宗派の縛りを外す。
+  // （ひと回し6案に対して、2つでは足りない）
+  return fit.length >= 3 ? fit : ranked
 }
 
 /** 真宗モードの結びに添える一句 */
@@ -606,6 +675,11 @@ export function generateNeta(input: GenerateInput): Neta[] {
   )
   // 理由（なんで？）に紐づく言葉は、前に出す程度の重みにする
   const preferred = new Set(reasons.flatMap((r) => r.concepts ?? []))
+
+  // 今日の話の大きさ。入口の桁に、仏教語の桁を合わせる。
+  const target = targetScale(input.scale ?? 'auto', input.text, emotions, scene)
+  // 目盛りが1つ違うところまでは使う（ぴったりに絞ると、同じ言葉ばかりになる）
+  const okScale = (c: Concept) => Math.abs((c.scale ?? 2) - target) <= 1
 
   const emotionLabels = input.emotions.map((id) => EMOTION_BY_ID[id]?.label).filter(Boolean)
   const reasonLabels = reasons.map((r) => r.label)
@@ -736,6 +810,15 @@ export function generateNeta(input: GenerateInput): Neta[] {
       }
     : null
 
+  // ひと回しの中で、同じ大きさの話ばかりにしない。
+  // （真宗モードでは救い・往生の語がまとめて上位に来るので、
+  //   放っておくと6案すべてが「いのちの話」になる）
+  const scalesInPlay = ([1, 2, 3] as const).filter((sc) =>
+    rankedConcepts.some((r) => (r.item.scale ?? 2) === sc && Math.abs(sc - target) <= 1),
+  )
+  const scaleCap = Math.max(1, Math.ceil(input.count / Math.max(1, scalesInPlay.length)))
+  const scaleUsed = new Map<number, number>()
+
   const usedConcept = new Set<string>()
   const usedStory = new Set<string>()
   const usedWord = new Set<string>()
@@ -753,6 +836,15 @@ export function generateNeta(input: GenerateInput): Neta[] {
     const conceptPool = shinshuAngle
       ? preferShinshu(rankedConceptsByReason)
       : rankedConceptsByReason
+    // 話の大きさは「好み」であって、絞り込みではない。
+    // 書かれた文や選んだ気持ちに当たっている言葉を、桁が違うからといって外さない。
+    // 1) 桁が合っていて、その桁をまだ使いきっていないもの
+    // 2) 桁が合っているもの
+    const scalePrefs = [
+      (c: Concept) =>
+        okScale(c) && (scaleUsed.get(c.scale ?? 2) ?? 0) < scaleCap,
+      okScale,
+    ]
     const wordPool = shinshuAngle ? preferShinshu(rankedWords) : rankedWords
     const storyPool = shinshuAngle ? preferShinshu(rankedStories) : rankedStories
     // 由来の切り口では、暮らしの品に結びつく人物だけを引く
@@ -778,7 +870,9 @@ export function generateNeta(input: GenerateInput): Neta[] {
           : rankedPhrases
 
     const pinnedConcept = pins.conceptId ? CONCEPT_BY_ID[pins.conceptId] : undefined
-    const concept = pinnedConcept ?? takeUnused(conceptPool, usedConcept, rand, 8)
+    const concept = pinnedConcept ?? takeUnused(conceptPool, usedConcept, rand, 8, scalePrefs)
+    const usedScale = concept.scale ?? 2
+    scaleUsed.set(usedScale, (scaleUsed.get(usedScale) ?? 0) + 1)
     // 一句・喩え・日常語は、選んだ教義と同じ気持ちを向いているものから引く（話の筋がずれないように）
     const conceptTags = new Set(concept.emotions)
     const alignTo = <T extends { emotions: readonly EmotionId[] }>(pool: Ranked<T>[]) =>

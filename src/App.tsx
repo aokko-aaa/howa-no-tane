@@ -13,7 +13,13 @@ import { STORIES } from './data/stories'
 import { WORDS } from './data/words'
 import type { EmotionId, Neta, SceneId, TraditionMode } from './data/types'
 import { combineNetas } from './lib/combine'
-import { generateNeta, swapMaterial, type GenerateInput, type Pins } from './lib/generate'
+import {
+  generateNeta,
+  swapMaterial,
+  type GenerateInput,
+  type Pins,
+  type ScaleMode,
+} from './lib/generate'
 import { detectEmotions } from './lib/match'
 import { savedStore } from './lib/storage'
 
@@ -36,6 +42,7 @@ export default function App() {
   const [sceneId, setSceneId] = useState<SceneId>('howakai')
   const [kojitsukeMax, setKojitsukeMax] = useState<1 | 2 | 3>(2)
   const [tradition, setTradition] = useState<TraditionMode>('otani')
+  const [scale, setScale] = useState<ScaleMode>('auto')
   const [month, setMonth] = useState(new Date().getMonth() + 1)
   const [results, setResults] = useState<Neta[]>([])
   const [picked, setPicked] = useState<string[]>([])
@@ -74,7 +81,7 @@ export default function App() {
     return () => clearTimeout(t)
     // 気持ちと理由が変わったときだけ。文の入力中は走らせない。
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [emotions.join(','), reasons.join(','), sceneId, tradition, kojitsukeMax, month])
+  }, [emotions.join(','), reasons.join(','), sceneId, tradition, scale, kojitsukeMax, month])
 
   const run = (mode: 'new' | 'more') => runWith(mode, true)
 
@@ -87,6 +94,7 @@ export default function App() {
       month,
       kojitsukeMax,
       tradition,
+      scale,
       reasonIds: reasons,
       seed,
       count: BATCH,
@@ -118,6 +126,7 @@ export default function App() {
       month,
       kojitsukeMax,
       tradition,
+      scale,
       reasonIds: reasons,
     }
     const next = swapMaterial(neta, base, kind, Math.floor(Math.random() * 1e9))
@@ -273,6 +282,35 @@ export default function App() {
                 {tradition === 'otani'
                   ? 'お聖教・御文・歎異抄を先に回し、大谷派の言い回しの注意を添えます'
                   : '宗派を問わない素材だけで組みます'}
+              </p>
+            </div>
+
+            <div>
+              <div className="label mb-2">話の大きさ</div>
+              <div className="flex flex-wrap gap-1.5">
+                {(
+                  [
+                    ['auto', 'おまかせ'],
+                    ['kurashi', '暮らしの寸法で'],
+                    ['inochi', 'いのちの話で'],
+                  ] as const
+                ).map(([id, label]) => (
+                  <button
+                    key={id}
+                    type="button"
+                    className={`chip ${scale === id ? 'chip-on' : ''}`}
+                    onClick={() => setScale(id)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <p className="mt-1.5 text-xs leading-relaxed text-stone-500">
+                {scale === 'auto'
+                  ? '書かれた文と気持ちと場から決めます。「家事に追われて」なら足元の話、「余命を告げられた」ならいのちの話に寄せます'
+                  : scale === 'kurashi'
+                    ? '足元・言葉づかい・段取りの寸法で。往生や臨終の語は後ろへ下げます'
+                    : '往生・救い・いのちの語を前に出します。通夜や法事の場で'}
               </p>
             </div>
 
