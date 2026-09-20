@@ -205,6 +205,9 @@ export type NetaMaterials = {
   wordId?: string
   figureId?: string
   modernId?: string
+  /** 入口の場面と語り出し。自分で書いた一件（modernId='typed'）は内蔵データに無いので、ここに残す */
+  modernScene?: string
+  modernLine?: string
   occasionId?: string
   phraseId?: string
 }
