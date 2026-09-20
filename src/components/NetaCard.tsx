@@ -22,6 +22,23 @@ type Props = {
   children?: React.ReactNode
 }
 
+/**
+ * 筋道の一行。「場面：〜」のように頭がついていれば、そこだけ小さく立てる。
+ * 順に読むとき、いま話のどこにいるかが目で追えるように。
+ */
+function Step({ line }: { line: string }) {
+  const at = line.indexOf('：')
+  if (at < 1 || at > 12) return <span>{line}</span>
+  return (
+    <span>
+      <span className="mr-1.5 text-xs font-bold tracking-wider text-stone-500">
+        {line.slice(0, at)}
+      </span>
+      {line.slice(at + 1)}
+    </span>
+  )
+}
+
 function Stars({ n }: { n: number }) {
   return (
     <span title="こじつけ度" className="text-enji/70">
@@ -145,7 +162,7 @@ export default function NetaCard({
                   <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-stone-100 text-xs font-bold text-stone-500">
                     {i + 1}
                   </span>
-                  <span>{line}</span>
+                  <Step line={line} />
                 </li>
               ))}
             </ol>

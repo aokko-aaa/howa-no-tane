@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { CONCEPT_BY_ID } from '../data/concepts'
-import { combineNetas } from './combine'
+import { COMBINED, combineNetas } from './combine'
 import { toProse, toScript } from './format'
-import { generateNeta, SECTION, type GenerateInput } from './generate'
+import { generateNeta, type GenerateInput } from './generate'
 import { buildStructure } from './structure'
 
 const base: GenerateInput = {
@@ -37,10 +37,12 @@ describe('combineNetas', () => {
   it('語るのは軸と受けの二語まで。残りは控えに回す', () => {
     const chosen = results.slice(0, 4)
     const out = combineNetas(chosen)!
-    const spoken = out.sections.filter((s) => s.label.startsWith(SECTION.kotoba))
+    const spoken = out.sections.filter(
+      (s) => s.label.startsWith(COMBINED.ichigo) || s.label.startsWith(COMBINED.mouichigo),
+    )
     expect(spoken.length).toBeLessThanOrEqual(2)
     // 語らなかった言葉は、素材としては消さず、演出メモに控えとして出す
-    const memo = out.sections.find((s) => s.label === SECTION.memo)!
+    const memo = out.sections.find((s) => s.label === COMBINED.memo)!
     const kept = new Set(out.sourceMaterials!.map((m) => m.conceptId))
     const allTerms = uniqTerms(chosen)
     const spokenText = spoken.map((s) => s.body).join('\n')
@@ -53,30 +55,78 @@ describe('combineNetas', () => {
 
   it('軸から受けへ渡す一段がある（言葉が並んだだけにしない）', () => {
     const out = combineNetas(results.slice(0, 3))!
-    const watashi = out.sections.find((s) => s.label === SECTION.watashi2)
-    const spoken = out.sections.filter((s) => s.label.startsWith(SECTION.kotoba))
-    // 二語語るなら、必ずそのあいだに渡しが入る
-    if (spoken.length > 1) {
-      expect(watashi, '渡しの一段').toBeTruthy()
-      const labels = out.sections.map((s) => s.label)
-      expect(labels.indexOf(SECTION.watashi2)).toBeGreaterThan(labels.indexOf(SECTION.kotoba))
-      expect(labels.indexOf(SECTION.watashi2)).toBeLessThan(
-        labels.indexOf(`${SECTION.kotoba}（もう一つ）`),
-      )
+    const labels = out.sections.map((s) => s.label)
+    const mou = labels.findIndex((x) => x.startsWith(COMBINED.mouichigo))
+    // 二語語るなら、必ずそのあいだに山（渡し）が入る
+    if (mou >= 0) {
+      const yama = labels.indexOf(COMBINED.yama)
+      const ichigo = labels.findIndex((x) => x.startsWith(COMBINED.ichigo))
+      expect(yama, '渡しの一段').toBeGreaterThan(-1)
+      expect(yama).toBeGreaterThan(ichigo)
+      expect(yama).toBeLessThan(mou)
     }
+  })
+
+  it('筋道は、上から読めばそのまま喋れる（語り手への指示を混ぜない）', () => {
+    for (let i = 0; i + 2 < results.length; i++) {
+      const out = combineNetas(results.slice(i, i + 3))!
+      for (const step of out.digest!.steps) {
+        // 「〜に戻す」「〜しない」のような、話の中身ではない一行を入れない。
+        // （筋道にこれが混ざると、何の話をしているのか読めなくなる）
+        expect(step, step).not.toMatch(/持ち帰らせ|飛ばすと|落とす。|声に出さない/)
+        // どの一行にも、どこの話かを示す頭がついている
+        expect(step, step).toMatch(/^(一句|場面|いま起きていること|世間では|今日の一語|たとえに|人の話に|ことばのもとは|ここが山|もう一つの場面|もう一語|同じことが、こちらでも|自分の言葉で|今日の一歩|結び)/)
+      }
+    }
+  })
+
+  it('見出しに、そこで出す言葉の名前が入る', () => {
+    const out = combineNetas(results.slice(0, 3))!
+    const jiku = CONCEPT_BY_ID[out.materials.conceptId!]
+    const labels = out.sections.map((s) => s.label)
+    expect(labels).toContain(`${COMBINED.ichigo} —「${jiku.term}」`)
+  })
+
+  it('見出しが重ならない（同じ欄が二つ出ない）', () => {
+    for (let i = 0; i + 2 < results.length; i++) {
+      const out = combineNetas(results.slice(i, i + 3))!
+      const labels = out.sections.map((s) => s.label)
+      expect(new Set(labels).size, labels.join(' / ')).toBe(labels.length)
+    }
+  })
+
+  it('見出しに素材名が二度出ない（題と要点で言い切る）', () => {
+    const out = combineNetas(results.slice(0, 3))!
+    // 題に受けの言葉まで入れると、どちらが今日の話か分からなくなる
+    expect(out.title).toContain('を軸に')
+    const uke = out.digest!.summary.match(/「(.+?)」を一度だけ重ねて/)?.[1]
+    if (uke) expect(out.title).not.toContain(uke)
+  })
+
+  it('同じことを二度言う言葉は、暮らしの言い換えで出す', () => {
+    // 「怨みは怨みによって止まず」は、見出し語と一行の意味がほぼ同じ
+    const urami = generateNeta({
+      ...base,
+      emotions: ['urami'],
+      count: 2,
+      pins: { conceptId: 'onmi-wa-yamazu' },
+    })
+    const out = combineNetas(urami)!
+    const line = out.digest!.steps.find((x) => x.includes('怨みは怨みによって止まず'))!
+    expect(line).not.toContain('ついに止むことがない')
   })
 
   it('結びは軸の一語に戻る（二語とも持ち帰らせない）', () => {
     const out = combineNetas(results.slice(0, 3))!
     const jiku = CONCEPT_BY_ID[out.materials.conceptId!]
-    const musubi = out.sections.find((s) => s.label === SECTION.musubi)!
+    const musubi = out.sections.find((s) => s.label === COMBINED.musubi)!
     expect(musubi.body).toContain(jiku.term)
     expect(musubi.body).toContain('一語で十分')
   })
 
   it('語り手向けメモに、軸と、尺の落とし方が入る', () => {
     const out = combineNetas(results.slice(0, 3))!
-    const memo = out.sections.find((s) => s.label === SECTION.memo)!
+    const memo = out.sections.find((s) => s.label === COMBINED.memo)!
     const jiku = CONCEPT_BY_ID[out.materials.conceptId!]
     expect(memo.body).toContain(`軸は「${jiku.term}」`)
     expect(memo.body).toContain('尺が足りなければ')
@@ -92,10 +142,11 @@ describe('combineNetas', () => {
     const typed = '無くして探していた診察券を見つけた。探してもいない時にフッと出てきた'
     const own = generateNeta({ ...base, text: typed, emotions: ['yorokobi'], count: 3 })
     const out = combineNetas(own.slice(0, 2))!
-    const iriguchi = out.sections.find((s) => s.label === SECTION.iriguchi)!
+    const iriguchi = out.sections.find((s) => s.label === COMBINED.hajimari)!
     expect(iriguchi.body).toContain('診察券')
     // 「ご自身の一件の場面に立てば」とは言わない
     expect(out.sections.map((s) => s.body).join('\n')).not.toContain('「ご自身の一件」の場面')
+    expect(out.materials.modernLine, '場面の文を持ち越す').toContain('診察券')
   })
 
   it('述語で終わる場面名を、助詞に直接つなげない', () => {
@@ -113,21 +164,21 @@ describe('combineNetas', () => {
     const twin = { ...a, id: `${a.id}-twin` }
     const out = combineNetas([a, twin])!
     const c = CONCEPT_BY_ID[a.materials.conceptId!]
-    const hits = out.sections.filter((s) => s.label.startsWith(SECTION.kotoba)).length
+    const hits = out.sections.filter((s) => s.label.startsWith(COMBINED.ichigo)).length
     expect(hits).toBe(1)
     expect(c).toBeTruthy()
   })
 
   it('入口は一つに絞り、二つ目からは後ろへ回す', () => {
     const out = combineNetas(results.slice(0, 3))!
-    const iriguchi = out.sections.filter((s) => s.label === SECTION.iriguchi)
+    const iriguchi = out.sections.filter((s) => s.label === COMBINED.hajimari)
     expect(iriguchi).toHaveLength(1)
   })
 
   it('つなぎ目は語り手が埋める形で残す（機械が結論を書かない）', () => {
     const out = combineNetas(results.slice(0, 2))!
-    const kasanari = out.sections.find((s) => s.label === SECTION.kasanari)!
-    expect(kasanari.body).toContain('［')
+    const jibun = out.sections.find((s) => s.label === COMBINED.jibun)!
+    expect(jibun.body).toContain('［')
     expect(out.digest!.steps.join('\n')).toContain('自分の言葉')
   })
 

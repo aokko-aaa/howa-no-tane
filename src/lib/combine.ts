@@ -21,16 +21,31 @@ import { hashString } from './random'
  * 素材を並べるだけでは筋が通らない。話の筋は一本しか通らないので、
  * 集めた仏教語を横に並べず、役をふる。
  *
- *   軸（主）… 今日の話はこの一語のこと。入口から結びまで、これで通す
- *   受け（副）… 軸だけでは足りないところへ渡すために、一度だけ出す
+ *   軸（主）… 今日の話はこの一語のこと。はじまりから結びまで、これで通す
+ *   受け（副）… 軸だけでは届かないところへ渡すために、一度だけ出す
  *   控え … 残り。語らずに演出メモへ回す（素材としては消さない）
  *
- * 軸→受けの渡し（SECTION.watashi2）を抜くと、ただ二語が並んだだけになる。
- * ここが、この組み直しの背骨。
- *
- * 機械が書けないのは、その人がこの二語をどう見ているかの一行だけ。
- * そこは［　］で空けてある。
+ * 見出しは、素材の種類名（「入口」「ひっかかり」）ではなく、
+ * 話のどこにいるかで付ける。読んだ人が順番どおりに喋れることを優先する。
+ * 語り手への指示は本文と筋道には出さず、演出メモにだけ書く。
  */
+
+/** 組み直した話の見出し。上から順に喋れば一本になる並びにしてある */
+export const COMBINED = {
+  ku: 'お聖教の一句',
+  hajimari: 'はじまり — この場面から',
+  okite: 'そこで起きていること',
+  ichigo: '今日の一語',
+  tatoe: 'たとえに',
+  hito: '人の話に',
+  moto: 'ことばのもとは',
+  yama: 'ここが山 — 一語では届かない',
+  mouichigo: 'もう一語',
+  jibun: '自分の言葉で（ここだけは埋めてください）',
+  ippo: '今日の一歩',
+  musubi: SECTION.musubi,
+  memo: SECTION.memo,
+} as const
 
 const nq = (t: string) => t.replace(/。$/, '')
 
@@ -44,30 +59,17 @@ const uniq = <T,>(xs: (T | undefined)[]): T[] => {
 const lookup = <T,>(ids: (string | undefined)[], by: Record<string, T>): T[] =>
   uniq(ids).map((id) => by[id]).filter((x): x is T => x !== undefined)
 
-/** 入口の場面。自分で書いた一件は内蔵データに無いので、案が持っている文をそのまま使う */
-type Lead = { id: string; scene: string; line: string; emotions: readonly EmotionId[]; own: boolean }
+const firstSentence = (t: string) => nq(t.split(/(?<=。)/)[0] ?? t)
 
-function leadsFrom(mats: NetaMaterials[]): Lead[] {
-  const out: Lead[] = []
-  for (const m of mats) {
-    if (!m.modernId || out.some((x) => x.id === m.modernId)) continue
-    const built = MODERN_BY_ID[m.modernId]
-    const scene = m.modernScene ?? built?.scene
-    const line = m.modernLine ?? built?.line
-    if (!scene || !line) continue
-    out.push({
-      id: m.modernId,
-      scene,
-      line,
-      emotions: built?.emotions ?? [],
-      // 自分で書いた一件は、内蔵の場面より先に入口へ立てる
-      own: m.modernId === 'typed',
-    })
-  }
-  return out
+/**
+ * その言葉を一行で言うと何か。
+ * 「怨みは怨みによって止まず」のように、見出し語とほぼ同じ一行を持つ言葉がある。
+ * そのまま出すと同じことを二度言うだけになるので、暮らしの言い換えのほうを使う。
+ */
+function gist(c: Concept): string {
+  const head = c.term.slice(0, Math.min(5, c.term.length))
+  return c.oneLine.includes(head) ? c.everyday : c.oneLine
 }
-
-const s = (label: string, body: string): NetaSection => ({ label, body })
 
 /** 二つのタグの重なりの数 */
 const overlap = (a: readonly EmotionId[], b: Set<EmotionId>) => a.filter((x) => b.has(x)).length
@@ -97,8 +99,47 @@ function pickJiku(concepts: Concept[]): Concept {
   return best
 }
 
-const conceptBody = (c: Concept) =>
-  `${c.term}（${c.reading}）。${c.oneLine}　【${c.source}】\nけれども、${c.pivot}`
+/** はじまりに置く場面。自分で書いた一件は内蔵データに無いので、案が持っている文を使う */
+type Lead = { id: string; scene: string; line: string; emotions: readonly EmotionId[]; own: boolean }
+
+const leadOf = (id: string, scene: string, line: string): Lead => ({
+  id,
+  scene,
+  line,
+  emotions: MODERN_BY_ID[id]?.emotions ?? [],
+  // 自分で書いた一件は、内蔵の場面より先にはじまりへ立てる
+  own: id === 'typed',
+})
+
+function leadsFrom(mats: NetaMaterials[]): Lead[] {
+  const out: Lead[] = []
+  for (const m of mats) {
+    if (!m.modernId || out.some((x) => x.id === m.modernId)) continue
+    const built = MODERN_BY_ID[m.modernId]
+    const scene = m.modernScene ?? built?.scene
+    const line = m.modernLine ?? built?.line
+    if (scene && line) out.push(leadOf(m.modernId, scene, line))
+  }
+  return out
+}
+
+/**
+ * 場面の文を持っていない古い保存から、はじまりの文を拾い直す。
+ * これが無いと、自分で書いた一件が組み直しのたびに消える。
+ */
+function recoverLead(n: Neta): Lead | undefined {
+  const id = n.materials.modernId
+  if (!id || n.materials.modernLine) return undefined
+  const sec = n.sections.find((s) => s.label.startsWith('入口') || s.label.startsWith('はじまり'))
+  // 掲示板・SNSの案にははじまりの欄がないので、筋道の一行目から拾う。
+  // 生成側が「場面の文　言葉の言い換え。」と全角空白でつないでいるので、前半だけを取る。
+  const line = (sec?.body ?? n.digest?.steps[0] ?? '').split('　')[0].trim()
+  if (!line) return undefined
+  const scene = n.materials.modernScene ?? MODERN_BY_ID[id]?.scene ?? 'ご自身の一件'
+  return leadOf(id, scene, line)
+}
+
+const s = (label: string, body: string): NetaSection => ({ label, body })
 
 /** 二つ以上の案から、一本の話をつくる。1件以下なら組み直さない。 */
 export function combineNetas(netas: Neta[]): Neta | null {
@@ -114,9 +155,14 @@ export function combineNetas(netas: Neta[]): Neta | null {
   const words = lookup(mats.map((m) => m.wordId), WORD_BY_ID)
   const figures = lookup(mats.map((m) => m.figureId), FIGURE_BY_ID)
   const phrases = lookup(mats.map((m) => m.phraseId), PHRASE_BY_ID)
-  const moderns = leadsFrom(mats)
 
   if (allConcepts.length === 0) return null
+
+  const moderns = leadsFrom(mats)
+  for (const n of netas) {
+    const rec = recoverLead(n)
+    if (rec && !moderns.some((m) => m.id === rec.id)) moderns.push(rec)
+  }
 
   // 語るのは二語まで。三語を対等に並べると、聴き手はどれが今日の話か分からなくなる。
   const jiku = pickJiku(allConcepts)
@@ -131,13 +177,11 @@ export function combineNetas(netas: Neta[]): Neta | null {
   const jikuMat = matOf(jiku)
   const ukeMat = matOf(uke)
 
-  // 入口は一つ。二つ目の場面は、受けの言葉を出すところで使う。
+  // はじまりは一つ。二つ目の場面は、受けの言葉を出すところで使う。
   // （語り出しが二本あると、どちらの話か分からなくなる）
-  // 自分で書いた一件があれば、それが入口。無ければ軸と組んで出てきた場面。
   const own = moderns.find((m) => m.own)
   const leadModern =
     own ?? moderns.find((m) => m.id === jikuMat?.modernId) ?? byFit(moderns, jiku)[0]
-  const lead = leadModern?.line ?? netas[0].digest?.steps[0] ?? ''
   const others = moderns.filter((m) => m.id !== leadModern?.id)
   const secondModern = uke
     ? (others.find((m) => m.id === ukeMat?.modernId) ?? byFit(others, uke)[0])
@@ -146,157 +190,166 @@ export function combineNetas(netas: Neta[]): Neta | null {
   const sceneRef = !leadModern
     ? 'あの場面'
     : leadModern.own
-      ? 'さきほどの一件'
+      ? 'さきほどの場面'
       : `「${leadModern.scene}」の場面`
 
-  // 支えの話は、軸のうしろに一つ、受けのうしろに一つ。残りは控えへ。
-  // 人の話 → 喩え → 日常語 の順に強い（人の話がいちばん入りやすい）
   const supports = [
     ...figures.map((f) => ({
-      label: SECTION.hito,
+      label: COMBINED.hito,
       id: f.id,
       name: f.name,
       emotions: f.emotions,
+      head: `${f.name} — ${f.title}`,
+      gist: `${f.name}——${nq(f.title)}。`,
       body: `${f.name}（${f.era}）。${f.title}、と言われる方です。${f.story}`,
+      memo: f.hook,
     })),
     ...stories.map((st) => ({
-      label: SECTION.tatoe,
+      label: COMBINED.tatoe,
       id: st.id,
       name: st.title,
       emotions: st.emotions,
+      head: st.title,
+      gist: `${st.title}——${firstSentence(st.summary)}。`,
       body: `${st.title}。${st.summary}　【${st.source}】`,
+      memo: st.point,
     })),
     ...words.map((w) => ({
-      label: SECTION.moto,
+      label: COMBINED.moto,
       id: w.id,
       name: `「${w.word}」`,
       emotions: w.emotions,
+      head: `「${w.word}」`,
+      gist: `「${w.word}」は、もとは${nq(w.origin)}。`,
       body: `「${w.word}」という言葉があります。いまは${nq(w.now)}。もとは、${w.origin}`,
+      memo: w.gap,
     })),
   ]
   // 軸のうしろには、軸と組んで出てきた話。無ければ気持ちの近いもの。
   const fromMat = (m: NetaMaterials | undefined, pool: typeof supports) =>
-    m
-      ? pool.find(
-          (x) => x.id === m.figureId || x.id === m.storyId || x.id === m.wordId,
-        )
-      : undefined
+    m ? pool.find((x) => x.id === m.figureId || x.id === m.storyId || x.id === m.wordId) : undefined
   const support1 = fromMat(jikuMat, supports) ?? byFit(supports, jiku)[0]
   const rest1 = supports.filter((x) => x.id !== support1?.id)
   const support2 = uke ? (fromMat(ukeMat, rest1) ?? byFit(rest1, uke)[0]) : undefined
   const hikaeSupports = supports.filter((x) => x.id !== support1?.id && x.id !== support2?.id)
 
-  const phrase =
-    (jikuMat?.phraseId ? PHRASE_BY_ID[jikuMat.phraseId] : undefined) ?? phrases[0]
+  const phrase = (jikuMat?.phraseId ? PHRASE_BY_ID[jikuMat.phraseId] : undefined) ?? phrases[0]
+
+  const conceptBody = (c: Concept) =>
+    `${c.term}（${c.reading}）。${gist(c)}　【${c.source}】\n\nけれども、${c.pivot}`
 
   // 軸だけでは届かないところへ渡す一段。これがこの組み直しの背骨。
   const watashi = uke
     ? [
         s(
-          SECTION.watashi2,
-          `——と、ここまでが「${jiku.term}」の話です。\n\nただ、言葉として分かっても、${sceneRef}に立てば、また同じところでつまずきます。分かることと、できることは別です。\n\nそこでもう一つ、「${
-            uke.term
-          }」という言葉を置いてみます。${secondModern ? `\n\n${secondModern.line}` : ''}`,
+          COMBINED.yama,
+          `——と、ここまでが「${jiku.term}」の話です。\n\nただ、言葉として分かっても、${sceneRef}に立てば、また同じところでつまずきます。分かることと、できることは別です。\n\nそこでもう一語、置いてみます。${
+            secondModern ? `\n\n${secondModern.line}` : ''
+          }`,
         ),
-        s(`${SECTION.kotoba}（もう一つ）`, conceptBody(uke)),
-        ...(support2 ? [s(support2.label, support2.body)] : []),
+        s(`${COMBINED.mouichigo} —「${uke.term}」`, conceptBody(uke)),
+        ...(support2 ? [s(`${support2.label} — ${support2.head}`, support2.body)] : []),
       ]
     : secondModern
       ? [
           s(
-            SECTION.watashi2,
+            COMBINED.yama,
             `同じことが、こちらでも起こります。${secondModern.line}\n\n場面は違いますが、立っているところは同じです。`,
           ),
         ]
       : []
 
-  const kasanariBody = uke
-    ? `今日は「${jiku.term}」を軸に置いて、そこへ「${uke.term}」を重ねました。${nq(
-        jiku.oneLine,
-      )}——そのうえで、${nq(uke.oneLine)}。\n\n［この二つが、ご自身の中でどうつながっているか、ここに一行だけ。うまく一つにならなければ、「私にはまだ結びついていません」でも構いません。そこが入ると、借り物の話になりません］`
+  const jibunBody = uke
+    ? `「${jiku.term}」と「${uke.term}」。${nq(gist(jiku))}——そのうえで、${nq(gist(uke))}。\n\n［この二つが、ご自身の中でどうつながっているか、ここに一行だけ。うまく一つにならなければ、「私にはまだ結びついていません」でも構いません。そこが入ると、借り物の話になりません］`
     : `同じ「${jiku.term}」という一語を、二つの場面から見てみました。\n\n［ご自身がどちらの場面に立っておられるか、ここに一行だけ］`
 
-  const otoshiBody = uke
-    ? `${nq(jiku.step)}。\n\nそれで足りなければ、${nq(uke.step)}。`
-    : `${nq(jiku.step)}。`
-
   const memo = [
-    `軸は「${jiku.term}」。入口から結びまで、この一語で通す。`,
+    `軸は「${jiku.term}」。はじまりから結びまで、この一語で通す。結びも軸に戻す。二語とも持ち帰らせようとしない。`,
     ...(uke
       ? [
-          `「${uke.term}」は受け。${jiku.term}だけでは届かないところへ渡すために、一度だけ出す。〈${SECTION.watashi2}〉を飛ばすと、二語が並んだだけになる。`,
-          `尺が足りなければ、〈${SECTION.watashi2}〉から〈${SECTION.kotoba}（もう一つ）〉までをまるごと落とす。${jiku.term}だけで一本になる。`,
+          `「${uke.term}」は受け。${jiku.term}だけでは届かないところへ渡すために、一度だけ出す。〈${COMBINED.yama}〉を飛ばすと、二語が並んだだけになる。`,
+          `尺が足りなければ、〈${COMBINED.yama}〉から〈${COMBINED.mouichigo}〉までをまるごと落とす。${jiku.term}だけで一本になる。`,
         ]
       : []),
+    ...(support1 ? [`${support1.name}の使いどころ：${support1.memo}`] : []),
+    ...(support2 ? [`${support2.name}の使いどころ：${support2.memo}`] : []),
     ...(hikaeConcepts.length > 0 || hikaeSupports.length > 0
       ? [
-          `${SECTION.hikae}：${[
+          `控え（今日は使わない）：${[
             ...hikaeConcepts.map((c) => c.term),
             ...hikaeSupports.map((x) => x.name),
-          ].join('・')}。今日は出さない。次に組み直すときの材料として残してある。`,
+          ].join('・')}。次に組み直すときの材料として残してある。`,
         ]
       : []),
-    `［　］の一行は、必ず自分の言葉で埋める。ここが空のままだと、どこかで聞いた話になる。`,
+    `〈${COMBINED.jibun}〉の［　］は、必ず自分の言葉で埋める。ここが空のままだと、どこかで聞いた話になる。`,
   ]
 
   const sections: NetaSection[] = [
-    ...(phrase ? [s(SECTION.shogyo, `${phrase.text}　【${phrase.source}】\n${phrase.gloss}`)] : []),
-    s(SECTION.iriguchi, lead),
+    ...(phrase
+      ? [s(COMBINED.ku, `${phrase.text}　【${phrase.source}】\n\n${phrase.gloss}`)]
+      : []),
+    s(COMBINED.hajimari, lead(leadModern, netas)),
     s(
-      SECTION.hikkakari,
-      // 入口で置いた場面を受け直してから中身に入る。ここを飛ばすと、
+      COMBINED.okite,
+      // はじまりで置いた場面を受け直してから中身に入る。ここを飛ばすと、
       // 場面と言葉が地続きにならず、別々の話に聞こえる。
       `こういうとき、私たちの中では何が起きているか。${nq(jiku.everyday)}。\n\n世間では、${nq(
         jiku.misread,
       )}。`,
     ),
-    s(SECTION.kotoba, conceptBody(jiku)),
-    ...(support1 ? [s(support1.label, support1.body)] : []),
+    s(`${COMBINED.ichigo} —「${jiku.term}」`, conceptBody(jiku)),
+    ...(support1 ? [s(`${support1.label} — ${support1.head}`, support1.body)] : []),
     ...watashi,
-    s(SECTION.kasanari, kasanariBody),
-    s(SECTION.otoshi, otoshiBody),
+    s(COMBINED.jibun, jibunBody),
     s(
-      SECTION.musubi,
+      COMBINED.ippo,
+      uke ? `${nq(jiku.step)}。\n\nそれで足りなければ、${nq(uke.step)}。` : `${nq(jiku.step)}。`,
+    ),
+    s(
+      COMBINED.musubi,
       `${phrase ? `もう一度、あの一句を。${phrase.text}\n\n` : ''}今日お持ち帰りいただくのは、「${
         jiku.term
       }」。一語で十分です。${
         uke ? `「${uke.term}」のほうは、引っかかった方だけが持って帰ってくだされば。` : ''
       }${sceneRef}で立ち止まったとき、これを一つ、思い出してください。`,
     ),
-    s(SECTION.memo, memo.join('\n')),
+    s(COMBINED.memo, memo.join('\n')),
+  ]
+
+  // 筋道は、上から読めばそのまま喋れる並びにする。
+  // 「〜に戻す」「〜しない」といった語り手への指示は入れない（演出メモへ回す）。
+  const steps: string[] = [
+    ...(phrase ? [`一句：「${phrase.text}」（${phrase.source}）＝${nq(phrase.gloss)}。`] : []),
+    `場面：${lead(leadModern, netas)}`,
+    `いま起きていること：${nq(jiku.everyday)}。`,
+    `世間では：${nq(jiku.misread)}。`,
+    `今日の一語：「${jiku.term}」＝${nq(gist(jiku))}。けれども、${jiku.pivot}`,
+    ...(support1 ? [`${support1.label}：${support1.gist}`] : []),
+    ...(uke
+      ? [
+          `ここが山：分かっても、${sceneRef}に立てばまた同じところでつまずく。`,
+          ...(secondModern ? [`もう一つの場面：${secondModern.line}`] : []),
+          `もう一語：「${uke.term}」＝${nq(gist(uke))}。けれども、${uke.pivot}`,
+          ...(support2 ? [`${support2.label}：${support2.gist}`] : []),
+        ]
+      : secondModern
+        ? [`同じことが、こちらでも：${secondModern.line}`]
+        : []),
+    `自分の言葉で：［この二つが自分の中でどうつながっているか、一行だけ］`,
+    `今日の一歩：${nq(jiku.step)}。`,
+    `結び：「${jiku.term}」の一語に戻して終える。`,
   ]
 
   const digest = {
     summary: uke
-      ? `「${jiku.term}」を軸に、「${uke.term}」を重ねて一本にしたもの`
+      ? `「${jiku.term}」を軸に、「${uke.term}」を一度だけ重ねて一本にしたもの`
       : `「${jiku.term}」を、二つの場面から見た一本`,
-    steps: [
-      ...(phrase ? [`一句を置く。「${phrase.text}」（${phrase.source}）。`] : []),
-      lead,
-      `世間では、${nq(jiku.misread)}。`,
-      `仏教はこれを「${jiku.term}」という。${nq(jiku.oneLine)}。`,
-      ...(support1 ? [`${support1.name}を、そこに重ねる。`] : []),
-      ...(uke
-        ? [
-            `——ここまでが「${jiku.term}」。ただ、分かってもその場ではつまずく。`,
-            `そこで「${uke.term}」を置く。${nq(uke.oneLine)}。`,
-            ...(secondModern ? [secondModern.line] : []),
-            ...(support2 ? [`${support2.name}を、そこに重ねる。`] : []),
-          ]
-        : secondModern
-          ? [`同じことが、こちらでも。${secondModern.line}`]
-          : []),
-      `［この二つが自分の中でどうつながっているか、一行だけ自分の言葉で］`,
-      `だから今日は、${nq(jiku.step)}。`,
-      `結びは「${jiku.term}」に戻る。二語とも持ち帰らせようとしない。`,
-    ],
+    steps,
     note: `もとにした案${netas.length}件（${netas
       .map((x) =>
         x.angleId === 'combine' ? `組み合わせ${(x.sourceMaterials ?? []).length}件ぶん` : x.angleName,
       )
-      .join('・')}）／軸は「${jiku.term}」${
-      uke ? `・受けは「${uke.term}」` : ''
-    }${hikaeConcepts.length > 0 ? `／控え${hikaeConcepts.length}語` : ''}`,
+      .join('・')}）${hikaeConcepts.length > 0 ? `／控え${hikaeConcepts.length}語` : ''}`,
   }
 
   const traditions = netas.map((n) => n.tradition)
@@ -312,9 +365,8 @@ export function combineNetas(netas: Neta[]): Neta | null {
     angleName: '組み合わせ',
     aim: '一語を軸に据え、もう一語を渡しでつないで、一本の筋にする',
     kojitsuke: Math.max(...netas.map((n) => n.kojitsuke)) as 1 | 2 | 3,
-    title: uke
-      ? `「${jiku.term}」に「${uke.term}」を重ねて — ${leadModern?.scene ?? netas[0].title}`
-      : `「${jiku.term}」— ${leadModern?.scene ?? netas[0].title}`,
+    // 受けの言葉は見出しに入れない（要点の一行と見出しで二度出ると、どちらが今日の話か分からなくなる）
+    title: leadModern ? `「${jiku.term}」を軸に — ${leadModern.scene}` : `「${jiku.term}」を軸に`,
     sections,
     digest,
     sources: uniq(netas.flatMap((n) => n.sources)),
@@ -336,4 +388,10 @@ export function combineNetas(netas: Neta[]): Neta | null {
     minutes: Math.max(...netas.map((x) => x.minutes)) || 3,
     tradition,
   }
+}
+
+/** はじまりの一文。どの案からも拾えなければ、書いてもらうための空欄を出す */
+function lead(leadModern: Lead | undefined, netas: Neta[]): string {
+  if (leadModern) return leadModern.line
+  return netas[0].digest?.steps[0]?.split('　')[0] ?? '［ここに、今日の場面を一つ］'
 }

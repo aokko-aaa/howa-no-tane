@@ -22,7 +22,11 @@ const nq = (t: string) => t.replace(/。$/, '')
 
 /** 案の中から、入口として語られている文を取り出す */
 function opening(neta: Neta): string {
-  const sec = neta.sections.find((s) => s.label.startsWith('入口'))
+  // 案が場面の文を持っているなら、それがいちばん確か（自分で書いた一件も残る）
+  if (neta.materials.modernLine) return neta.materials.modernLine
+  const sec = neta.sections.find(
+    (s) => s.label.startsWith('入口') || s.label.startsWith('はじまり'),
+  )
   if (sec) return sec.body
   const modern = neta.materials.modernId ? MODERN_BY_ID[neta.materials.modernId] : undefined
   return modern?.line ?? neta.digest?.steps[0] ?? ''
