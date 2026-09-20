@@ -61,8 +61,6 @@ export type GenerateInput = {
   tradition: TraditionMode
   /** 気持ちの一段下（「なんで？」で選んだ理由） */
   reasonIds?: string[]
-  /** この言葉を前に出す（話題の型など、外から当てたいとき） */
-  preferConceptIds?: string[]
   seed: number
   count: number
   /** 名指しで指定された素材・切り口（条件検索） */
@@ -559,10 +557,8 @@ export function generateNeta(input: GenerateInput): Neta[] {
   const emotions = Array.from(
     new Set([...input.emotions, ...reasons.flatMap((r) => r.emotions)]),
   )
-  // 理由（なんで？）に紐づく言葉は、前に出す程度の重み。
-  // 外から名指しされた言葉（話題の型など）は、文に当たったのと同じ強さで扱う。
+  // 理由（なんで？）に紐づく言葉は、前に出す程度の重みにする
   const preferred = new Set(reasons.flatMap((r) => r.concepts ?? []))
-  const named = new Set(input.preferConceptIds ?? [])
 
   const emotionLabels = input.emotions.map((id) => EMOTION_BY_ID[id]?.label).filter(Boolean)
   const reasonLabels = reasons.map((r) => r.label)
@@ -653,14 +649,12 @@ export function generateNeta(input: GenerateInput): Neta[] {
       : shuffle(usable, rand)
 
   const rankedConceptsByReason =
-    preferred.size > 0 || named.size > 0
+    preferred.size > 0
       ? rankedConcepts
           .map((r) =>
-            named.has(r.item.id)
-              ? { ...r, score: r.score + 20, match: Math.max(r.match, 1), hits: Math.max(r.hits, 1) }
-              : preferred.has(r.item.id)
-                ? { ...r, score: r.score + 12, match: Math.max(r.match, 1) }
-                : r,
+            preferred.has(r.item.id)
+              ? { ...r, score: r.score + 12, match: Math.max(r.match, 1) }
+              : r,
           )
           .sort((a, b) => b.score - a.score)
       : rankedConcepts

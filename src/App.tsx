@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import ChartView from './components/ChartView'
 import DictView from './components/DictView'
-import NewsView from './components/NewsView'
 import EmotionPicker from './components/EmotionPicker'
 import NetaCard from './components/NetaCard'
 import SavedView from './components/SavedView'
@@ -16,11 +15,10 @@ import { generateNeta, swapMaterial, type GenerateInput, type Pins } from './lib
 import { detectEmotions } from './lib/match'
 import { savedStore } from './lib/storage'
 
-type Tab = 'make' | 'news' | 'chart' | 'book' | 'dict'
+type Tab = 'make' | 'chart' | 'book' | 'dict'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'make', label: 'つくる' },
-  { id: 'news', label: '話題から' },
   { id: 'chart', label: 'くらし' },
   { id: 'book', label: 'ネタ帳' },
   { id: 'dict', label: 'ことば' },
@@ -474,16 +472,6 @@ export default function App() {
         </div>
       )}
 
-      {tab === 'news' && (
-        <NewsView
-          sceneId={sceneId}
-          tradition={tradition}
-          kojitsukeMax={kojitsukeMax}
-          month={month}
-          savedIds={savedIds}
-          onSave={save}
-        />
-      )}
       {tab === 'chart' && (
         <ChartView tradition={tradition} savedIds={savedIds} onSave={save} />
       )}
