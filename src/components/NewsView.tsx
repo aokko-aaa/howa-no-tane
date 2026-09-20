@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { NewsTopic } from '../data/news'
 import { NEWS_TOPICS } from '../data/news'
 import type { Neta, SceneId, TraditionMode } from '../data/types'
@@ -40,6 +40,7 @@ export default function NewsView({
   const [pasted, setPasted] = useState('')
   const [picked, setPicked] = useState<{ headline: string; topic?: NewsTopic } | null>(null)
   const [results, setResults] = useState<Neta[]>([])
+  const resultsRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
     const ctrl = new AbortController()
@@ -74,6 +75,9 @@ export default function NewsView({
     })
     setPicked({ headline, topic })
     setResults(applyNewsLead(netas, headline, topic))
+    requestAnimationFrame(() =>
+      resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+    )
   }
 
   const swap = (neta: Neta, kind: 'modern' | 'angle') => {
@@ -215,7 +219,7 @@ export default function NewsView({
       </section>
 
       {picked && results.length > 0 && (
-        <section className="flex flex-col gap-3">
+        <section ref={resultsRef} className="flex flex-col gap-3 scroll-mt-3">
           <div className="rounded-lg bg-stone-50 px-3 py-2">
             <div className="label">元にした話題</div>
             <p className="mt-0.5 text-sm leading-relaxed">{picked.headline}</p>

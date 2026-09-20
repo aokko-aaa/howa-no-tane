@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import ChartView from './components/ChartView'
 import DictView from './components/DictView'
 import NewsView from './components/NewsView'
@@ -39,6 +39,7 @@ export default function App() {
   const [month, setMonth] = useState(new Date().getMonth() + 1)
   const [results, setResults] = useState<Neta[]>([])
   const [pins, setPins] = useState<Pins>({})
+  const resultsRef = useRef<HTMLElement>(null)
   const [openPins, setOpenPins] = useState(false)
   const [savedIds, setSavedIds] = useState<string[]>([])
 
@@ -77,8 +78,16 @@ export default function App() {
       count: BATCH,
       pins,
     })
-    // 押した場所から動かさない（毎回先頭へ飛ぶと、条件をいじりながら見比べられない）
+    // ページの先頭ではなく、結果の頭へ寄せる。
+    // 「もっと」のときは、いま足りた分の先頭へ。
+    const anchorId = mode === 'more' ? next[0]?.id : undefined
     setResults((prev) => (mode === 'more' ? [...prev, ...next] : next))
+    requestAnimationFrame(() => {
+      const target = anchorId
+        ? document.getElementById(`neta-${anchorId}`)
+        : resultsRef.current
+      target?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
   }
 
   /** 入口や切り口が自分に合わないとき、その場で次の候補に差し替える */
@@ -408,19 +417,20 @@ export default function App() {
           </section>
 
           {results.length > 0 && (
-            <section className="flex flex-col gap-3">
+            <section ref={resultsRef} className="flex flex-col gap-3 scroll-mt-3">
               <p className="text-xs leading-relaxed text-stone-500">
                 同じ気持ちから、違う入り方を{results.length}通り。ぴんと来なければ〈出し直す〉で別の組み合わせになります。
                 引用はそのまま使わず、出典に当たってから語ってください。
               </p>
               {results.map((n) => (
+                <div key={n.id} id={`neta-${n.id}`} className="scroll-mt-3">
                 <NetaCard
-                  key={n.id}
                   neta={n}
                   saved={savedIds.includes(n.id)}
                   onSave={save}
                   onSwap={swap}
                 />
+                </div>
               ))}
               <button type="button" className="btn-ghost self-start" onClick={() => run('more')}>
                 別の切り口をもっと
