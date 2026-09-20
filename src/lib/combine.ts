@@ -129,14 +129,14 @@ function leadsFrom(mats: NetaMaterials[]): Lead[] {
  */
 function recoverLead(n: Neta): Lead | undefined {
   const id = n.materials.modernId
-  if (!id || n.materials.modernLine) return undefined
+  // 内蔵の場面は MODERN_BY_ID から引けるので、拾い直しが要るのは自分で書いた一件だけ。
+  // （欄から拾うと、切り口によっては場面ではない文が入口の欄に来る）
+  if (id !== 'typed' || n.materials.modernLine) return undefined
   const sec = n.sections.find((s) => s.label.startsWith('入口') || s.label.startsWith('はじまり'))
-  // 掲示板・SNSの案にははじまりの欄がないので、筋道の一行目から拾う。
-  // 生成側が「場面の文　言葉の言い換え。」と全角空白でつないでいるので、前半だけを取る。
-  const line = (sec?.body ?? n.digest?.steps[0] ?? '').split('　')[0].trim()
+  // 掲示板・SNSの案にははじまりの欄がないので、そのときは筋道の一行目から拾う。
+  const line = splitLead(sec?.body ?? n.digest?.steps[0] ?? '').trim()
   if (!line) return undefined
-  const scene = n.materials.modernScene ?? MODERN_BY_ID[id]?.scene ?? 'ご自身の一件'
-  return leadOf(id, scene, line)
+  return leadOf(id, n.materials.modernScene ?? 'ご自身の一件', line)
 }
 
 const s = (label: string, body: string): NetaSection => ({ label, body })
@@ -390,8 +390,19 @@ export function combineNetas(netas: Neta[]): Neta | null {
   }
 }
 
+/**
+ * 「場面の文　言葉の言い換え。」とつないである一行から、場面の文だけを取る。
+ * 全角空白そのものは一句（「煩悩障眼雖不見　大悲無倦常照我」）にも出るので、
+ * 句点のうしろで区切れているときだけ切る。
+ */
+function splitLead(step: string): string {
+  const at = step.indexOf('。　')
+  return at >= 0 ? step.slice(0, at + 1) : step
+}
+
 /** はじまりの一文。どの案からも拾えなければ、書いてもらうための空欄を出す */
 function lead(leadModern: Lead | undefined, netas: Neta[]): string {
   if (leadModern) return leadModern.line
-  return netas[0].digest?.steps[0]?.split('　')[0] ?? '［ここに、今日の場面を一つ］'
+  const first = netas[0].digest?.steps[0]
+  return first ? splitLead(first) : '［ここに、今日の場面を一つ］'
 }
