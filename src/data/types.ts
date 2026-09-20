@@ -198,6 +198,17 @@ export type NetaSection = {
   body: string
 }
 
+/** その案がどの素材で組まれたか */
+export type NetaMaterials = {
+  conceptId?: string
+  storyId?: string
+  wordId?: string
+  figureId?: string
+  modernId?: string
+  occasionId?: string
+  phraseId?: string
+}
+
 export type Neta = {
   id: string
   angleId: string
@@ -222,15 +233,13 @@ export type Neta = {
   alternatives?: { modernIds: string[]; angleIds: string[] }
   sources: string[]
   cautions: string[]
-  materials: {
-    conceptId?: string
-    storyId?: string
-    wordId?: string
-    figureId?: string
-    modernId?: string
-    occasionId?: string
-    phraseId?: string
-  }
+  materials: NetaMaterials
+  /**
+   * 組み合わせでできた案が、もとの案それぞれの素材を覚えておくためのもの。
+   * materials には各種ひとつしか入らないので、これが無いと
+   * 「組んだものを、さらに組む」たびに素材が落ちていく。
+   */
+  sourceMaterials?: NetaMaterials[]
   /** この案がどの系統の素材で組まれたか */
   tradition: Tradition
   minutes: number

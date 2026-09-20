@@ -3,7 +3,7 @@ import { FIGURE_BY_ID } from '../data/figures'
 import { MODERN_BY_ID } from '../data/modern'
 import { PHRASE_BY_ID } from '../data/shinshu/phrases'
 import { STORY_BY_ID } from '../data/stories'
-import type { Concept, Neta, NetaSection, Tradition } from '../data/types'
+import type { Concept, Neta, NetaMaterials, NetaSection, Tradition } from '../data/types'
 import { WORD_BY_ID } from '../data/words'
 import { SECTION } from './generate'
 import { hashString } from './random'
@@ -39,14 +39,23 @@ function conceptBlock(c: Concept, i: number, many: boolean): NetaSection {
 export function combineNetas(netas: Neta[]): Neta | null {
   if (netas.length < 2) return null
 
-  const concepts = uniq(netas.map((n) => n.materials.conceptId)).map((id) => CONCEPT_BY_ID[id])
-  const stories = uniq(netas.map((n) => n.materials.storyId)).map((id) => STORY_BY_ID[id])
-  const words = uniq(netas.map((n) => n.materials.wordId)).map((id) => WORD_BY_ID[id])
-  const figures = uniq(netas.map((n) => n.materials.figureId)).map((id) => FIGURE_BY_ID[id])
-  const phrases = uniq(netas.map((n) => n.materials.phraseId)).map((id) => PHRASE_BY_ID[id])
-  const moderns = uniq(netas.map((n) => n.materials.modernId)).map((id) => MODERN_BY_ID[id])
+  // 組んだものを、さらに組めるように。
+  // 組み合わせの案は materials に各種ひとつしか持てないので、
+  // もとの案の素材（sourceMaterials）があればそちらを開いて使う。
+  const mats: NetaMaterials[] = netas.flatMap((n) => n.sourceMaterials ?? [n.materials])
 
-  if (concepts.length === 0) return null
+  const allConcepts = uniq(mats.map((m) => m.conceptId)).map((id) => CONCEPT_BY_ID[id])
+  const stories = uniq(mats.map((m) => m.storyId)).map((id) => STORY_BY_ID[id])
+  const words = uniq(mats.map((m) => m.wordId)).map((id) => WORD_BY_ID[id])
+  const figures = uniq(mats.map((m) => m.figureId)).map((id) => FIGURE_BY_ID[id])
+  const phrases = uniq(mats.map((m) => m.phraseId)).map((id) => PHRASE_BY_ID[id])
+  const moderns = uniq(mats.map((m) => m.modernId)).map((id) => MODERN_BY_ID[id])
+
+  if (allConcepts.length === 0) return null
+  // 仏教のことばは、四つ五つと並べると聴き手が持ち帰れない。語るのは三つまで。
+  // （外したものも sourceMaterials に残るので、組み直しでは消えない）
+  const concepts = allConcepts.slice(0, 3)
+  const trimmed = allConcepts.length - concepts.length
 
   const terms = concepts.map((c) => c.term)
   const many = concepts.length > 1
@@ -95,9 +104,7 @@ export function combineNetas(netas: Neta[]): Neta | null {
     s(
       SECTION.kasanari,
       many
-        ? `${termList}——言い方は違いますが、${
-            terms.length > 2 ? 'いずれも' : 'どちらも'
-          }同じ一点を指しています。\n\n［ここに、ご自身が${
+        ? `${termList}——言い方は違いますが、重ねてみると、同じ一点が見えてくることがあります。\n\n［ここに、ご自身が${
             terms.length > 2 ? 'これらを' : 'この二つを'
           }どう重ねて見ているかを一言。うまくつながらなければ、無理に一つにせず、並べて置いたままでも構いません］`
         : `${termList}という一語を、二つの入口から見てみました。\n\n［ここに、ご自身がどちらの入口に立っているかを一言］`,
@@ -124,7 +131,17 @@ export function combineNetas(netas: Neta[]): Neta | null {
       `［つなぎ目は、ご自身の言葉で一言］`,
       ...steps.map((x, i) => (i === 0 ? `だから今日は、${nq(x)}。` : `あるいは、${nq(x)}。`)),
     ],
-    note: `もとにした案：${netas.map((n) => n.angleName).join('・')}（${netas.length}件）`,
+    // 組み合わせを組み直したときは「組み合わせ・組み合わせ」では手がかりにならないので、
+    // それぞれが何件から出来ているかを添える
+    note: `もとにした案：${netas
+      .map((x) =>
+        x.angleId === 'combine'
+          ? `組み合わせ（${(x.sourceMaterials ?? []).length}件）`
+          : x.angleName,
+      )
+      .join('・')}（${netas.length}件）${
+      trimmed > 0 ? `／ことばは三つまでに絞りました（ほかに${trimmed}語）` : ''
+    }`,
   }
 
   const traditions = netas.map((n) => n.tradition)
@@ -153,6 +170,8 @@ export function combineNetas(netas: Neta[]): Neta | null {
       modernId: moderns[0]?.id,
       phraseId: phrases[0]?.id,
     },
+    // さらに組み直せるように、もとの素材をそのまま持たせておく
+    sourceMaterials: mats,
     // 組み直したものは、一行では収まらない。
     // 掲示板・SNS（0分）の案どうしを重ねたときも、話す形として扱う。
     minutes: Math.max(...netas.map((x) => x.minutes)) || 3,

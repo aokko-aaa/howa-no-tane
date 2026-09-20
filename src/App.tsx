@@ -569,7 +569,7 @@ export default function App() {
       {tab === 'chart' && (
         <ChartView tradition={tradition} savedIds={savedIds} onSave={save} />
       )}
-      {tab === 'book' && <SavedView />}
+      {tab === 'book' && <SavedView onChange={setSavedIds} />}
       {tab === 'dict' && <DictView />}
 
       <footer className="mt-10 border-t border-stone-200 pt-4 text-xs leading-relaxed text-stone-500">

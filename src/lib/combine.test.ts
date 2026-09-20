@@ -114,6 +114,37 @@ describe('combineNetas', () => {
     }
   })
 
+  it('組んだものを、さらに組める（ネタ帳で溜めたものを重ねる）', () => {
+    const ab = combineNetas(results.slice(0, 2))!
+    const cd = combineNetas(results.slice(2, 4))!
+    const all = combineNetas([ab, cd])!
+    // もとの4案の仏教語が、素材としてすべて残っている
+    const want = results.slice(0, 4).map((n) => n.materials.conceptId)
+    const got = all.sourceMaterials!.map((m) => m.conceptId)
+    for (const id of want) expect(got, id).toContain(id)
+  })
+
+  it('組み直しても、出典と注意が落ちない', () => {
+    const chosen = results.slice(0, 4)
+    const ab = combineNetas(chosen.slice(0, 2))!
+    const cd = combineNetas(chosen.slice(2, 4))!
+    const all = combineNetas([ab, cd])!
+    for (const n of chosen) {
+      for (const src of n.sources) expect(all.sources).toContain(src)
+    }
+  })
+
+  it('語るのは仏教語三つまで（外したものは素材として残す）', () => {
+    const out = combineNetas(results.slice(0, 5))!
+    const shown = out.sections.filter((s) => s.label.startsWith(SECTION.kotoba))
+    expect(shown.length).toBeLessThanOrEqual(3)
+    const kept = new Set(out.sourceMaterials!.map((m) => m.conceptId))
+    for (const n of results.slice(0, 5)) {
+      expect(kept, n.title).toContain(n.materials.conceptId)
+    }
+    if (shown.length === 3) expect(out.digest!.note).toContain('三つまで')
+  })
+
   it('人の小ネタを含む案を重ねると、その人物も本文に残る', () => {
     const [hito] = generateNeta({ ...base, count: 1, pins: { angleId: 'hito' } })
     const out = combineNetas([hito, results[0]])!
