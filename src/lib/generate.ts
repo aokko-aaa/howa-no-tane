@@ -469,20 +469,23 @@ function takeUnused<T extends { id: string }>(
   rand: Rand,
   window = 6,
 ): T {
-  // 気持ちに当たっている素材があるうちは、その中からだけ選ぶ。
-  // （score ではなく match で見る。score は宗派の加点が入っていて、
-  //   気持ちに当たっていない素材でも正の値になり得るため）
-  // 書かれた文に当たった素材があれば、いちばんに採る。
-  // 次に気持ちに当たった素材。どちらも無ければ全体から。
+  // 順番に見る。
+  // 1) 書かれた文に当たった素材があるなら、1つでもそこからだけ選ぶ
+  //    （気持ちのタグで穴埋めすると、書いた一件と無関係の言葉が混ざる）
+  // 2) 無ければ、気持ちに当たった素材から
+  //    （score ではなく match で見る。score には宗派の加点が入っているため）
+  // 3) それも無ければ全体から
   const byText = ranked.filter((r) => r.hits > 0)
   const matched = ranked.filter((r) => r.match > 0)
-  const base = byText.length >= 2 ? byText : matched.length > 0 ? matched : ranked
+  const base = byText.length > 0 ? byText : matched.length > 0 ? matched : ranked
   const freshBase = base.filter((r) => !used.has(r.item.id))
   // 当たっている素材が尽きたら、同じものを使い回してでも枠の外には出ない。
   // （気持ちに合わない素材を出すくらいなら、同じ言葉で切り口を変えるほうがよい）
   const source = freshBase.length > 0 ? freshBase : base
   const pool = source.slice(0, Math.max(window, 3))
-  const chosen = pool[Math.floor(rand() * pool.length) % pool.length].item
+  // 前のほうを引きやすくする（よく当たっている素材から先に出す）
+  const i = Math.floor(pool.length * rand() * rand())
+  const chosen = pool[Math.min(i, pool.length - 1)].item
   used.add(chosen.id)
   return chosen
 }
@@ -512,7 +515,8 @@ function weighTradition<T extends { tradition?: Tradition }>(
  */
 const preferShinshu = <T extends { tradition?: Tradition }>(ranked: Ranked<T>[]) => {
   const fit = ranked.filter((r) => r.item.tradition === 'shinshu' && r.match > 0)
-  return fit.length > 0 ? fit : ranked
+  // 当たっている真宗の素材が1つしかないなら、そればかり並ぶので宗派の縛りを外す
+  return fit.length >= 2 ? fit : ranked
 }
 
 /** 真宗モードの結びに添える一句 */

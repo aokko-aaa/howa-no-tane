@@ -189,11 +189,37 @@ describe('書いた一件を入口にする', () => {
     }
   })
 
-  it('書いた文に出てくる語から、素材を選ぶ', () => {
-    const out = generateNeta({ ...base, text: typed, emotions: ['yorokobi'], count: 6 })
-    const ids = out.map((n) => n.materials.conceptId)
-    // 「諦め」「見つか」「たまたま」に当たる言葉が選ばれる
-    expect(ids.every((id) => ['akirameru', 'arigatashi', 'engi'].includes(id!))).toBe(true)
+  const hitsText = (id: string | undefined, text: string) => {
+    const c = CONCEPTS.find((x) => x.id === id)!
+    return [c.term, ...(c.keywords ?? [])].some((w) => w.length >= 2 && text.includes(w))
+  }
+
+  it.each([
+    ['診察券', typed],
+    [
+      '無くしもの',
+      '無くしものが出てきてうれしい 探していた時は見つからなかったのに ふとした時にでてきて気分が明るくなった。',
+    ],
+    ['仏滅', '結婚式の日取りを、仏滅だからと親に反対されて決められない'],
+  ])('%s の一件では、文に当たった言葉だけが出る', (_name, text) => {
+    // 気持ちのタグで穴埋めして、書いた一件と関係のない言葉を混ぜない
+    for (const n of generateNeta({ ...base, text, emotions: ['yorokobi'], count: 6 })) {
+      expect(hitsText(n.materials.conceptId, text), `${n.title}`).toBe(true)
+    }
+  })
+
+  // 語の付け間違い（「気分・機嫌・天気」が日日是好日ではなく前後際断に付いていた）を
+  // 早く見つけるための、文と言葉の対応の見本
+  it.each([
+    ['結婚式の日取りが仏滅だと親に反対された', 'ryouji-kichijitsu'],
+    ['雨で気分が沈む', 'nichinichi-kore-koujitsu'],
+    ['戒名のお布施はいくらかと聞かれた', 'houmyou'],
+    ['天国のおじいちゃんに会いたいと子どもが言う', 'ojodo'],
+    ['もう手放そうと思ったら、こだわっていた自分に気づいた', 'hougejaku'],
+    ['他力本願だと言われた', 'tariki-hongan'],
+  ])('「%s」では %s が出る', (text, conceptId) => {
+    const out = generateNeta({ ...base, text, emotions: [], count: 6 })
+    expect(out.map((n) => n.materials.conceptId)).toContain(conceptId)
   })
 
   it('入口は、内蔵の場面に差し替えられる', () => {

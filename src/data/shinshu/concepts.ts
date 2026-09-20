@@ -28,7 +28,7 @@ export const SHINSHU_CONCEPTS: Concept[] = [
     pivot: '親鸞聖人は「他力といふは如来の本願力なり」と定義された。他人の力ではなく、如来のはたらきのこと。誤用が広まったこと自体が、法話の入口になる。',
     step: '「他力本願」と誰かが口にしたら、本来の意味を一度だけ伝えてみる。',
     emotions: ['tsukare', 'mukuwarenai', 'jikokeno', 'ningenkankei'],
-    keywords: ['他力本願', '人任せ', '甘え'],
+    keywords: ['他力本願', '人任せ', '甘え', '自分の力では'],
     tradition: 'shinshu',
   },
   {
@@ -42,7 +42,7 @@ export const SHINSHU_CONCEPTS: Concept[] = [
     pivot: '「われにまかせよ、かならず救う」という如来の喚び声が、私の口から出てくださっている——と受け取るのが真宗の領解。称えるのは、答えているということ。',
     step: '手を合わせたとき、頼みごとを言わずに、ただ称えてみる。',
     emotions: ['fuan', 'kodoku', 'shi', 'wakare', 'tsukare', 'yasuragi'],
-    keywords: ['南無阿弥陀仏', '念仏', '手を合わ', 'お参り'],
+    keywords: ['南無阿弥陀仏', '念仏', '手を合わ', 'お参り', 'お願い', '拝ん'],
     caution: '名号の領解は先達によって言葉が異なる。自分の言葉に直して語ること。',
     tradition: 'shinshu',
   },
@@ -140,6 +140,7 @@ export const SHINSHU_CONCEPTS: Concept[] = [
     pivot: '「行者のはからひにあらず」。自然にしようとする私のはからいまで、向こうが引き受けている。なりゆき任せとは逆の、徹底した受け身。',
     step: '「うまくやろう」と思った場面を一つ、そのまま手放してみる。',
     emotions: ['tsukare', 'mayoi', 'aseri', 'yasuragi'],
+    keywords: ['ふと', '力を抜', 'はからい', 'いつのまにか', 'いつの間に', '気づいたら', '自然に'],
     tradition: 'shinshu',
   },
   {
@@ -218,7 +219,7 @@ export const SHINSHU_CONCEPTS: Concept[] = [
     pivot: '真宗の法要は、故人を助けるための追善ではなく、受けてきたものに気づいた者のお礼。差し引きではなく、気づきのほうが先にある。',
     step: '今日、返せそうにない恩を一つ数えて、そのままにしておく。',
     emotions: ['kansha', 'mukuwarenai', 'kazoku', 'wakare', 'zaiakukan'],
-    keywords: ['お礼', '恩', 'お返し', 'ありがた'],
+    keywords: ['お礼', '恩', 'お返し', 'ありがた', 'おかげ'],
     tradition: 'shinshu',
   },
   {
@@ -232,7 +233,7 @@ export const SHINSHU_CONCEPTS: Concept[] = [
     pivot: '真宗は、煩悩がなくなることを目標に置かない。具足＝そなわっているまま、救いの目当てにされている。直ってから来い、と言われていない。',
     step: '直らなかったことを一つ、責めずに書き留める。',
     emotions: ['jikokeno', 'zaiakukan', 'koukai', 'iraira', 'tsukare'],
-    keywords: ['また同じ', '反省', '直らな', 'つい'],
+    keywords: ['また同じ', '反省', '直らな', 'またやって'],
     tradition: 'shinshu',
   },
   {

@@ -66,7 +66,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     pivot: '本来は吉凶の話ではなく、原因と条件の話。運ではなく、条件をひとつ変えれば結果が変わるという教え。',
     step: 'うまくいかない一件について、変えられる条件をひとつだけ探す。',
     emotions: ['urami', 'ningenkankei', 'okane', 'mayoi', 'iraira'],
-    keywords: ['おかげ', 'たまたま', '偶然', 'めぐり', 'タイミング'],
+    keywords: ['おかげ', 'たまたま', '偶然', 'めぐり', 'タイミング', 'ふと', 'めぐりあわせ'],
   },
   {
     id: 'daini-no-ya',
@@ -79,7 +79,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     pivot: '一本目（起きた出来事）は受けてよい。仏教が止めるのは、自分で自分に撃ち込む二本目のほう。',
     step: '事実だけを一行書き、その下に「自分が足した言葉」を書き分ける。',
     emotions: ['ochikomi', 'koukai', 'jikokeno', 'iraira', 'zaiakukan'],
-    keywords: ['引きず', '反省', '思い出し', 'くよくよ'],
+    keywords: ['引きず', '反省', '思い出し', 'くよくよ', '思い出して'],
   },
   {
     id: 'sandoku',
@@ -216,6 +216,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     pivot: '雨を晴れに変える話ではなく、雨を雨のまま受け取れるかという話。好日は気分ではなく姿勢。',
     step: '今日を「よい・悪い」で採点するのを一日だけやめてみる。',
     emotions: ['yasuragi', 'tsukare', 'ochikomi', 'henka'],
+    keywords: ['気分', '機嫌', '天気', '雨の日'],
     tradition: 'zen',
   },
   {
@@ -269,6 +270,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     pivot: '捨てたという手柄まで捨てよ、という念押し。手放し方にこだわること自体が荷物になる。',
     step: '「もう気にしていない」と言いたくなったら、言わずにおく。',
     emotions: ['koukai', 'urami', 'tsukare', 'shounin'],
+    keywords: ['手放', '置いて', 'こだわ', '忘れよう', '諦めていた', 'やめたら'],
     tradition: 'zen',
   },
   {
@@ -322,7 +324,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     pivot: '止めるのは思考ではなく、事実と空想の混同。「これは起きたことか、考えただけか」と仕分ける作業になる。',
     step: '不安を書き出し、「事実」と「予想」に印をつける。',
     emotions: ['fuan', 'koukai', 'aseri', 'ochikomi'],
-    keywords: ['心配', '考えすぎ', '眠れな'],
+    keywords: ['心配', '考えすぎ', '眠れな', '取り越し'],
     tradition: 'zen',
   },
   {
@@ -388,7 +390,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     pivot: '他力は他人任せではなく、自力の限界を本当に知ったところでようやく働きはじめる力のこと。',
     step: '今日、人に任せていい仕事を一つだけ手放す。',
     emotions: ['tsukare', 'fuan', 'mukuwarenai', 'jikokeno'],
-    keywords: ['自分の力', 'おかげ', '助け', '支え'],
+    keywords: ['自分の力', 'おかげ', '助け', '支え', 'ひとりで', '力を抜', '助かっ'],
     tradition: 'shinshu',
   },
   {
@@ -516,7 +518,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     pivot: '難しいことが起きたという驚きが先にあって、感謝はその後から出てくる。順番を戻すと、言葉が生き返る。',
     step: '今日の「ありがとう」を一回だけ、「めったにないことです」と言い換えてみる。',
     emotions: ['kansha', 'yorokobi', 'wakare', 'yasuragi'],
-    keywords: ['ありがとう', 'めったに', '偶然', 'たまたま', '見つか', '出てき', '戻っ'],
+    keywords: ['ありがとう', 'めったに', '偶然', 'たまたま', '見つか', '出てき', '戻っ', 'でてき', 'ひょっこり', '無くし', 'なくし', '落とし', '忘れ物', '探し物'],
   },
   {
     id: 'akirameru',
@@ -529,7 +531,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     pivot: '諦は真実の意味。諦めるとは、できないことをできないと正確に見る力のこと。そこから初めて手が空く。',
     step: 'できないことを一つ、はっきり言葉にして人に伝える。',
     emotions: ['mayoi', 'koukai', 'tsukare', 'henka'],
-    keywords: ['諦め', 'あきらめ', '無理だ', 'もうだめ'],
+    keywords: ['諦め', 'あきらめ', '無理だ', 'もうだめ', '探しても', '見つからな', '探していた'],
     caution: '日本語「あきらめる」と仏教語「諦」の関係は語感の重なりとして語られる。語源説明として断定しすぎない。',
   },
   {
