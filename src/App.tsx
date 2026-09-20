@@ -64,7 +64,18 @@ export default function App() {
   const toggleReason = (id: string) =>
     setReasons((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
 
-  const run = (mode: 'new' | 'more') => {
+  /** 気持ちを選んだら、そのまま出す。押す手間を一つ減らす。 */
+  useEffect(() => {
+    if (effective.length === 0) return
+    const t = setTimeout(() => runWith('new', false), 300)
+    return () => clearTimeout(t)
+    // 気持ちと理由が変わったときだけ。文の入力中は走らせない。
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [emotions.join(','), reasons.join(','), sceneId, tradition, kojitsukeMax, month])
+
+  const run = (mode: 'new' | 'more') => runWith(mode, true)
+
+  const runWith = (mode: 'new' | 'more', scroll: boolean) => {
     const seed = Math.floor(Math.random() * 1e9)
     const next = generateNeta({
       text,
@@ -82,6 +93,7 @@ export default function App() {
     // 「もっと」のときは、いま足りた分の先頭へ。
     const anchorId = mode === 'more' ? next[0]?.id : undefined
     setResults((prev) => (mode === 'more' ? [...prev, ...next] : next))
+    if (!scroll) return
     requestAnimationFrame(() => {
       const target = anchorId
         ? document.getElementById(`neta-${anchorId}`)
@@ -190,7 +202,18 @@ export default function App() {
             />
           </section>
 
-          <section className="card flex flex-col gap-4 px-4 py-4">
+          <section className="card px-4 py-4">
+            <details>
+              <summary className="cursor-pointer text-sm">
+                <span className="font-bold">詳しい設定</span>
+                <span className="ml-2 text-xs text-stone-500">
+                  {tradition === 'otani' ? '真宗大谷派' : '宗派を問わない'}／
+                  {SCENES.find((x) => x.id === sceneId)?.label}／
+                  {kojitsukeMax === 1 ? '素直に' : kojitsukeMax === 2 ? 'ひとひねり' : '全開'}／{month}月
+                  {pinCount > 0 ? `／素材${pinCount}件` : ''}
+                </span>
+              </summary>
+              <div className="mt-3 flex flex-col gap-4">
             <div>
               <div className="label mb-2">どの教えで出す</div>
               <div className="flex flex-wrap gap-1.5">
@@ -410,7 +433,10 @@ export default function App() {
               )}
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
+              </div>
+            </details>
+
+            <div className="mt-3 flex flex-wrap items-center gap-2">
               <button type="button" className="btn-primary" onClick={() => run('new')}>
                 {pinCount > 0
                   ? `この条件で${results.length > 0 ? '探し直す' : '探す'}`
