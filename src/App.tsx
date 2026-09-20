@@ -12,6 +12,7 @@ import { PHRASES } from './data/shinshu/phrases'
 import { STORIES } from './data/stories'
 import { WORDS } from './data/words'
 import type { EmotionId, Neta, SceneId, TraditionMode } from './data/types'
+import { combineNetas } from './lib/combine'
 import { generateNeta, swapMaterial, type GenerateInput, type Pins } from './lib/generate'
 import { detectEmotions } from './lib/match'
 import { savedStore } from './lib/storage'
@@ -37,6 +38,9 @@ export default function App() {
   const [tradition, setTradition] = useState<TraditionMode>('otani')
   const [month, setMonth] = useState(new Date().getMonth() + 1)
   const [results, setResults] = useState<Neta[]>([])
+  const [picked, setPicked] = useState<string[]>([])
+  const [combined, setCombined] = useState<Neta | null>(null)
+  const combinedRef = useRef<HTMLElement>(null)
   const [pins, setPins] = useState<Pins>({})
   const resultsRef = useRef<HTMLElement>(null)
   const [openPins, setOpenPins] = useState(false)
@@ -92,6 +96,10 @@ export default function App() {
     // 「もっと」のときは、いま足りた分の先頭へ。
     const anchorId = mode === 'more' ? next[0]?.id : undefined
     setResults((prev) => (mode === 'more' ? [...prev, ...next] : next))
+    if (mode === 'new') {
+      setPicked([])
+      setCombined(null)
+    }
     if (!scroll) return
     requestAnimationFrame(() => {
       const target = anchorId
@@ -114,6 +122,24 @@ export default function App() {
     }
     const next = swapMaterial(neta, base, kind, Math.floor(Math.random() * 1e9))
     setResults((prev) => prev.map((n) => (n.id === neta.id ? next : n)))
+    // 入れ替えた案は別物なので、チェックと組み上がりは外す
+    setPicked((prev) => prev.filter((id) => id !== neta.id))
+    setCombined(null)
+  }
+
+  const togglePick = (id: string) =>
+    setPicked((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
+
+  /** チェックした案の素材を、一本の話に並べ直す */
+  const combine = () => {
+    // 並びは、画面に出ている順のまま（選んだ順に入れ替えると入口が定まらない）
+    const chosen = results.filter((n) => picked.includes(n.id))
+    const next = combineNetas(chosen)
+    setCombined(next)
+    if (!next) return
+    requestAnimationFrame(() => {
+      combinedRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
   }
 
   const save = (neta: Neta) => {
@@ -469,10 +495,28 @@ export default function App() {
             </div>
           </section>
 
+          {combined && (
+            <section ref={combinedRef} className="flex flex-col gap-2 scroll-mt-3">
+              <div className="flex flex-wrap items-baseline gap-x-2">
+                <h2 className="text-sm font-bold text-enji">組み合わせたもの</h2>
+                <p className="text-xs text-stone-500">
+                  つなぎ目の［　］だけ、ご自身の言葉で埋めてください
+                </p>
+              </div>
+              <NetaCard
+                neta={combined}
+                saved={savedIds.includes(combined.id)}
+                onSave={save}
+                defaultView="prose"
+              />
+            </section>
+          )}
+
           {results.length > 0 && (
             <section ref={resultsRef} className="flex flex-col gap-3 scroll-mt-3">
               <p className="text-xs text-stone-500">
                 違う入り方を{results.length}通り。ぴんと来なければ〈出し直す〉。
+                気になるものに〈組む〉を入れると、二つ以上をまとめて組み直せます。
               </p>
               {results.map((n) => (
                 <div key={n.id} id={`neta-${n.id}`} className="scroll-mt-3">
@@ -481,6 +525,8 @@ export default function App() {
                   saved={savedIds.includes(n.id)}
                   onSave={save}
                   onSwap={swap}
+                  picked={picked.includes(n.id)}
+                  onPick={togglePick}
                 />
                 </div>
               ))}
@@ -488,6 +534,34 @@ export default function App() {
                 別の切り口をもっと
               </button>
             </section>
+          )}
+
+          {picked.length > 0 && (
+            <div className="fixed inset-x-0 bottom-0 z-10 border-t border-stone-200 bg-white/95 px-4 py-2.5 backdrop-blur">
+              <div className="mx-auto flex max-w-3xl flex-wrap items-center gap-2">
+                <span className="text-sm">
+                  <span className="font-bold text-enji">{picked.length}件</span>を選んでいます
+                </span>
+                <button
+                  type="button"
+                  className="btn-primary"
+                  disabled={picked.length < 2}
+                  onClick={combine}
+                >
+                  {picked.length < 2 ? 'あと1件えらぶと組めます' : '組み合わせて一本にする'}
+                </button>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() => {
+                    setPicked([])
+                    setCombined(null)
+                  }}
+                >
+                  えらび直す
+                </button>
+              </div>
+            </div>
           )}
         </div>
       )}

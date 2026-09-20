@@ -16,6 +16,9 @@ type Props = {
   swapKinds?: ('modern' | 'angle')[]
   /** 一覧で見比べるときは要点から、読ませたいときは原稿から */
   defaultView?: View
+  /** 組み合わせ用のチェック（渡したときだけ出る） */
+  picked?: boolean
+  onPick?: (id: string) => void
   children?: React.ReactNode
 }
 
@@ -36,6 +39,8 @@ export default function NetaCard({
   onSwap,
   swapKinds = ['modern', 'angle'],
   defaultView = 'outline',
+  picked = false,
+  onPick,
   children,
 }: Props) {
   const hasOutline = (neta.digest?.steps.length ?? 0) > 0
@@ -69,8 +74,19 @@ export default function NetaCard({
   const structure = STRUCTURES.find((x) => x.id === view)
 
   return (
-    <article className="card overflow-hidden">
+    <article className={`card overflow-hidden ${picked ? 'ring-2 ring-enji/40' : ''}`}>
       <header className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-stone-100 bg-stone-50/70 px-4 py-2.5">
+        {onPick && (
+          <label className="flex cursor-pointer items-center gap-1.5 text-xs text-stone-600">
+            <input
+              type="checkbox"
+              checked={picked}
+              onChange={() => onPick(neta.id)}
+              className="h-4 w-4 accent-enji"
+            />
+            組む
+          </label>
+        )}
         <span className="rounded bg-matcha/10 px-2 py-0.5 text-xs font-bold text-matcha">
           {neta.angleName}
         </span>

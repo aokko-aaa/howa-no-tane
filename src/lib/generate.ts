@@ -38,6 +38,7 @@ export const SECTION = {
   tatoe: 'たとえ・逸話',
   hito: '人の話（小ネタ）',
   yurai: '身のまわりの出どころ',
+  kasanari: '重なるところ',
   zure: '視座のズレ',
   seken: '世間の見方',
   hotoke: '仏の見方',
