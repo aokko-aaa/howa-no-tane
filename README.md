@@ -2,6 +2,8 @@
 
 日常の気持ちを入口に、法話の切り口をまとめて出す下ごしらえ帳。
 
+**公開先: https://aokko-aaa.github.io/howa-no-tane/**
+
 ## つくりの考え方
 
 教義から降りていくのではなく、**一般の人が実際に立ち止まる場面**（既読がつかない、同級生の新築、免許返納…）から始めて、そこから仏教へ渡す。
@@ -59,4 +61,21 @@ npm run typecheck
 npm run build      # dist/ に静的ファイル
 ```
 
-ビルド結果は静的ファイルのみ。`vercel.json` を置いてあるのでそのまま配信できる。
+## デプロイ
+
+`main` に push すると GitHub Actions（`.github/workflows/deploy.yml`）が
+typecheck → test → build を通し、`dist/` を GitHub Pages に公開する。
+テストが落ちたらそこで止まるので、壊れたものは公開されない。
+
+- 配信は静的ファイルのみ。サーバーもAPIキーも使わない。
+- `vite.config.ts` の `base: './'` で相対パス出力にしてあるので、
+  `/howa-no-tane/` のようなサブディレクトリでも、独自ドメイン直下でも動く。
+- 初回のみ、リポジトリの Settings → Pages で Source が
+  **GitHub Actions** になっていることを確認する（ワークフローが自動で有効化を試みる）。
+- Vercel や Cloudflare Pages に載せる場合は、ビルド `npm run build` / 出力 `dist` を指定すればよい
+  （`vercel.json` は SPA 用の rewrite を入れてある）。
+
+## 出どころ
+
+もとは [aokko-aaa/sns-bg-maker](https://github.com/aokko-aaa/sns-bg-maker) の中で作ったものを、
+`git subtree split` でコミット履歴ごと切り出したリポジトリ。
