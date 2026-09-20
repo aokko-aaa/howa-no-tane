@@ -4,6 +4,7 @@ import { CONCEPTS } from './concepts'
 import { EMOTIONS } from './emotions'
 import { MODERNS } from './modern'
 import { OCCASIONS } from './occasions'
+import { REASONS, reasonsFor } from './reasons'
 import { MANNERS } from './shinshu/manners'
 import { PHRASES } from './shinshu/phrases'
 import { STORIES } from './stories'
@@ -106,6 +107,52 @@ describe('データの整合', () => {
       expect(c.misread.length, c.term).toBeGreaterThan(0)
       expect(c.pivot.length, c.term).toBeGreaterThan(0)
       expect(c.step.length, c.term).toBeGreaterThan(0)
+    }
+  })
+})
+
+describe('気持ちの一段下（なんで？）', () => {
+  const conceptIds = new Set(CONCEPTS.map((c) => c.id))
+
+  it('どの気持ちにも、掘る問いと選択肢がある', () => {
+    for (const e of EMOTIONS) {
+      expect(e.question.length, e.label).toBeGreaterThan(0)
+      expect(reasonsFor(e.id).length, e.label).toBeGreaterThanOrEqual(3)
+    }
+  })
+
+  it('理由のidが重複していない', () => {
+    const ids = Object.values(REASONS).flat().map((r) => r.id)
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+
+  it('理由が指す気持ちと仏教語が、すべて実在する', () => {
+    for (const r of Object.values(REASONS).flat()) {
+      for (const e of r.emotions) expect(emotionIds.has(e), `${r.label} / ${e}`).toBe(true)
+      for (const c of r.concepts ?? []) expect(conceptIds.has(c), `${r.label} / ${c}`).toBe(true)
+    }
+  })
+
+  it('理由は、その気持ち自身を足し込まない（掘り下げにならないため）', () => {
+    for (const [emotionId, list] of Object.entries(REASONS)) {
+      for (const r of list) {
+        expect(r.emotions, `${emotionId} / ${r.label}`).not.toContain(emotionId)
+      }
+    }
+  })
+
+  it('理由に紐づく仏教語は、その気持ちか理由の気持ちに当たっている', () => {
+    for (const [emotionId, list] of Object.entries(REASONS)) {
+      for (const r of list) {
+        const tags = new Set([emotionId, ...r.emotions])
+        for (const id of r.concepts ?? []) {
+          const c = CONCEPTS.find((x) => x.id === id)!
+          expect(
+            c.emotions.some((e) => tags.has(e)),
+            `${emotionId} / ${r.label} / ${c.term}`,
+          ).toBe(true)
+        }
+      }
     }
   })
 })

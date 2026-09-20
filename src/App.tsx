@@ -7,6 +7,7 @@ import NetaCard from './components/NetaCard'
 import SavedView from './components/SavedView'
 import { ANGLES, SCENES } from './data/angles'
 import { CONCEPTS } from './data/concepts'
+import { reasonsFor } from './data/reasons'
 import { PHRASES } from './data/shinshu/phrases'
 import { STORIES } from './data/stories'
 import { WORDS } from './data/words'
@@ -31,6 +32,7 @@ export default function App() {
   const [tab, setTab] = useState<Tab>('make')
   const [text, setText] = useState('')
   const [emotions, setEmotions] = useState<EmotionId[]>([])
+  const [reasons, setReasons] = useState<string[]>([])
   const [sceneId, setSceneId] = useState<SceneId>('howakai')
   const [kojitsukeMax, setKojitsukeMax] = useState<1 | 2 | 3>(2)
   const [tradition, setTradition] = useState<TraditionMode>('otani')
@@ -52,8 +54,14 @@ export default function App() {
   const setPin = (key: keyof Pins, value: string) =>
     setPins((prev) => ({ ...prev, [key]: value || undefined }))
 
-  const toggle = (id: EmotionId) =>
+  const toggle = (id: EmotionId) => {
     setEmotions((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
+    // 気持ちを外したら、その下で選んでいた理由も外す
+    setReasons((prev) => prev.filter((r) => !reasonsFor(id).some((x) => x.id === r)))
+  }
+
+  const toggleReason = (id: string) =>
+    setReasons((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
 
   const run = (mode: 'new' | 'more') => {
     const seed = Math.floor(Math.random() * 1e9)
@@ -64,6 +72,7 @@ export default function App() {
       month,
       kojitsukeMax,
       tradition,
+      reasonIds: reasons,
       seed,
       count: BATCH,
       pins,
@@ -81,6 +90,7 @@ export default function App() {
       month,
       kojitsukeMax,
       tradition,
+      reasonIds: reasons,
     }
     const next = swapMaterial(neta, base, kind, Math.floor(Math.random() * 1e9))
     setResults((prev) => prev.map((n) => (n.id === neta.id ? next : n)))
@@ -151,7 +161,13 @@ export default function App() {
 
           <section className="card px-4 py-4">
             <div className="label mb-2">気持ち（いくつでも）</div>
-            <EmotionPicker selected={emotions} onToggle={toggle} detected={detected} />
+            <EmotionPicker
+              selected={emotions}
+              onToggle={toggle}
+              detected={detected}
+              reasons={reasons}
+              onToggleReason={toggleReason}
+            />
           </section>
 
           <section className="card flex flex-col gap-4 px-4 py-4">

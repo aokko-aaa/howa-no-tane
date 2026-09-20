@@ -285,7 +285,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     misread: '「与えられた場所で咲きなさい」という我慢のすすめに聞こえる。',
     pivot: '置かれた場所を肯定する話ではなく、どこにいても客のままでいるな、という促し。主になるかどうかは自分が決める。',
     step: '今の持ち場で、自分の判断で決めていいことを一つ見つける。',
-    emotions: ['mukuwarenai', 'isogashii', 'henka', 'munashisa'],
+    emotions: ['mukuwarenai', 'isogashii', 'henka', 'munashisa', 'tassei'],
     tradition: 'zen',
   },
   {
@@ -571,7 +571,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     misread: '「今年こそ頑張るぞ」という決意表明の言葉になっている。',
     pivot: 'もとは悟りを求める心を起こすこと。大きな決意より、向きを変えた最初の一歩を指す。',
     step: '目標ではなく、明日の最初の三分の行動だけを決める。',
-    emotions: ['hajimari', 'mayoi', 'tassei', 'aseri'],
+    emotions: ['hajimari', 'mayoi', 'tassei', 'aseri', 'jikokeno'],
   },
 ]
 

@@ -2,6 +2,7 @@ import { ANGLES, ANGLE_BY_ID, SCENE_BY_ID } from '../data/angles'
 import { CONCEPTS, CONCEPT_BY_ID } from '../data/concepts'
 import { EMOTION_BY_ID } from '../data/emotions'
 import { MODERNS, MODERN_BY_ID } from '../data/modern'
+import { REASON_BY_ID } from '../data/reasons'
 import { OCCASIONS } from '../data/occasions'
 import { MANNERS } from '../data/shinshu/manners'
 import { PHRASES, PHRASE_BY_ID } from '../data/shinshu/phrases'
@@ -58,6 +59,8 @@ export type GenerateInput = {
   kojitsukeMax: 1 | 2 | 3
   /** 'otani' で真宗大谷派の素材と切り口を優先する */
   tradition: TraditionMode
+  /** 気持ちの一段下（「なんで？」で選んだ理由） */
+  reasonIds?: string[]
   seed: number
   count: number
   /** 名指しで指定された素材・切り口（条件検索） */
@@ -523,16 +526,28 @@ function mannerFor(scene: Scene, rand: Rand): Manner {
 }
 
 export function generateNeta(input: GenerateInput): Neta[] {
-  const rand = mulberry32(input.seed ^ hashString(input.text + input.emotions.join(',')))
+  const rand = mulberry32(
+    input.seed ^ hashString(input.text + input.emotions.join(',') + (input.reasonIds ?? []).join(',')),
+  )
   const scene = SCENE_BY_ID[input.sceneId] ?? SCENE_BY_ID.howakai
   const mode = input.tradition
+
+  // 「なんで？」で選んだ理由を、気持ちに足し込む。
+  // 理由に紐づく仏教語は、とくに当たりやすいものとして前に出す。
+  const reasons = (input.reasonIds ?? []).map((id) => REASON_BY_ID[id]).filter(Boolean)
+  const emotions = Array.from(
+    new Set([...input.emotions, ...reasons.flatMap((r) => r.emotions)]),
+  )
+  const preferred = new Set(reasons.flatMap((r) => r.concepts ?? []))
+
   const emotionLabels = input.emotions.map((id) => EMOTION_BY_ID[id]?.label).filter(Boolean)
+  const reasonLabels = reasons.map((r) => r.label)
   const primaryLabel = emotionLabels[0] ?? 'そのざわつき'
 
   const rankedConcepts = weighTradition(
     rankItems(
       CONCEPTS,
-      input.emotions,
+      emotions,
       input.text,
       (x) => x.emotions,
       (x) => [x.term, ...(x.keywords ?? [])],
@@ -542,7 +557,7 @@ export function generateNeta(input: GenerateInput): Neta[] {
   const rankedStories = weighTradition(
     rankItems(
       STORIES,
-      input.emotions,
+      emotions,
       input.text,
       (x) => x.emotions,
       (x) => [x.title],
@@ -552,7 +567,7 @@ export function generateNeta(input: GenerateInput): Neta[] {
   const rankedWords = weighTradition(
     rankItems(
       WORDS,
-      input.emotions,
+      emotions,
       input.text,
       (x) => x.emotions,
       (x) => [x.word],
@@ -561,14 +576,14 @@ export function generateNeta(input: GenerateInput): Neta[] {
   )
   const rankedModerns = rankItems(
     MODERNS.filter((m) => !(m.avoidScenes ?? []).includes(scene.id)),
-    input.emotions,
+    emotions,
     input.text,
     (x) => x.emotions,
     (x) => [x.scene, ...(x.keywords ?? [])],
   )
   const rankedPhrases = rankItems(
     PHRASES,
-    input.emotions,
+    emotions,
     input.text,
     (x) => x.emotions,
     (x) => [x.text, x.source],
@@ -587,7 +602,7 @@ export function generateNeta(input: GenerateInput): Neta[] {
   // 御文・歎異抄の切り口は、その出典に気持ちへ当たる一句があるときだけ出す。
   // （無いまま出すと、話の筋と関係のない一句を読み上げることになる）
   const hasFitPhrase = (source: string) =>
-    input.emotions.length === 0 ||
+    emotions.length === 0 ||
     rankedPhrases.some((r) => r.match > 0 && r.item.source.includes(source))
   const PHRASE_SOURCE: Record<string, string> = { ofumi: '御文', tannisho: '歎異抄' }
 
@@ -613,6 +628,17 @@ export function generateNeta(input: GenerateInput): Neta[] {
         )
       : shuffle(usable, rand)
 
+  const rankedConceptsByReason =
+    preferred.size > 0
+      ? rankedConcepts
+          .map((r) =>
+            preferred.has(r.item.id)
+              ? { ...r, score: r.score + 12, match: Math.max(r.match, 1) }
+              : r,
+          )
+          .sort((a, b) => b.score - a.score)
+      : rankedConcepts
+
   const usedConcept = new Set<string>()
   const usedStory = new Set<string>()
   const usedWord = new Set<string>()
@@ -626,7 +652,9 @@ export function generateNeta(input: GenerateInput): Neta[] {
     const shinshuAngle = angle.tradition === 'shinshu'
 
     // 真宗の切り口には真宗の素材を当てる（足りなければ全体から）
-    const conceptPool = shinshuAngle ? preferShinshu(rankedConcepts) : rankedConcepts
+    const conceptPool = shinshuAngle
+      ? preferShinshu(rankedConceptsByReason)
+      : rankedConceptsByReason
     const wordPool = shinshuAngle ? preferShinshu(rankedWords) : rankedWords
     const storyPool = shinshuAngle ? preferShinshu(rankedStories) : rankedStories
     const occasionPoolForAngle = shinshuAngle
@@ -755,7 +783,9 @@ export function generateNeta(input: GenerateInput): Neta[] {
     const digest = {
       summary:
         emotionLabels.length > 0
-          ? `${emotionLabels.join('・')}——というときに。${ctx.concept.oneLine}`
+          ? `${emotionLabels.join('・')}${
+              reasonLabels.length > 0 ? `（${reasonLabels.join('・')}）` : ''
+            }——というときに。${ctx.concept.oneLine}`
           : ctx.concept.oneLine,
       steps,
       note: `入口：${ctx.modern.scene}（ご自身の一件に差し替え可）／${

@@ -21,6 +21,21 @@ export type Emotion = {
   plain: string
   /** 自由記述から拾うための語 */
   keywords: string[]
+  /** 一段掘るときの問いかけ（「なんで？」「何が？」など） */
+  question: string
+}
+
+/**
+ * 気持ちの一段下。「イライラする」だけでは当てようがないので、
+ * 「なんで？」まで降りてから素材を選ぶための枝。
+ */
+export type Reason = {
+  id: string
+  label: string
+  /** この理由で足される気持ち */
+  emotions: EmotionId[]
+  /** とくに当たりやすい仏教語 */
+  concepts?: string[]
 }
 
 /** 仏教語・教義 */

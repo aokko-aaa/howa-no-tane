@@ -4,6 +4,7 @@ import { CONCEPTS } from '../data/concepts'
 import { EMOTIONS } from '../data/emotions'
 import { PHRASES } from '../data/shinshu/phrases'
 import { MODERNS } from '../data/modern'
+import { REASON_BY_ID } from '../data/reasons'
 import type { EmotionId } from '../data/types'
 import { toOutline, toProse, toScript } from './format'
 import { generateNeta, SECTION, swapMaterial, type GenerateInput } from './generate'
@@ -171,6 +172,63 @@ describe('選んだ気持ちから外れない', () => {
       (n) => CONCEPTS.find((x) => x.id === n.materials.conceptId)?.tradition === 'shinshu',
     )
     expect(shinshu.length).toBeGreaterThanOrEqual(4)
+  })
+})
+
+describe('気持ちの一段下（なんで？）', () => {
+  it('理由を選ぶと、ひとことにそれが出る', () => {
+    const n = generateNeta({
+      ...base,
+      emotions: ['iraira'],
+      reasonIds: ['iraira-hito'],
+      count: 1,
+    })[0]
+    expect(n.digest!.summary).toContain('イライラする')
+    expect(n.digest!.summary).toContain('あの人が許せない')
+  })
+
+  it('理由に紐づく言葉が、実際に前へ出てくる', () => {
+    const out = generateNeta({
+      ...base,
+      emotions: ['iraira'],
+      reasonIds: ['iraira-hito'],
+      count: 6,
+    })
+    const ids = out.map((n) => n.materials.conceptId)
+    const preferred = REASON_BY_ID['iraira-hito'].concepts!
+    expect(ids.some((id) => preferred.includes(id!))).toBe(true)
+  })
+
+  it('理由で足された気持ちが、素材の選び方に効く', () => {
+    const withReason = generateNeta({
+      ...base,
+      emotions: ['fuan'],
+      reasonIds: ['fuan-okane'],
+      count: 6,
+    })
+    // お金の心配が足されるので、お金に当たる言葉や場面が入ってくる
+    const hit = withReason.some((n) => {
+      const c = CONCEPTS.find((x) => x.id === n.materials.conceptId)!
+      const m = MODERNS.find((x) => x.id === n.materials.modernId)!
+      return c.emotions.includes('okane') || m.emotions.includes('okane')
+    })
+    expect(hit).toBe(true)
+  })
+
+  it('理由が違えば、別の案になる', () => {
+    const a = generateNeta({ ...base, emotions: ['fuan'], reasonIds: ['fuan-okane'], count: 6 })
+    const b = generateNeta({ ...base, emotions: ['fuan'], reasonIds: ['fuan-kenkou'], count: 6 })
+    expect(a.map((n) => n.materials.conceptId)).not.toEqual(b.map((n) => n.materials.conceptId))
+  })
+
+  it('理由を選ばなくても、これまでどおり出る', () => {
+    expect(generateNeta({ ...base, emotions: ['fuan'], count: 6 })).toHaveLength(6)
+    expect(generateNeta({ ...base, emotions: ['fuan'], reasonIds: [], count: 6 })).toHaveLength(6)
+  })
+
+  it('知らない理由idが混ざっても落ちない', () => {
+    const out = generateNeta({ ...base, emotions: ['fuan'], reasonIds: ['nope'], count: 3 })
+    expect(out).toHaveLength(3)
   })
 })
 
