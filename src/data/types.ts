@@ -170,6 +170,8 @@ export type Neta = {
   sections: NetaSection[]
   /** ひと目で中身が分かる要点。読み上げる文ではなく、名詞で並べる */
   outline?: string[]
+  /** その場で入れ替えられる候補（入口の場面・切り口） */
+  alternatives?: { modernIds: string[]; angleIds: string[] }
   sources: string[]
   cautions: string[]
   materials: {

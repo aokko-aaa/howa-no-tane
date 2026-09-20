@@ -5,7 +5,7 @@ import { PHRASES } from '../data/shinshu/phrases'
 import { MODERNS } from '../data/modern'
 import type { EmotionId } from '../data/types'
 import { toOutline, toProse, toScript } from './format'
-import { generateNeta, SECTION, type GenerateInput } from './generate'
+import { generateNeta, SECTION, swapMaterial, type GenerateInput } from './generate'
 import { detectEmotions } from './match'
 
 const base: GenerateInput = {
@@ -180,6 +180,59 @@ describe('要点（箇条書き）', () => {
   it('掲示板の案にも要点がつく', () => {
     for (const n of generateNeta({ ...base, sceneId: 'keijiban', count: 3 })) {
       expect(n.outline!.join('\n')).toContain('尺：掲示板のことば（一行）')
+    }
+  })
+})
+
+describe('入口と切り口の入れ替え', () => {
+  const rest = (({ pins: _p, count: _c, seed: _s, ...r }) => r)({ ...base })
+
+  it('どの案にも、入口と切り口の差し替え候補がつく', () => {
+    for (const n of generateNeta({ ...base, count: 6 })) {
+      expect(n.alternatives!.modernIds.length).toBeGreaterThan(1)
+      expect(n.alternatives!.angleIds.length).toBeGreaterThan(1)
+      expect(n.alternatives!.modernIds[0]).toBe(n.materials.modernId)
+      expect(n.alternatives!.angleIds[0]).toBe(n.angleId)
+    }
+  })
+
+  it('入口を変えても、ことば・喩え・切り口は変わらない', () => {
+    const n = generateNeta({ ...base, count: 1 })[0]
+    const next = swapMaterial(n, rest, 'modern', 42)
+    expect(next.materials.modernId).not.toBe(n.materials.modernId)
+    expect(next.materials.conceptId).toBe(n.materials.conceptId)
+    expect(next.angleId).toBe(n.angleId)
+    expect(next.id).not.toBe(n.id)
+  })
+
+  it('切り口を変えても、ことばは変わらない', () => {
+    const n = generateNeta({ ...base, count: 1 })[0]
+    const next = swapMaterial(n, rest, 'angle', 42)
+    expect(next.angleId).not.toBe(n.angleId)
+    expect(next.materials.conceptId).toBe(n.materials.conceptId)
+  })
+
+  it('押すたびに候補を順に回り、元に戻ってくる', () => {
+    let n = generateNeta({ ...base, count: 1 })[0]
+    const first = n.materials.modernId
+    const seen = new Set<string>([first!])
+    for (let i = 0; i < n.alternatives!.modernIds.length - 1; i++) {
+      n = swapMaterial(n, rest, 'modern', 100 + i)
+      seen.add(n.materials.modernId!)
+    }
+    expect(seen.size).toBe(n.alternatives!.modernIds.length)
+    n = swapMaterial(n, rest, 'modern', 999)
+    expect(n.materials.modernId).toBe(first)
+  })
+
+  it('要点には、自分の一件に差し替えてよいと書いてある', () => {
+    const n = generateNeta({ ...base, count: 1 })[0]
+    expect(n.outline!.find((l) => l.startsWith('入口：'))).toContain('ご自身の一件に差し替え可')
+  })
+
+  it('要点に切り口の指定を並べない（見出しの札で足りる）', () => {
+    for (const n of generateNeta({ ...base, count: 6 })) {
+      expect(n.outline!.some((l) => l.startsWith('切り口：'))).toBe(false)
     }
   })
 })

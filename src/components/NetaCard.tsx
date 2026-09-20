@@ -9,6 +9,10 @@ type Props = {
   saved: boolean
   onSave: (neta: Neta) => void
   onRemove?: (id: string) => void
+  /** 入口の場面・切り口を、その場で次の候補に入れ替える */
+  onSwap?: (neta: Neta, kind: 'modern' | 'angle') => void
+  /** 入れ替えられるもの（ニュースからの案は入口が見出しなので切り口だけ） */
+  swapKinds?: ('modern' | 'angle')[]
   /** 一覧で見比べるときは要点から、読ませたいときは原稿から */
   defaultView?: View
   children?: React.ReactNode
@@ -34,6 +38,8 @@ export default function NetaCard({
   saved,
   onSave,
   onRemove,
+  onSwap,
+  swapKinds = ['modern', 'angle'],
   defaultView = 'outline',
   children,
 }: Props) {
@@ -141,6 +147,22 @@ export default function NetaCard({
                   ))}
                 </ul>
               </div>
+            )}
+          </div>
+        )}
+
+        {open && onSwap && (neta.alternatives?.modernIds.length ?? 0) > 1 && (
+          <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg bg-stone-50 px-3 py-2">
+            <span className="label">しっくり来なければ</span>
+            {swapKinds.includes('modern') && (
+              <button type="button" className="chip" onClick={() => onSwap(neta, 'modern')}>
+                入口を変える
+              </button>
+            )}
+            {swapKinds.includes('angle') && (
+              <button type="button" className="chip" onClick={() => onSwap(neta, 'angle')}>
+                切り口を変える
+              </button>
             )}
           </div>
         )}

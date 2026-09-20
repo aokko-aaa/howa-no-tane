@@ -1,7 +1,7 @@
 import { ANGLES, ANGLE_BY_ID, SCENE_BY_ID } from '../data/angles'
 import { CONCEPTS, CONCEPT_BY_ID } from '../data/concepts'
 import { EMOTION_BY_ID } from '../data/emotions'
-import { MODERNS } from '../data/modern'
+import { MODERNS, MODERN_BY_ID } from '../data/modern'
 import { OCCASIONS } from '../data/occasions'
 import { MANNERS } from '../data/shinshu/manners'
 import { PHRASES, PHRASE_BY_ID } from '../data/shinshu/phrases'
@@ -67,6 +67,7 @@ export type GenerateInput = {
 /** 「この言葉で」「この一句で」「この切り口で」と指定するための条件 */
 export type Pins = {
   angleId?: string
+  modernId?: string
   conceptId?: string
   phraseId?: string
   storyId?: string
@@ -626,7 +627,9 @@ export function generateNeta(input: GenerateInput): Neta[] {
       primaryLabel,
       userText: input.text,
       // 入口も、選んだ教義と同じ気持ちのものに寄せる
-      modern: takeUnused(alignTo(rankedModerns), usedModern, rand, 8),
+      modern:
+        (pins.modernId ? MODERN_BY_ID[pins.modernId] : undefined) ??
+        takeUnused(alignTo(rankedModerns), usedModern, rand, 8),
       concept,
       story: (pins.storyId ? STORY_BY_ID[pins.storyId] : undefined) ?? takeUnused(alignTo(storyPool), usedStory, rand, 6),
       word: (pins.wordId ? WORD_BY_ID[pins.wordId] : undefined) ?? takeUnused(alignTo(wordPool), usedWord, rand, 6),
@@ -687,10 +690,16 @@ export function generateNeta(input: GenerateInput): Neta[] {
     }
 
     // 一覧で見比べるための要点。声に出す文ではなく、素材を名詞で並べる。
+    // 入口の差し替え候補（同じ気持ちに当たっている場面）
+    const modernAlts = alignTo(rankedModerns)
+      .slice(0, 6)
+      .map((r) => r.item.id)
+      .filter((id) => id !== ctx.modern.id)
+    const angleAlts = usable.map((x) => x.id).filter((id) => id !== angle.id)
+
     const outline: string[] = [
-      `入口：${ctx.modern.scene}`,
+      `入口：${ctx.modern.scene}　※ご自身の一件に差し替え可`,
       ...(emotionLabels.length > 0 ? [`気持ち：${emotionLabels.join('・')}`] : []),
-      `切り口：${angle.name}（${angle.aim}）`,
       ...(built.uses.phrase ? [`一句：${short(ctx.phrase.text, 24)}／${ctx.phrase.source}`] : []),
       ...(built.uses.word ? [`語源：${ctx.word.word}＝${nq(ctx.word.origin)}`] : []),
       `ことば：${ctx.concept.term}＝${nq(ctx.concept.oneLine)}`,
@@ -715,6 +724,7 @@ export function generateNeta(input: GenerateInput): Neta[] {
       title: scene.minutes === 0 ? `${ctx.concept.term} — ${ctx.modern.scene}` : built.title,
       sections,
       outline,
+      alternatives: { modernIds: [ctx.modern.id, ...modernAlts], angleIds: [angle.id, ...angleAlts] },
       sources,
       cautions,
       materials: {
@@ -730,6 +740,35 @@ export function generateNeta(input: GenerateInput): Neta[] {
     })
   }
   return out
+}
+
+/** 条件はそのままに、入口の場面／切り口だけを次の候補に入れ替える */
+export function swapMaterial(
+  neta: Neta,
+  base: Omit<GenerateInput, 'pins' | 'count' | 'seed'>,
+  kind: 'modern' | 'angle',
+  seed: number,
+): Neta {
+  const alts = kind === 'modern' ? neta.alternatives?.modernIds : neta.alternatives?.angleIds
+  if (!alts || alts.length < 2) return neta
+  const current = kind === 'modern' ? neta.materials.modernId : neta.angleId
+  const next = alts[(Math.max(0, alts.indexOf(current ?? '')) + 1) % alts.length]
+
+  const pins: Pins = {
+    angleId: kind === 'angle' ? next : neta.angleId,
+    modernId: kind === 'modern' ? next : neta.materials.modernId,
+    conceptId: neta.materials.conceptId,
+    storyId: neta.materials.storyId,
+    wordId: neta.materials.wordId,
+    phraseId: neta.materials.phraseId,
+  }
+  const [out] = generateNeta({ ...base, seed, count: 1, pins })
+  return {
+    ...out,
+    id: `${neta.id}-${kind}${seed}`,
+    // 候補の並びは元のものを保って、押すたびに順に回るようにする
+    alternatives: neta.alternatives,
+  }
 }
 
 export type { Concept, Story, Word, Modern, Phrase, Manner, Scene }

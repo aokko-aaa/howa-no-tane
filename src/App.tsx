@@ -11,7 +11,7 @@ import { PHRASES } from './data/shinshu/phrases'
 import { STORIES } from './data/stories'
 import { WORDS } from './data/words'
 import type { EmotionId, Neta, SceneId, TraditionMode } from './data/types'
-import { generateNeta, type Pins } from './lib/generate'
+import { generateNeta, swapMaterial, type GenerateInput, type Pins } from './lib/generate'
 import { detectEmotions } from './lib/match'
 import { savedStore } from './lib/storage'
 
@@ -70,6 +70,20 @@ export default function App() {
     })
     setResults((prev) => (mode === 'more' ? [...prev, ...next] : next))
     if (mode === 'new') window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  /** 入口や切り口が自分に合わないとき、その場で次の候補に差し替える */
+  const swap = (neta: Neta, kind: 'modern' | 'angle') => {
+    const base: Omit<GenerateInput, 'pins' | 'count' | 'seed'> = {
+      text,
+      emotions: effective,
+      sceneId,
+      month,
+      kojitsukeMax,
+      tradition,
+    }
+    const next = swapMaterial(neta, base, kind, Math.floor(Math.random() * 1e9))
+    setResults((prev) => prev.map((n) => (n.id === neta.id ? next : n)))
   }
 
   const save = (neta: Neta) => {
@@ -389,6 +403,7 @@ export default function App() {
                   neta={n}
                   saved={savedIds.includes(n.id)}
                   onSave={save}
+                  onSwap={swap}
                 />
               ))}
               <button type="button" className="btn-ghost self-start" onClick={() => run('more')}>

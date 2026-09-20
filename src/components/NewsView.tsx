@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { NewsTopic } from '../data/news'
 import { NEWS_TOPICS } from '../data/news'
 import type { Neta, SceneId, TraditionMode } from '../data/types'
-import { generateNeta } from '../lib/generate'
+import { generateNeta, swapMaterial, type GenerateInput } from '../lib/generate'
 import {
   applyNewsLead,
   classifyHeadline,
@@ -74,6 +74,22 @@ export default function NewsView({
     })
     setPicked({ headline, topic })
     setResults(applyNewsLead(netas, headline, topic))
+  }
+
+  const swap = (neta: Neta, kind: 'modern' | 'angle') => {
+    if (!picked) return
+    const topics = classifyHeadline(picked.headline)
+    const base: Omit<GenerateInput, 'pins' | 'count' | 'seed'> = {
+      text: picked.headline,
+      emotions: emotionsFromHeadline(picked.headline, topics),
+      sceneId,
+      month,
+      kojitsukeMax,
+      tradition,
+    }
+    const swapped = swapMaterial(neta, base, kind, Math.floor(Math.random() * 1e9))
+    const [next] = applyNewsLead([swapped], picked.headline, picked.topic)
+    setResults((prev) => prev.map((n) => (n.id === neta.id ? next : n)))
   }
 
   return (
@@ -210,7 +226,14 @@ export default function NewsView({
             )}
           </div>
           {results.map((n) => (
-            <NetaCard key={n.id} neta={n} saved={savedIds.includes(n.id)} onSave={onSave} />
+            <NetaCard
+              key={n.id}
+              neta={n}
+              saved={savedIds.includes(n.id)}
+              onSave={onSave}
+              onSwap={swap}
+              swapKinds={['angle']}
+            />
           ))}
         </section>
       )}

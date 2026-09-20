@@ -70,10 +70,14 @@ export function applyNewsLead(netas: Neta[], headline: string, topic?: NewsTopic
       }
       return sec
     })
+    const outline = (n.outline ?? []).map((line) =>
+      line.startsWith('入口：') ? `入口：${headline}（今日の話題）` : line,
+    )
     return {
       ...n,
       title: topic ? `${topic.label} — ${n.title}` : n.title,
       sections,
+      outline,
       cautions: [
         NEWS_CAUTION,
         ...(topic?.caution ? [`${topic.label}：${topic.caution}`] : []),
