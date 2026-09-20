@@ -11,7 +11,7 @@ const GENERAL_WORDS: Word[] = [
     origin: '七慢のひとつ。自分に執着し、他人より上だと思い上がる心。',
     now: '耐えること、辛抱すること。美徳として使われる。',
     gap: 'もとは褒め言葉ではなく、煩悩の名前だった。「我慢が足りない」と責められてきた人の肩の力が抜ける。',
-    emotions: ['tsukare', 'iraira', 'mukuwarenai', 'jikokeno'],
+    emotions: ['tsukare', 'iraira', 'mukuwarenai', 'jikokeno', 'urami'],
   },
   {
     id: 'uchouten',
@@ -20,7 +20,7 @@ const GENERAL_WORDS: Word[] = [
     origin: '天界のいちばん上、有頂天（非想非非想処）。それでも輪廻の内側で、そこから落ちる。',
     now: '舞い上がって我を忘れている状態。',
     gap: '仏教はいちばん上まで昇った先まで見ている。頂上も通過点だという設計になっている。',
-    emotions: ['yorokobi', 'tassei', 'shounin', 'hikaku'],
+    emotions: ['yorokobi', 'tassei', 'shounin', 'hikaku', 'shitto'],
   },
   {
     id: 'okkuu',
@@ -29,7 +29,7 @@ const GENERAL_WORDS: Word[] = [
     origin: '「劫」は気の遠くなるほど長い時間の単位。その一億倍。',
     now: '面倒くさい。',
     gap: '面倒だと感じているあの一瞬を、仏教は一億劫という尺度で言い表した。体感時間の話として笑いが取れる。',
-    emotions: ['tsukare', 'isogashii', 'ochikomi'],
+    emotions: ['tsukare', 'isogashii', 'ochikomi', 'jikokeno', 'aseri'],
   },
   {
     id: 'daijoubu',
@@ -56,7 +56,7 @@ const GENERAL_WORDS: Word[] = [
     origin: '三毒のひとつ「痴」。物事の道理がわからない状態。',
     now: '言っても仕方のないことを、くどくど言うこと。',
     gap: 'もとは「言う」ことではなく「見えていない」こと。愚痴を言うなではなく、何が見えていないのかを一緒に探す方向へ話を開ける。',
-    emotions: ['iraira', 'mukuwarenai', 'ningenkankei', 'tsukare'],
+    emotions: ['iraira', 'mukuwarenai', 'ningenkankei', 'tsukare', 'urami', 'ochikomi'],
   },
   {
     id: 'anshin',
@@ -74,7 +74,7 @@ const GENERAL_WORDS: Word[] = [
     origin: '仏が衆生を救うためにこの世に出現すること（出世間＝世俗を出ること）。',
     now: '会社で地位が上がること。',
     gap: '本来は世間から出ることだったのに、今は世間の中で上がることを指す。言葉の向きが百八十度変わっている。',
-    emotions: ['shounin', 'hikaku', 'mukuwarenai', 'munashisa'],
+    emotions: ['shounin', 'hikaku', 'mukuwarenai', 'munashisa', 'shitto', 'koukai', 'okane', 'henka'],
   },
   {
     id: 'genkan',
@@ -92,7 +92,7 @@ const GENERAL_WORDS: Word[] = [
     origin: 'サハー（忍耐）の音写。耐え忍ばなければ生きられない世界。',
     now: '刑務所や寮の外の、自由な世の中。',
     gap: '耐え忍ぶ世界だったはずの娑婆が、今では「自由な外の世界」を指す。どこにいても娑婆だという話に持っていける。',
-    emotions: ['tsukare', 'henka', 'munashisa', 'ningenkankei'],
+    emotions: ['tsukare', 'henka', 'munashisa', 'ningenkankei', 'okane'],
   },
   {
     id: 'mikkyou-naisho',
@@ -110,7 +110,7 @@ const GENERAL_WORDS: Word[] = [
     origin: '修行の厳しさに屈して、退いてしまうこと。',
     now: 'することがなくて暇なこと。',
     gap: 'もとは「心が折れて退く」こと。暇と退屈は別物だという切り口になる。',
-    emotions: ['munashisa', 'tsukare', 'mayoi', 'yasuragi'],
+    emotions: ['munashisa', 'tsukare', 'mayoi', 'yasuragi', 'ochikomi', 'henka'],
   },
   {
     id: 'meiwaku',
@@ -119,7 +119,7 @@ const GENERAL_WORDS: Word[] = [
     origin: '迷い、惑うこと。自分が道に迷っている状態。',
     now: '他人に不利益をかけること。',
     gap: 'もとは自分が迷っている状態の名前だった。「迷惑をかけてはいけない」と縮こまっている人に別の入口を渡せる。',
-    emotions: ['zaiakukan', 'kodoku', 'ningenkankei', 'shi'],
+    emotions: ['zaiakukan', 'kodoku', 'ningenkankei', 'shi', 'ochikomi', 'urami', 'koukai'],
   },
   {
     id: 'seken',
@@ -128,7 +128,7 @@ const GENERAL_WORDS: Word[] = [
     origin: '移り変わり、壊れていくもの（ローカ）。仏教では「出世間」と対に置かれる。',
     now: '人の目、世の中の評判。',
     gap: '世間はもともと「壊れゆくもの」。その評価を軸に生きることの危うさを、語源から言える。',
-    emotions: ['hikaku', 'shounin', 'ningenkankei', 'fuan'],
+    emotions: ['hikaku', 'shounin', 'ningenkankei', 'fuan', 'shitto', 'urami'],
   },
   {
     id: 'kaku-go',
@@ -137,7 +137,7 @@ const GENERAL_WORDS: Word[] = [
     origin: '迷いから覚め、悟ること。',
     now: '悪い結果を引き受ける心づもり。',
     gap: '本来は前向きな「目が覚める」という語。悲壮な言葉として使ってきたことに気づける。',
-    emotions: ['shi', 'fuan', 'mayoi', 'hajimari'],
+    emotions: ['shi', 'fuan', 'mayoi', 'hajimari', 'koukai', 'aseri'],
   },
   {
     id: 'riyaku',
@@ -146,7 +146,7 @@ const GENERAL_WORDS: Word[] = [
     origin: '「りやく」。仏の働きが人にもたらす恵み。',
     now: '「りえき」。もうけ。',
     gap: '同じ二字が、読み方ひとつで「恵み」と「もうけ」に分かれる。お金の話をやわらかく始められる。',
-    emotions: ['okane', 'mukuwarenai', 'kansha', 'shounin'],
+    emotions: ['okane', 'mukuwarenai', 'kansha', 'shounin', 'koukai'],
   },
   {
     id: 'daigomi',
@@ -155,7 +155,7 @@ const GENERAL_WORDS: Word[] = [
     origin: '乳を五段階に精製した最上の味「醍醐」。最高の教えの喩え。',
     now: 'いちばんの面白さ、深い味わい。',
     gap: '最上の味に至るには段階がある、という前提ごと言葉に入っている。積み重ねの話に。',
-    emotions: ['tassei', 'yorokobi', 'henka', 'mayoi'],
+    emotions: ['tassei', 'yorokobi', 'henka', 'mayoi', 'ochikomi', 'aseri'],
   },
   {
     id: 'shoujin',
@@ -173,7 +173,7 @@ const GENERAL_WORDS: Word[] = [
     origin: '『法華経』の「一大事因縁」。仏がこの世に現れた、ただ一つの大きな目的。',
     now: '大変なことが起きた、という騒ぎ。',
     gap: 'もとは騒ぎではなく、生涯の目的のこと。優先順位の話に使える。',
-    emotions: ['isogashii', 'aseri', 'mayoi', 'shi'],
+    emotions: ['isogashii', 'aseri', 'mayoi', 'shi', 'koukai'],
   },
   {
     id: 'enryo',
@@ -211,7 +211,7 @@ const GENERAL_WORDS: Word[] = [
     origin: '「和会通釈」。矛盾して見える教えを、つき合わせて筋を通すこと。',
     now: '軽く頭を下げる挨拶。',
     gap: 'もとは食い違いを調整する作業だった。頭を下げる動作に、その意味が残っている。',
-    emotions: ['ningenkankei', 'iraira', 'kazoku'],
+    emotions: ['ningenkankei', 'iraira', 'kazoku', 'urami'],
   },
   {
     id: 'inga-innen',
@@ -220,7 +220,7 @@ const GENERAL_WORDS: Word[] = [
     origin: '因（直接の原因）と縁（条件）。ものごとが成り立つ仕組みそのもの。',
     now: '「因縁をつける」など、言いがかりや悪い宿命の意味。',
     gap: '中立的な仕組みの用語が、すっかり悪い意味に転落した。運命論から条件の話へ戻せる。',
-    emotions: ['urami', 'koukai', 'ningenkankei', 'mayoi'],
+    emotions: ['urami', 'koukai', 'ningenkankei', 'mayoi', 'ochikomi'],
   },
   {
     id: 'sekkyou-jouhin',
@@ -229,7 +229,7 @@ const GENERAL_WORDS: Word[] = [
     origin: '極楽往生の段階「九品」のうちの上位・下位。もとは「じょうぼん・げぼん」。',
     now: '「じょうひん・げひん」。品のあるなし。',
     gap: '人を上下に分ける言葉になったが、もとは往生のしかたの分類で、どの品でも往生する点が肝心。',
-    emotions: ['hikaku', 'shounin', 'jikokeno', 'ningenkankei'],
+    emotions: ['hikaku', 'shounin', 'jikokeno', 'ningenkankei', 'shitto'],
   },
   {
     id: 'buji',
@@ -238,7 +238,7 @@ const GENERAL_WORDS: Word[] = [
     origin: '禅語の「無事」。外に求めるものがない、そのままで足りている状態。',
     now: '事故や病気がないこと。',
     gap: '「何も起きない」ことではなく「外に求めない」こと。平凡な一日の価値を語れる。',
-    emotions: ['yasuragi', 'kansha', 'fuan', 'yorokobi'],
+    emotions: ['yasuragi', 'kansha', 'fuan', 'yorokobi', 'tassei'],
   },
   {
     id: 'shoujou-yudan',

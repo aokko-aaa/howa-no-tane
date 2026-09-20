@@ -29,7 +29,7 @@ export const SHINSHU_WORDS: Word[] = [
     origin: '縁は、ものごとを成り立たせる条件。仏縁・ご縁は、教えに遇う条件が整うこと。',
     now: '「ご縁がありまして」と、出会いや偶然の挨拶語になっている。',
     gap: '真宗の場では「ご縁」は挨拶ではなく、この場に座っていること自体を指す。挨拶語を本来の重さに戻せる。',
-    emotions: ['kansha', 'wakare', 'hajimari', 'ningenkankei'],
+    emotions: ['kansha', 'wakare', 'hajimari', 'ningenkankei', 'henka'],
     tradition: 'shinshu',
   },
   {
@@ -39,7 +39,7 @@ export const SHINSHU_WORDS: Word[] = [
     origin: '真宗の場では「ようこそのお参り」「ようこそのお聴聞」と、来てくれたことへのお礼として使う。',
     now: '店や式典の歓迎の挨拶。',
     gap: '妙好人・因幡の源左は、都合の悪いことにまで「ようこそ」と言ったと伝わる。歓迎の言葉が、受け止めの言葉に変わる。',
-    emotions: ['kansha', 'iraira', 'mukuwarenai', 'yasuragi'],
+    emotions: ['kansha', 'iraira', 'mukuwarenai', 'yasuragi', 'okane'],
     tradition: 'shinshu',
   },
   {

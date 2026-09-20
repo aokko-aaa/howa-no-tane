@@ -11,7 +11,7 @@ const GENERAL_STORIES: Story[] = [
     summary:
       '釈尊のいとこである提婆達多は、教団の中で人一倍修行し、神通力まで得た。それでも人々は釈尊を慕う。やがて彼は教団を割ろうとし、釈尊の命を狙うまでになった。持っていたものが足りなかったのではなく、比べる相手がすぐそばにいた。',
     point: '嫉妬は遠い相手には起きない。近い人、似た立場の人にだけ起きるという指摘に使える。',
-    emotions: ['shitto', 'hikaku', 'shounin', 'urami'],
+    emotions: ['shitto', 'hikaku', 'shounin', 'urami', 'ochikomi'],
   },
   {
     id: 'kanbutsu-ushi',
@@ -31,7 +31,7 @@ const GENERAL_STORIES: Story[] = [
     summary:
       '毒矢に射られた人がいる。ところが本人は「誰が射たのか、弓の材質は何か、矢羽根は何の鳥か。それがわかるまで抜かせない」と言う。釈尊は言われた。その人は、答えが出る前に死んでしまうだろう、と。',
     point: '理由がすべて解けてからでないと動けない人に。まず矢を抜く、という順番の話。',
-    emotions: ['mayoi', 'fuan', 'koukai', 'ochikomi'],
+    emotions: ['mayoi', 'fuan', 'koukai', 'ochikomi', 'aseri'],
     keywords: ['原因', '理由', '納得', '調べ'],
   },
   {
@@ -53,7 +53,7 @@ const GENERAL_STORIES: Story[] = [
     summary:
       '大海の底に、目の見えない亀がいる。百年に一度だけ浮かび上がる。海面には穴のあいた流木が一本、波に漂っている。その亀が浮いたとき、たまたま流木の穴に首が入る。人として生まれ、教えに出会うのは、それほどのことだと説かれる。',
     point: '「ありがとう＝有り難し」の出どころ。当たり前のほうが異常事態だと気づかせる。',
-    emotions: ['kansha', 'yorokobi', 'munashisa', 'yasuragi'],
+    emotions: ['kansha', 'yorokobi', 'munashisa', 'yasuragi', 'hajimari', 'tassei'],
     keywords: ['めったに', '偶然', 'たまたま', '見つか', '出てき', 'ありがとう'],
   },
   {
@@ -64,7 +64,7 @@ const GENERAL_STORIES: Story[] = [
     summary:
       '向こう岸へ渡るために筏を組んだ人がいる。渡り終えたあと、「この筏のおかげで助かった」と頭に載せて歩き続けたらどうだろう。釈尊は、教えさえも渡るための筏であり、担ぎ続けるものではないと説かれた。',
     point: '役に立った考え方や肩書きを、いつまでも背負っていないか。手放しの話に。',
-    emotions: ['henka', 'tsukare', 'koukai', 'mukuwarenai'],
+    emotions: ['henka', 'tsukare', 'koukai', 'mukuwarenai', 'shitto'],
     keywords: ['肩書', '手放', '卒業'],
   },
   {
@@ -86,7 +86,7 @@ const GENERAL_STORIES: Story[] = [
     summary:
       '同じひとつまみの塩でも、コップの水に入れれば飲めなくなり、大きな川に入れれば味は変わらない。同じ出来事が、人によって致命傷にも、かすり傷にもなる。違うのは塩の量ではなく、受ける水のほうだと説かれる。',
     point: '出来事を変えられないときに、器の話へ持っていける喩え。',
-    emotions: ['iraira', 'ochikomi', 'ningenkankei', 'tsukare'],
+    emotions: ['iraira', 'ochikomi', 'ningenkankei', 'tsukare', 'urami', 'shitto', 'okane'],
     keywords: ['些細', '気にな', '小さなこと'],
   },
   {
@@ -107,7 +107,7 @@ const GENERAL_STORIES: Story[] = [
     summary:
       '人を殺めては指を数えていた男が、釈尊を追いかけた。走っても追いつけない。「止まれ」と叫ぶと、釈尊は「私はとうに止まっている。止まっていないのはお前だ」と答えた。男はそこで出家し、のちに石を投げられながら托鉢して歩いた。',
     point: '過去が消えるという話ではない。受けながら生きる姿を語れる。',
-    emotions: ['zaiakukan', 'koukai', 'jikokeno', 'urami'],
+    emotions: ['zaiakukan', 'koukai', 'jikokeno', 'urami', 'ochikomi'],
   },
   {
     id: 'hinja-ittou',
@@ -117,7 +117,7 @@ const GENERAL_STORIES: Story[] = [
     summary:
       '王が万灯を供えた夜、貧しい女が髪を売って一灯を捧げた。夜半、風が吹いて王の灯は次々と消えたが、その一灯だけは朝まで消えなかった。',
     point: '額ではなく、何を削って差し出したか。布施の話に。',
-    emotions: ['okane', 'mukuwarenai', 'kansha', 'munashisa'],
+    emotions: ['okane', 'mukuwarenai', 'kansha', 'munashisa', 'tassei', 'hajimari', 'shitto'],
     keywords: ['寄付', 'お金', '気持ちだけ'],
   },
   {
@@ -160,7 +160,7 @@ const GENERAL_STORIES: Story[] = [
     summary:
       '慧可が達磨に願った。「私の心は不安です。どうか安らかにしてください」。達磨は「その心を、ここへ出してみよ」。慧可は「探しましたが、見つかりません」。達磨は「もう安らかにしておいた」と答えた。',
     point: '不安を実体として扱っているうちは終わらない、という転換に。',
-    emotions: ['fuan', 'ochikomi', 'mayoi', 'kodoku'],
+    emotions: ['fuan', 'ochikomi', 'mayoi', 'kodoku', 'aseri'],
     tradition: 'zen',
   },
   {
@@ -171,7 +171,7 @@ const GENERAL_STORIES: Story[] = [
     summary:
       '趙州は、初めて来た僧にも「お茶でも飲んでいきなさい」、前にも来たことのある僧にも「お茶でも飲んでいきなさい」と言った。院主が「なぜどちらにも同じことを」と尋ねると、趙州は院主にも「お茶でも飲んでいきなさい」と言った。',
     point: '相手によって態度を変えない、という一点で笑いも取れる。',
-    emotions: ['ningenkankei', 'isogashii', 'kodoku'],
+    emotions: ['ningenkankei', 'isogashii', 'kodoku', 'iraira'],
     tradition: 'zen',
   },
   {
@@ -182,7 +182,7 @@ const GENERAL_STORIES: Story[] = [
     summary:
       '高齢の百丈が畑仕事をやめないので、弟子たちが農具を隠した。百丈はその日、食事をとらなかった。「一日作さざれば一日食らわず」。',
     point: '働くことと食べることのつながり。定年・介護・役割喪失の話にも。',
-    emotions: ['henka', 'munashisa', 'mukuwarenai', 'tsukare'],
+    emotions: ['henka', 'munashisa', 'mukuwarenai', 'tsukare', 'tassei', 'aseri', 'isogashii'],
     tradition: 'zen',
   },
   {
@@ -193,7 +193,7 @@ const GENERAL_STORIES: Story[] = [
     summary:
       '学問では誰にも負けなかった香厳が、師の一問に答えられず、書物をすべて焼いて山に入った。ある日、掃除をしていて飛んだ小石が竹に当たった。その音で、すべてが落ちた。',
     point: '答えは机の上ではなく、日常の作業の途中で来る。',
-    emotions: ['mayoi', 'ochikomi', 'tassei', 'isogashii'],
+    emotions: ['mayoi', 'ochikomi', 'tassei', 'isogashii', 'aseri'],
     tradition: 'zen',
   },
   {
@@ -204,7 +204,7 @@ const GENERAL_STORIES: Story[] = [
     summary:
       '牛を探し、見つけ、連れ帰り、やがて牛も自分も消える。ところが図はそこで終わらない。最後の一枚で、その人は袋をさげて町へ出て、誰かと笑っている。',
     point: '悟りのゴールが山ではなく町だという意外性。日常回帰の締めに。',
-    emotions: ['munashisa', 'yasuragi', 'henka', 'tassei'],
+    emotions: ['munashisa', 'yasuragi', 'henka', 'tassei', 'yorokobi'],
     tradition: 'zen',
   },
   {
@@ -215,7 +215,7 @@ const GENERAL_STORIES: Story[] = [
     summary:
       '修行の前は、山は山、水は水に見えた。修行に入ると、山は山ではなく、水は水ではなくなった。そして今、やはり山は山、水は水である。同じ言葉が、三度とも違う意味を持つ。',
     point: '同じ日常が違って見える、という構造を短く示せる。',
-    emotions: ['henka', 'yasuragi', 'mayoi', 'jikokeno'],
+    emotions: ['henka', 'yasuragi', 'mayoi', 'jikokeno', 'koukai'],
     tradition: 'zen',
   },
   {
@@ -237,7 +237,7 @@ const GENERAL_STORIES: Story[] = [
     summary:
       '庵に入った盗人が、持ち去るものを何も見つけられず出ていった。良寛の句に「盗人に取り残されし窓の月」とある。',
     point: '失った話のあとに、残っているものへ視線を動かす一句として。',
-    emotions: ['okane', 'munashisa', 'yasuragi', 'wakare'],
+    emotions: ['okane', 'munashisa', 'yasuragi', 'wakare', 'shitto', 'hikaku'],
     tradition: 'zen',
     caution: '逸話としての伝承が強い。句の位置づけは断定を避けて語る。',
   },
@@ -271,7 +271,7 @@ const GENERAL_STORIES: Story[] = [
     summary:
       '目の見えない人たちが象にふれ、鼻にふれた者は「蛇のようだ」、耳にふれた者は「扇だ」、足にふれた者は「柱だ」と言い合う。誰も嘘はついていない。全員が正しくて、全員が足りない。',
     point: '意見の対立を、正誤ではなく部分の話に変える。',
-    emotions: ['ningenkankei', 'iraira', 'mayoi', 'hikaku'],
+    emotions: ['ningenkankei', 'iraira', 'mayoi', 'hikaku', 'urami'],
     keywords: ['意見', '対立', '言い分'],
     caution: '古い喩え。目の不自由な人を笑う話にならないよう「全員が正しい」側で語る。',
   },
@@ -283,7 +283,7 @@ const GENERAL_STORIES: Story[] = [
     summary:
       '近所の娘が身ごもり、父親は白隠だと言われた。白隠は「そうか」と言って赤子を引き取り、育てた。のちに真実が明らかになり、娘の家が詫びに来た。白隠はまた「そうか」と言って、赤子を返した。',
     point: '弁明しない強さ。誤解や悪評に苦しむ人への話に。',
-    emotions: ['urami', 'zaiakukan', 'shounin', 'ningenkankei'],
+    emotions: ['urami', 'zaiakukan', 'shounin', 'ningenkankei', 'ochikomi', 'jikokeno'],
     tradition: 'zen',
     caution: '出典のはっきりしない逸話として広まっている。伝承と断って語る。',
   },
@@ -295,7 +295,7 @@ const GENERAL_STORIES: Story[] = [
     summary:
       '道で遊んでいた子どもが、托鉢の釈尊に差し上げるものがなく、砂で作った餅を捧げた。その子がのちのアショーカ王だと伝えられる。',
     point: '子どもの供養、形の整わない布施を肯定する話に。',
-    emotions: ['kazoku', 'okane', 'kansha', 'hajimari'],
+    emotions: ['kazoku', 'okane', 'kansha', 'hajimari', 'yorokobi', 'tassei'],
     keywords: ['子ども', '砂', '遊び'],
   },
 ]

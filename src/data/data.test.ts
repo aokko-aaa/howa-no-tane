@@ -156,3 +156,25 @@ describe('気持ちの一段下（なんで？）', () => {
     }
   })
 })
+
+describe('気持ちごとの素材の厚み', () => {
+  // 「うれしい」に言葉が4つしかなく、残りを無関係な言葉で埋めていたことへの歯止め。
+  // どの気持ちを選んでも、6通り出すだけの素材があることを担保する。
+  it.each(EMOTIONS.map((e) => ({ id: e.id, label: e.label })))(
+    '$label に、十分な素材がある',
+    ({ id }) => {
+      const n = {
+        概念: CONCEPTS.filter((x) => x.emotions.includes(id)).length,
+        喩え: STORIES.filter((x) => x.emotions.includes(id)).length,
+        日常語: WORDS.filter((x) => x.emotions.includes(id)).length,
+        場面: MODERNS.filter((x) => x.emotions.includes(id)).length,
+        一句: PHRASES.filter((x) => x.emotions.includes(id)).length,
+      }
+      expect(n.概念, `概念 ${n.概念}`).toBeGreaterThanOrEqual(7)
+      expect(n.喩え, `喩え ${n.喩え}`).toBeGreaterThanOrEqual(3)
+      expect(n.日常語, `日常語 ${n.日常語}`).toBeGreaterThanOrEqual(3)
+      expect(n.場面, `場面 ${n.場面}`).toBeGreaterThanOrEqual(3)
+      expect(n.一句, `一句 ${n.一句}`).toBeGreaterThanOrEqual(2)
+    },
+  )
+})

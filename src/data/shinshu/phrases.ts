@@ -3,12 +3,52 @@ import type { Phrase } from '../types'
 // お聖教の一句。真宗の法話は、ここから始めて日常へ降ろす形が多い。
 export const PHRASES: Phrase[] = [
   {
+    id: 'tannisho-13',
+    text: 'さるべき業縁のもよほせば、いかなるふるまひもすべし',
+    source: '『歎異抄』第十三条',
+    gloss: 'しかるべき縁がもよおせば、人はどんなふるまいもする。',
+    use: '「あの人が許せない」「なぜ自分はあんなことを」に。人柄の話を、縁の話に移す。',
+    emotions: ['urami', 'iraira', 'zaiakukan', 'jikokeno', 'koukai'],
+  },
+  {
+    id: 'wasan-myouri',
+    text: '是非しらず邪正もわかぬ このみなり　小慈小悲もなけれども　名利に人師をこのむなり',
+    source: '『正像末和讃』愚禿悲歎述懐',
+    gloss: '善悪の判断もつかない身でありながら、名声と利益を求めて人の師になりたがる。',
+    use: '人と比べる・認められたいという気持ちに。祖師自身が同じ穴にいると示す。',
+    emotions: ['hikaku', 'shitto', 'shounin', 'mukuwarenai'],
+  },
+  {
+    id: 'wasan-shouji',
+    text: '小慈小悲もなき身にて　有情利益はおもふまじ　如来の願船いまさずは　苦海をいかでかわたるべき',
+    source: '『正像末和讃』愚禿悲歎述懐',
+    gloss: '人を思いやる心もない身で、人助けなど言えたものではない。',
+    use: '「やさしくできない自分」を責めている人に。',
+    emotions: ['jikokeno', 'ningenkankei', 'iraira', 'munashisa', 'kazoku', 'urami'],
+  },
+  {
+    id: 'kyogyoshinsho-yorokobashi',
+    text: '慶ばしいかな、心を弘誓の仏地に樹て、念を難思の法海に流す',
+    source: '『教行信証』総序',
+    gloss: '喜ばしいことだ。この心が、大きな願いの大地に根を下ろした。',
+    use: 'うれしいこと・区切りのついたことを、自分の手柄の外側から受け取る。',
+    emotions: ['yorokobi', 'kansha', 'tassei', 'hajimari', 'yasuragi'],
+  },
+  {
+    id: 'tannisho-9',
+    text: 'よろこぶべきこころをおさへて、よろこばざるは煩悩の所為なり',
+    source: '『歎異抄』第九条',
+    gloss: '喜べるはずのことを喜べないのは、煩悩のしわざである。',
+    use: 'うれしいはずなのに素直に喜べない、という声に。唯円の問いがそのまま使える。',
+    emotions: ['yorokobi', 'munashisa', 'jikokeno', 'shitto', 'ochikomi'],
+  },
+  {
     id: 'tannisho-1',
     text: '弥陀の本願には、老少善悪のひとをえらばれず',
     source: '『歎異抄』第一条',
     gloss: '年齢も、善し悪しも、選ばれていない。',
     use: '「自分のような者でも」と言う人に、条件がないことを先に置く。',
-    emotions: ['jikokeno', 'zaiakukan', 'shi', 'kodoku'],
+    emotions: ['jikokeno', 'zaiakukan', 'shi', 'kodoku', 'hikaku', 'shitto'],
   },
   {
     id: 'tannisho-3',
@@ -16,7 +56,7 @@ export const PHRASES: Phrase[] = [
     source: '『歎異抄』第三条',
     gloss: '善人でさえ往生する。まして悪人は。',
     use: '悪人正機。自分を責めている人に。順番が逆に見えるところを説く。',
-    emotions: ['zaiakukan', 'jikokeno', 'koukai', 'tsukare'],
+    emotions: ['zaiakukan', 'jikokeno', 'koukai', 'tsukare', 'urami'],
   },
   {
     id: 'tannisho-7',
@@ -48,7 +88,7 @@ export const PHRASES: Phrase[] = [
     source: '『歎異抄』後序（煩悩具足の凡夫、火宅無常の世界は…）',
     gloss: 'みなそらごとたわごとの中で、念仏だけがまこと。',
     use: '情報に振り回されている人に。何を軸にするかの話として。',
-    emotions: ['mayoi', 'fuan', 'munashisa', 'isogashii'],
+    emotions: ['mayoi', 'fuan', 'munashisa', 'isogashii', 'henka'],
   },
   {
     id: 'tannisho-ichinin',
@@ -82,7 +122,7 @@ export const PHRASES: Phrase[] = [
     source: '『高僧和讃』天親讃',
     gloss: '本願のはたらきに遇えば、むなしく過ぎる人は一人もいない。',
     use: '報われない、意味がないと感じている人に。',
-    emotions: ['munashisa', 'mukuwarenai', 'tsukare', 'kodoku'],
+    emotions: ['munashisa', 'mukuwarenai', 'tsukare', 'kodoku', 'henka', 'isogashii'],
   },
   {
     id: 'wasan-ondoku',
@@ -114,7 +154,7 @@ export const PHRASES: Phrase[] = [
     source: '蓮如上人『御文』五帖目第十六通（白骨の御文）',
     gloss: '朝の元気な顔が、夕べには骨になっている身。',
     use: '通夜・葬儀で。順番が決まっていないという事実として読む。',
-    emotions: ['shi', 'wakare', 'fuan', 'kazoku'],
+    emotions: ['shi', 'wakare', 'fuan', 'kazoku', 'henka'],
   },
   {
     id: 'ofumi-ichiryu',
@@ -155,7 +195,7 @@ export const PHRASES: Phrase[] = [
     source: '親鸞聖人『末灯鈔』自然法爾章',
     gloss: 'おのずから、そうあらしめられている。私の計らいではない。',
     use: '力みが抜けない人に。晩年の一通として重みが出る。',
-    emotions: ['tsukare', 'aseri', 'mayoi', 'yasuragi'],
+    emotions: ['tsukare', 'aseri', 'mayoi', 'yasuragi', 'henka'],
   },
   {
     id: 'sankie',
@@ -171,7 +211,7 @@ export const PHRASES: Phrase[] = [
     source: '清沢満之（大谷派・1863–1903）',
     gloss: 'まず引き受けてしまってから、できることをする。',
     use: '順番が逆になりがちな現代の努力論に当てる。',
-    emotions: ['aseri', 'fuan', 'tsukare', 'mayoi'],
+    emotions: ['aseri', 'fuan', 'tsukare', 'mayoi', 'isogashii', 'henka'],
     caution: '近代の言葉。経典の語ではないと断って引く。',
   },
 ]

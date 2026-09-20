@@ -3,6 +3,18 @@ import type { Modern } from './types'
 // 「一般の人の思考起点」。法話の一行目をここから始めるための現代の場面。
 // line はそのまま口に出せる語り出しにしてある。
 export const MODERNS: Modern[] = [
+  { id: 'chuui', scene: '呼ばれて注意される', line: '名前を呼ばれて、少しだけ声の温度が違う。その一瞬で、何の話か分かってしまいます。', emotions: ['ochikomi', 'shounin', 'ningenkankei'], avoidScenes: ['sougo'] },
+  { id: 'kagami', scene: '鏡に映った自分', line: '洗面所の鏡に映った自分の顔を、まじまじと見ることは、あまりありません。', emotions: ['jikokeno', 'ochikomi', 'henka'] },
+  { id: 'shashin-kesu', scene: '自分の写真を消す', line: '集合写真をもらって、まず自分の顔だけを確かめます。', emotions: ['jikokeno', 'hikaku', 'shounin'] },
+  { id: 'namae-mite', scene: '相手の名前を見ただけで', line: '着信の名前を見ただけで、胃のあたりが重くなる相手がいます。', emotions: ['urami', 'ningenkankei', 'iraira'] },
+  { id: 'ayamaranai', scene: '謝ってこない相手', line: 'こちらが待っているあいだ、向こうはそのことを忘れている、ということがあります。', emotions: ['urami', 'mukuwarenai', 'ningenkankei'] },
+  { id: 'happyo-shizuka', scene: '発表のあとの沈黙', line: '一生懸命に話し終えて、拍手のあと、誰も何も言わない時間があります。', emotions: ['shounin', 'mukuwarenai', 'ochikomi'], avoidScenes: ['sougo'] },
+  { id: 'hanko', scene: 'ハンコの並んだカード', line: 'ラジオ体操のカードに、ハンコが一列に並んでいく。あの気持ちよさ。', emotions: ['tassei', 'hajimari', 'yorokobi'], avoidScenes: ['sougo'] },
+  { id: 'hikidashi-shoujou', scene: '引き出しの奥の表彰状', line: '引き出しの奥から、昔もらった表彰状が出てきます。', emotions: ['tassei', 'munashisa', 'henka'] },
+  { id: 'kansou-tsukare', scene: 'やり終えた翌日', line: 'やりきった翌日は、うれしさより先に、体が重い。', emotions: ['tassei', 'tsukare', 'yorokobi'], avoidScenes: ['sougo'] },
+  { id: 'omedetou-uchi', scene: 'おめでとうと打つ指', line: '「おめでとう」と打つ手が、一瞬だけ止まることがあります。', emotions: ['shitto', 'hikaku', 'shounin'] },
+  { id: 'kyuryou-meisai', scene: '給与明細', line: '明細の数字を見て、今月の自分の一か月が、その行に収まっているのを見ます。', emotions: ['okane', 'mukuwarenai', 'munashisa'], avoidScenes: ['sougo'] },
+  { id: 'tomodachi-shoukai', scene: '友人の結婚の知らせ', line: 'おめでたい知らせほど、返事を書くのに時間がかかることがあります。', emotions: ['shitto', 'hikaku', 'hajimari', 'yorokobi'], avoidScenes: ['sougo'] },
   { id: 'kidoku', scene: '既読がつかない', line: '送ったメッセージに、いつまでも既読がつかない。あの数十分のことを考えてみます。', emotions: ['ningenkankei', 'fuan', 'kodoku'], keywords: ['LINE', '既読', '返信'] },
   { id: 'sns-ie', scene: 'SNSで同級生の家が建つ', line: 'スマホを開いたら、同級生が新築の写真をあげていた。おめでとう、と打ちながら、指が少し重い。', emotions: ['hikaku', 'shitto', 'okane'], keywords: ['SNS', 'インスタ'] },
   { id: 'tsuuchi', scene: '通知が消えない', line: '赤い丸の数字が、消したそばからまた増えていきます。', emotions: ['isogashii', 'tsukare', 'aseri'], avoidScenes: ['sougo'] },

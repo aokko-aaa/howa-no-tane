@@ -14,7 +14,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     misread: '「無常＝はかない・さびしい」と、暗い言葉として受け取られている。',
     pivot: '変わるのは良いものだけではない。今の苦しさも同じ法則の中にあって、そのままでは続かない。',
     step: '今日「これは今しかない」と思った場面を、ひとつだけ言葉にして残す。',
-    emotions: ['wakare', 'munashisa', 'henka', 'shi', 'yorokobi'],
+    emotions: ['wakare', 'munashisa', 'henka', 'shi', 'yorokobi', 'tassei'],
     keywords: ['変わる', '続かない', '無常'],
   },
   {
@@ -27,7 +27,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     misread: '「無我＝自分を殺して我慢すること」と読まれてしまう。',
     pivot: '無我は「自分を消せ」という命令ではなく、「もともと単独ではない」という事実の報告。',
     step: '今日の成果を、関わった人の名前で三つ数えてみる。',
-    emotions: ['shounin', 'jikokeno', 'tassei', 'kansha', 'mukuwarenai'],
+    emotions: ['shounin', 'jikokeno', 'tassei', 'kansha', 'mukuwarenai', 'shitto', 'hikaku', 'yorokobi'],
   },
   {
     id: 'issai-kaiku',
@@ -52,7 +52,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     misread: '「四苦八苦する」＝ただ大変、という慣用句になっている。',
     pivot: '二千五百年前に、人の悩みはすでに分類されていた。名前がつくと、それは自分だけの異常ではなくなる。',
     step: '今の苦しさが八つのどれに当たるか、当てはめてみる。',
-    emotions: ['ningenkankei', 'tsukare', 'shi', 'wakare', 'mukuwarenai'],
+    emotions: ['ningenkankei', 'tsukare', 'shi', 'wakare', 'mukuwarenai', 'okane', 'shitto'],
     keywords: ['大変', 'しんど', '重な'],
   },
   {
@@ -65,7 +65,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     misread: '「縁起がいい・悪い」という、占いや縁起物の言葉になっている。',
     pivot: '本来は吉凶の話ではなく、原因と条件の話。運ではなく、条件をひとつ変えれば結果が変わるという教え。',
     step: 'うまくいかない一件について、変えられる条件をひとつだけ探す。',
-    emotions: ['urami', 'ningenkankei', 'okane', 'mayoi', 'iraira'],
+    emotions: ['urami', 'ningenkankei', 'okane', 'mayoi', 'iraira', 'yorokobi', 'hajimari', 'tassei'],
     keywords: ['おかげ', 'たまたま', '偶然', 'めぐり', 'タイミング', 'ふと', 'めぐりあわせ'],
   },
   {
@@ -78,7 +78,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     misread: '「落ち込むな、切り替えろ」という根性論に聞こえてしまう。',
     pivot: '一本目（起きた出来事）は受けてよい。仏教が止めるのは、自分で自分に撃ち込む二本目のほう。',
     step: '事実だけを一行書き、その下に「自分が足した言葉」を書き分ける。',
-    emotions: ['ochikomi', 'koukai', 'jikokeno', 'iraira', 'zaiakukan'],
+    emotions: ['ochikomi', 'koukai', 'jikokeno', 'iraira', 'zaiakukan', 'urami'],
     keywords: ['引きず', '反省', '思い出し', 'くよくよ', '思い出して'],
   },
   {
@@ -91,7 +91,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     misread: '「煩悩をなくさないと救われない」と思われている。',
     pivot: '毒と呼ぶのは、悪だからではなく量の問題だから。ゼロにする話ではなく、濃さに気づく話。',
     step: '今日出た三毒を、寝る前に一つずつ名指ししてみる。',
-    emotions: ['iraira', 'urami', 'shitto', 'okane'],
+    emotions: ['iraira', 'urami', 'shitto', 'okane', 'hikaku'],
   },
   {
     id: 'chudo',
@@ -116,7 +116,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     misread: '難しい教理用語として、名前だけ覚えられている。',
     pivot: '仏教は「気の持ちよう」ではなく手順の宗教。まず症状を正確に言葉にするところから始まる。',
     step: '悩みを「症状／原因／どうなれば治るか／最初の一手」の四行に分けて書く。',
-    emotions: ['mayoi', 'fuan', 'ochikomi', 'tsukare'],
+    emotions: ['mayoi', 'fuan', 'ochikomi', 'tsukare', 'okane'],
   },
   {
     id: 'hasshodo',
@@ -189,7 +189,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     misread: '布施＝お金を包むこと、と受け取られている。',
     pivot: 'まなざしや表情まで施しに数える文化がある。持っていないから何もできない、という前提が崩れる。',
     step: '七つのうち一つを選んで、今日のうちに一回だけやる。',
-    emotions: ['okane', 'mukuwarenai', 'munashisa', 'kansha', 'kodoku'],
+    emotions: ['okane', 'mukuwarenai', 'munashisa', 'kansha', 'kodoku', 'yorokobi'],
     keywords: ['笑顔', '席を譲', '手伝', '親切'],
   },
   {
@@ -202,7 +202,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     misread: '「欲を捨てろ＝向上心を持つな」と説教に聞こえる。',
     pivot: '足りないから欲しくなるのではなく、「足りない」と思う癖が欲しがらせている。順番が逆。',
     step: '欲しいものを一つ、買う前に一週間だけ書いて寝かせる。',
-    emotions: ['okane', 'hikaku', 'mukuwarenai', 'munashisa'],
+    emotions: ['okane', 'hikaku', 'mukuwarenai', 'munashisa', 'shitto'],
     keywords: ['欲し', '買っ', '足りな', '満足'],
   },
   {
@@ -215,7 +215,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     misread: '「毎日がいい日！」というポジティブ思考の標語にされている。',
     pivot: '雨を晴れに変える話ではなく、雨を雨のまま受け取れるかという話。好日は気分ではなく姿勢。',
     step: '今日を「よい・悪い」で採点するのを一日だけやめてみる。',
-    emotions: ['yasuragi', 'tsukare', 'ochikomi', 'henka'],
+    emotions: ['yasuragi', 'tsukare', 'ochikomi', 'henka', 'yorokobi'],
     keywords: ['気分', '機嫌', '天気', '雨の日'],
     tradition: 'zen',
   },
@@ -283,7 +283,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     misread: '「よい行いに意味はない」と冷たく響く。',
     pivot: '達磨が否定したのは善行ではなく、功徳を勘定に入れる心のほう。見返りを外すと、行いはむしろ軽くなる。',
     step: '今日した親切をひとつ、誰にも言わないでおく。',
-    emotions: ['mukuwarenai', 'shounin', 'munashisa', 'kazoku'],
+    emotions: ['mukuwarenai', 'shounin', 'munashisa', 'kazoku', 'shitto', 'tassei'],
     keywords: ['誰も見て', '評価', 'お礼', '感謝され'],
     tradition: 'zen',
   },
@@ -337,7 +337,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     misread: '「ありのままでいい」という、やさしいだけの言葉に読まれる。',
     pivot: 'ありのままを許す話ではなく、もともと別物を同じ物差しで測っていたという指摘。',
     step: '自分と誰かを比べている物差しの名前を、口に出してみる。',
-    emotions: ['hikaku', 'jikokeno', 'shitto', 'shounin'],
+    emotions: ['hikaku', 'jikokeno', 'shitto', 'shounin', 'yorokobi'],
     keywords: ['比べ', '向いてな', 'できる人'],
     tradition: 'zen',
   },
@@ -351,7 +351,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     misread: '「人それぞれ」という相対主義の話にされる。',
     pivot: '人それぞれで終わらせず、見えている世界のほうが自分の状態を映しているとまで言う。水ではなく自分を見る話。',
     step: '腹が立った場面を、相手の席から見た文章で書き直す。',
-    emotions: ['ningenkankei', 'iraira', 'hikaku', 'urami'],
+    emotions: ['ningenkankei', 'iraira', 'hikaku', 'urami', 'shitto'],
     keywords: ['誤解', 'すれ違', '言い分'],
   },
   {
@@ -403,7 +403,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     misread: '旅行や出会いの場面で使う、感傷的な決まり文句になっている。',
     pivot: 'もとは茶席の主客の心得で、二度とない一席だからこそ準備を尽くすという実践の話。気分ではなく段取りの言葉。',
     step: '次に会う約束のある人に、今日できる準備を一つする。',
-    emotions: ['wakare', 'kansha', 'yorokobi', 'kazoku'],
+    emotions: ['wakare', 'kansha', 'yorokobi', 'kazoku', 'hajimari'],
     keywords: ['最後', '一度きり', '会え', '別れ際'],
     caution: '茶の湯の語。禅の影響下にあるが経典の語ではない。',
   },
@@ -429,7 +429,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     misread: '「小さなことでもコツコツと」という道徳訓に縮められている。',
     pivot: '最澄は「国宝」とまで言い切った。隅は妥協した場所ではなく、そこを照らす者がいなければ回らない場所。',
     step: '職場や家で、自分しか照らしていない隅をひとつ言葉にする。',
-    emotions: ['mukuwarenai', 'munashisa', 'shounin', 'kazoku'],
+    emotions: ['mukuwarenai', 'munashisa', 'shounin', 'kazoku', 'tassei', 'hajimari'],
   },
   {
     id: 'moko-rita',
@@ -453,7 +453,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     misread: '「やられても我慢しろ」という泣き寝入りの教えに聞こえる。',
     pivot: '我慢のすすめではなく、連鎖の構造の指摘。止め方を知っている側が止めるしかない、という実務の話。',
     step: '返信を書き終えてから、仕返しの一文だけ消して送る。',
-    emotions: ['urami', 'iraira', 'ningenkankei'],
+    emotions: ['urami', 'iraira', 'ningenkankei', 'zaiakukan'],
     keywords: ['仕返し', '言い返', '許せ', '恨'],
   },
   {
@@ -466,7 +466,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     misread: '「人をうらやむな」という道徳の注意に見える。',
     pivot: '嫉妬を責めるのではなく、時間の使い道の問題として扱っている。数えた分だけ、自分の分が減る。',
     step: '人の投稿を見た時間と、自分の手を動かした時間を並べて書く。',
-    emotions: ['hikaku', 'shitto', 'munashisa', 'shounin'],
+    emotions: ['hikaku', 'shitto', 'munashisa', 'shounin', 'okane'],
     keywords: ['SNS', 'インスタ', '見てしま', '比べ'],
   },
   {
@@ -517,7 +517,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     misread: 'お礼の決まり文句として、すり減って使われている。',
     pivot: '難しいことが起きたという驚きが先にあって、感謝はその後から出てくる。順番を戻すと、言葉が生き返る。',
     step: '今日の「ありがとう」を一回だけ、「めったにないことです」と言い換えてみる。',
-    emotions: ['kansha', 'yorokobi', 'wakare', 'yasuragi'],
+    emotions: ['kansha', 'yorokobi', 'wakare', 'yasuragi', 'tassei', 'hajimari'],
     keywords: ['ありがとう', 'めったに', '偶然', 'たまたま', '見つか', '出てき', '戻っ', 'でてき', 'ひょっこり', '無くし', 'なくし', '落とし', '忘れ物', '探し物'],
   },
   {
@@ -530,7 +530,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     misread: '「もうやめる」という敗北宣言として使われている。',
     pivot: '諦は真実の意味。諦めるとは、できないことをできないと正確に見る力のこと。そこから初めて手が空く。',
     step: 'できないことを一つ、はっきり言葉にして人に伝える。',
-    emotions: ['mayoi', 'koukai', 'tsukare', 'henka'],
+    emotions: ['mayoi', 'koukai', 'tsukare', 'henka', 'ochikomi'],
     keywords: ['諦め', 'あきらめ', '無理だ', 'もうだめ', '探しても', '見つからな', '探していた'],
     caution: '日本語「あきらめる」と仏教語「諦」の関係は語感の重なりとして語られる。語源説明として断定しすぎない。',
   },
@@ -570,7 +570,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     misread: '「逆境に負けるな」という応援の言葉になっている。',
     pivot: '泥を乗り越える話ではなく、泥がなければ咲かないという話。泥は障害ではなく養分として扱われている。',
     step: '今の困りごとを、誰かに渡せる経験として一行書いておく。',
-    emotions: ['ochikomi', 'tsukare', 'zaiakukan', 'jikokeno'],
+    emotions: ['ochikomi', 'tsukare', 'zaiakukan', 'jikokeno', 'urami', 'koukai'],
     keywords: ['どん底', 'つらい', '経験'],
   },
   {
@@ -596,7 +596,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     misread: '「今年こそ頑張るぞ」という決意表明の言葉になっている。',
     pivot: 'もとは悟りを求める心を起こすこと。大きな決意より、向きを変えた最初の一歩を指す。',
     step: '目標ではなく、明日の最初の三分の行動だけを決める。',
-    emotions: ['hajimari', 'mayoi', 'tassei', 'aseri', 'jikokeno'],
+    emotions: ['hajimari', 'mayoi', 'tassei', 'aseri', 'jikokeno', 'yorokobi'],
     keywords: ['始め', '続かな', '三日坊主', 'やる気'],
   },
 ]
