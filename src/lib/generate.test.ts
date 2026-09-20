@@ -174,6 +174,29 @@ describe('選んだ気持ちから外れない', () => {
   })
 })
 
+describe('筋の通らない組み合わせを出さない', () => {
+  it('御文・歎異抄の切り口は、その出典に合う一句があるときだけ出す', () => {
+    // 合う一句が無いまま出すと、話と関係のない一句を読み上げることになる
+    for (const e of EMOTIONS) {
+      for (const n of generateNeta({ ...base, tradition: 'otani', emotions: [e.id], count: 12 })) {
+        if (n.angleId !== 'ofumi' && n.angleId !== 'tannisho') continue
+        const p = PHRASES.find((x) => x.id === n.materials.phraseId)!
+        expect(p.source, `${e.label} / ${n.angleId}`).toContain(
+          n.angleId === 'ofumi' ? '御文' : '歎異抄',
+        )
+        expect(p.emotions, `${e.label} / ${p.text}`).toContain(e.id)
+      }
+    }
+  })
+
+  it('行事の切り口では、行事が筋道に出てくる', () => {
+    for (const n of generateNeta({ ...base, tradition: 'otani', month: 11, count: 12 })) {
+      if (!n.materials.occasionId) continue
+      expect(n.digest!.steps[0]).toContain('の頃です')
+    }
+  })
+})
+
 describe('要点（筋道）', () => {
   it('上から読めば話が通る形になっている', () => {
     for (const n of generateNeta({ ...base, count: 12 })) {
@@ -193,7 +216,9 @@ describe('要点（筋道）', () => {
       const joined = d.steps.join('\n')
       expect(joined).toContain(`「${CONCEPTS.find((c) => c.id === n.materials.conceptId)!.term}」`)
       expect(joined).toContain('世間では')
-      expect(d.steps[d.steps.length - 1]).toContain('だから今日は')
+      expect(d.steps[d.steps.length - 1]).toMatch(/^だから/)
+      // 「だから今日は、今日…」と重ねない
+      expect(d.steps[d.steps.length - 1]).not.toContain('だから今日は、今日')
     }
   })
 

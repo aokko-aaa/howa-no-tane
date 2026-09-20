@@ -584,10 +584,20 @@ export function generateNeta(input: GenerateInput): Neta[] {
   // 切り口を名指しされたら、こじつけ度や宗派の絞り込みより指定を優先する
   const pins = input.pins ?? {}
   const pinnedAngle = pins.angleId ? ANGLES.find((a) => a.id === pins.angleId) : undefined
+  // 御文・歎異抄の切り口は、その出典に気持ちへ当たる一句があるときだけ出す。
+  // （無いまま出すと、話の筋と関係のない一句を読み上げることになる）
+  const hasFitPhrase = (source: string) =>
+    input.emotions.length === 0 ||
+    rankedPhrases.some((r) => r.match > 0 && r.item.source.includes(source))
+  const PHRASE_SOURCE: Record<string, string> = { ofumi: '御文', tannisho: '歎異抄' }
+
   const usable = pinnedAngle
     ? [pinnedAngle]
     : ANGLES.filter(
-        (a) => a.kojitsuke <= input.kojitsukeMax && (mode === 'otani' || a.tradition !== 'shinshu'),
+        (a) =>
+          a.kojitsuke <= input.kojitsukeMax &&
+          (mode === 'otani' || a.tradition !== 'shinshu') &&
+          (!PHRASE_SOURCE[a.id] || hasFitPhrase(PHRASE_SOURCE[a.id])),
       )
   // 一句を名指しされたら、その一句を読む切り口を回す（無ければ通常どおり）
   const phraseAngles = usable.filter((a) => ['shogyo', 'ofumi', 'tannisho'].includes(a.id))
@@ -721,7 +731,14 @@ export function generateNeta(input: GenerateInput): Neta[] {
       .filter((id) => id !== ctx.modern.id)
     const angleAlts = usable.map((x) => x.id).filter((id) => id !== angle.id)
 
+    const todayStep = ctx.concept.step.startsWith('今日')
+      ? `だから、${nq(ctx.concept.step)}。`
+      : `だから今日は、${nq(ctx.concept.step)}。`
+
     const steps: string[] = [
+      ...(built.uses.occasion
+        ? [`${ctx.occasion.name}の頃です。${nq(ctx.occasion.hook)}、というところから。`]
+        : []),
       `${ctx.modern.line}　${nq(ctx.concept.everyday)}。`,
       ...(built.uses.phrase
         ? [`ここで一句。「${ctx.phrase.text}」（${ctx.phrase.source}）＝${nq(ctx.phrase.gloss)}。`]
@@ -732,7 +749,7 @@ export function generateNeta(input: GenerateInput): Neta[] {
       `仏教はこれを「${ctx.concept.term}」という。${nq(ctx.concept.oneLine)}。`,
       `世間では${nq(ctx.concept.misread)}。けれども、${ctx.concept.pivot}`,
       ...(built.uses.story ? [`${ctx.story.title}の話が、そこに重なる。`] : []),
-      `だから今日は、${nq(ctx.concept.step)}。`,
+      todayStep,
     ]
 
     const digest = {

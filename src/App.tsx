@@ -68,8 +68,8 @@ export default function App() {
       count: BATCH,
       pins,
     })
+    // 押した場所から動かさない（毎回先頭へ飛ぶと、条件をいじりながら見比べられない）
     setResults((prev) => (mode === 'more' ? [...prev, ...next] : next))
-    if (mode === 'new') window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   /** 入口や切り口が自分に合わないとき、その場で次の候補に差し替える */
