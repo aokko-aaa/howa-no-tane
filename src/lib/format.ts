@@ -12,14 +12,15 @@ export function toScript(neta: Neta): string {
   return `${head}\n\n${body}${src}${caution}\n`
 }
 
-/** 要点だけを箇条書きで */
+/** 要点（ひとことと筋道）だけを書き出す */
 export function toOutline(neta: Neta): string {
   const head = `■ ${neta.title}`
-  const body = (neta.outline ?? neta.sections.map((s) => `${s.label}：${s.body}`))
-    .map((line) => `・${line}`)
-    .join('\n')
+  if (!neta.digest) {
+    return `${head}\n${neta.sections.map((s) => `・${s.label}：${s.body}`).join('\n')}\n`
+  }
+  const steps = neta.digest.steps.map((line, i) => `${i + 1}. ${line}`).join('\n')
   const src = neta.sources.length ? `\n出典：${neta.sources.join(' / ')}` : ''
-  return `${head}\n${body}${src}\n`
+  return `${head}\n${neta.digest.summary}\n\n${steps}\n\n${neta.digest.note}${src}\n`
 }
 
 /** 見出しと語り手向けメモを外して、そのまま読み上げられる形に */

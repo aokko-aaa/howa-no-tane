@@ -168,8 +168,18 @@ export type Neta = {
   kojitsuke: 1 | 2 | 3
   title: string
   sections: NetaSection[]
-  /** ひと目で中身が分かる要点。読み上げる文ではなく、名詞で並べる */
-  outline?: string[]
+  /**
+   * ひと目で筋が分かる要点。項目を並べるのではなく、順に読めば話が通る形にする。
+   * （ラベルを並べただけでは、つながりが見えずに意味が取れない）
+   */
+  digest?: {
+    /** この案がひとことで言っていること */
+    summary: string
+    /** 入口から今日の一歩まで、順に並べた筋道 */
+    steps: string[]
+    /** 入口の場面と尺。差し替えの手がかり */
+    note: string
+  }
   /** その場で入れ替えられる候補（入口の場面・切り口） */
   alternatives?: { modernIds: string[]; angleIds: string[] }
   sources: string[]

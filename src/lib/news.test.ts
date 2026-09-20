@@ -119,13 +119,14 @@ describe('ニュースから法話の案にする', () => {
     }
   })
 
-  it('要点の入口も、見出しに置き換わる', () => {
+  it('筋道の一行目も、今日の見出しから始まる', () => {
     const topic = classifyHeadline('電気代など相次ぐ値上げ')[0]
     const out = applyNewsLead(generateNeta(base), '電気代など相次ぐ値上げ', topic)
     for (const n of out) {
-      const lead = n.outline!.find((l) => l.startsWith('入口：'))
-      expect(lead).toContain('電気代など相次ぐ値上げ')
-      expect(lead).toContain('今日の話題')
+      expect(n.digest!.steps[0]).toContain('電気代など相次ぐ値上げ')
+      expect(n.digest!.note).toContain('今日の話題')
+      // 二行目から先は、もとの筋のまま
+      expect(n.digest!.steps.length).toBeGreaterThanOrEqual(4)
     }
   })
 

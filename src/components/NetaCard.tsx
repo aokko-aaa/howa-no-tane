@@ -27,12 +27,6 @@ function Stars({ n }: { n: number }) {
   )
 }
 
-/** 「入口：既読がつかない」のような行を、見出しと中身に割る */
-function splitLine(line: string): { head: string; body: string } {
-  const i = line.indexOf('：')
-  return i > 0 ? { head: line.slice(0, i), body: line.slice(i + 1) } : { head: '', body: line }
-}
-
 export default function NetaCard({
   neta,
   saved,
@@ -43,7 +37,7 @@ export default function NetaCard({
   defaultView = 'outline',
   children,
 }: Props) {
-  const hasOutline = (neta.outline?.length ?? 0) > 0
+  const hasOutline = (neta.digest?.steps.length ?? 0) > 0
   const [view, setView] = useState<View>(hasOutline ? defaultView : 'prose')
   const [open, setOpen] = useState(true)
   const [copied, setCopied] = useState<string | null>(null)
@@ -53,7 +47,7 @@ export default function NetaCard({
       kind === 'outline' ? toOutline(neta) : kind === 'script' ? toScript(neta) : toProse(neta)
     const ok = await copyText(text)
     const label =
-      kind === 'outline' ? '要点' : kind === 'script' ? '見出しつきの下書き' : '通し原稿'
+      kind === 'outline' ? '筋道' : kind === 'script' ? '見出しつきの下書き' : '通し原稿'
     setCopied(ok ? `${label}をコピーしました` : 'コピーできませんでした')
     setTimeout(() => setCopied(null), 2200)
   }
@@ -85,7 +79,7 @@ export default function NetaCard({
               className={`chip ${view === 'outline' ? 'chip-on' : ''}`}
               onClick={() => setView('outline')}
             >
-              要点
+              筋道
             </button>
             <button
               type="button"
@@ -98,20 +92,22 @@ export default function NetaCard({
         )}
 
         {open && view === 'outline' && hasOutline && (
-          <ul className="mt-3 flex flex-col gap-1.5">
-            {neta.outline!.map((line, i) => {
-              const { head, body } = splitLine(line)
-              return (
-                <li key={i} className="flex gap-2 text-[15px] leading-relaxed">
-                  <span className="mt-[0.45rem] h-1 w-1 shrink-0 rounded-full bg-enji/60" />
-                  <span>
-                    {head && <span className="font-bold text-stone-500">{head}　</span>}
-                    {body}
+          <div className="mt-3">
+            <p className="text-[15px] font-bold leading-relaxed text-enji">
+              {neta.digest!.summary}
+            </p>
+            <ol className="mt-2 flex flex-col gap-2">
+              {neta.digest!.steps.map((line, i) => (
+                <li key={i} className="flex gap-2.5 text-[15px] leading-relaxed">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-stone-100 text-xs font-bold text-stone-500">
+                    {i + 1}
                   </span>
+                  <span>{line}</span>
                 </li>
-              )
-            })}
-          </ul>
+              ))}
+            </ol>
+            <p className="mt-2 text-xs text-stone-500">{neta.digest!.note}</p>
+          </div>
         )}
 
         {open && view === 'prose' && (
@@ -172,7 +168,7 @@ export default function NetaCard({
         <div className="mt-3 flex flex-wrap items-center gap-2">
           {hasOutline && (
             <button type="button" className="btn-ghost" onClick={() => copy('outline')}>
-              要点をコピー
+              筋道をコピー
             </button>
           )}
           <button type="button" className="btn-ghost" onClick={() => copy('script')}>

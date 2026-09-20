@@ -447,6 +447,16 @@ function condense(built: Built, c: Ctx): NetaSection[] {
   ]
 }
 
+/** 二つの並びを交互に混ぜる */
+function interleave<T>(a: T[], b: T[]): T[] {
+  const out: T[] = []
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    if (i < a.length) out.push(a[i])
+    if (i < b.length) out.push(b[i])
+  }
+  return out
+}
+
 /** 絞り込んだ候補が空なら、全体に戻す */
 const orAll = <T,>(narrowed: Ranked<T>[], all: Ranked<T>[]) => (narrowed.length > 0 ? narrowed : all)
 
@@ -456,12 +466,15 @@ function takeUnused<T extends { id: string }>(
   rand: Rand,
   window = 6,
 ): T {
-  // 気持ちに当たっている素材が足りているうちは、その中からだけ選ぶ。
-  const positive = ranked.filter((r) => r.score > 0)
-  const base = positive.length >= 3 ? positive : ranked
+  // 気持ちに当たっている素材があるうちは、その中からだけ選ぶ。
+  // （score ではなく match で見る。score は宗派の加点が入っていて、
+  //   気持ちに当たっていない素材でも正の値になり得るため）
+  const matched = ranked.filter((r) => r.match > 0)
+  const base = matched.length > 0 ? matched : ranked
   const freshBase = base.filter((r) => !used.has(r.item.id))
-  const freshAll = ranked.filter((r) => !used.has(r.item.id))
-  const source = freshBase.length >= 2 ? freshBase : freshAll.length > 0 ? freshAll : ranked
+  // 当たっている素材が尽きたら、同じものを使い回してでも枠の外には出ない。
+  // （気持ちに合わない素材を出すくらいなら、同じ言葉で切り口を変えるほうがよい）
+  const source = freshBase.length > 0 ? freshBase : base
   const pool = source.slice(0, Math.max(window, 3))
   const chosen = pool[Math.floor(rand() * pool.length) % pool.length].item
   used.add(chosen.id)
@@ -469,8 +482,10 @@ function takeUnused<T extends { id: string }>(
 }
 
 /** 真宗大谷派モードでの素材の重みづけ（0で中立、負で後ろへ回す） */
+// 宗派の優先は「同じくらい気持ちに合っているなら真宗を採る」程度に留める。
+// 気持ちの一致（1つにつき10点）を超える加点にしてはいけない。
 const TRADITION_BONUS: Record<TraditionMode, Record<Tradition, number>> = {
-  otani: { shinshu: 8, common: 1, zen: -2 },
+  otani: { shinshu: 4, common: 0, zen: -3 },
   any: { shinshu: 0, common: 0, zen: 0 },
 }
 
@@ -480,12 +495,19 @@ function weighTradition<T extends { tradition?: Tradition }>(
 ): Ranked<T>[] {
   const bonus = TRADITION_BONUS[mode]
   return ranked
-    .map((r) => ({ item: r.item, score: r.score + bonus[r.item.tradition ?? 'common'] }))
+    .map((r) => ({ ...r, score: r.score + bonus[r.item.tradition ?? 'common'] }))
     .sort((a, b) => b.score - a.score)
 }
 
-const onlyShinshu = <T extends { tradition?: Tradition }>(ranked: Ranked<T>[]) =>
-  ranked.filter((r) => r.item.tradition === 'shinshu')
+/**
+ * 真宗の切り口には真宗の素材を当てる。ただし気持ちに当たっているものに限る。
+ * 当たっている真宗の素材が無ければ、宗派より気持ちの一致を採る。
+ * （ここで真宗を優先しすぎると、「イライラする」に死に際の話が出る）
+ */
+const preferShinshu = <T extends { tradition?: Tradition }>(ranked: Ranked<T>[]) => {
+  const fit = ranked.filter((r) => r.item.tradition === 'shinshu' && r.match > 0)
+  return fit.length > 0 ? fit : ranked
+}
 
 /** 真宗モードの結びに添える一句 */
 const OTANI_CLOSINGS = [
@@ -555,7 +577,7 @@ export function generateNeta(input: GenerateInput): Neta[] {
   const monthly = OCCASIONS.filter((o) => o.months.includes(input.month))
   const occasionPool = monthly.length > 0 ? monthly : OCCASIONS
   const occasions = weighTradition(
-    occasionPool.map((item) => ({ item, score: 0 })),
+    occasionPool.map((item) => ({ item, score: 0, match: 0 })),
     mode,
   )
 
@@ -572,16 +594,13 @@ export function generateNeta(input: GenerateInput): Neta[] {
   const angles = pins.phraseId && !pinnedAngle && phraseAngles.length > 0
     ? shuffle(phraseAngles, rand)
     : mode === 'otani'
-      ? [
-          ...shuffle(
-            usable.filter((a) => a.tradition === 'shinshu'),
-            rand,
-          ),
-          ...shuffle(
-            usable.filter((a) => a.tradition !== 'shinshu'),
-            rand,
-          ),
-        ]
+      ? // 真宗の切り口と、宗派を問わない切り口を交互に。
+        // 真宗の切り口で固めると、真宗の言葉のうち気持ちに合うものが少ないときに
+        // 同じ言葉ばかりが並んでしまうため。
+        interleave(
+          shuffle(usable.filter((a) => a.tradition === 'shinshu'), rand),
+          shuffle(usable.filter((a) => a.tradition !== 'shinshu'), rand),
+        )
       : shuffle(usable, rand)
 
   const usedConcept = new Set<string>()
@@ -597,10 +616,15 @@ export function generateNeta(input: GenerateInput): Neta[] {
     const shinshuAngle = angle.tradition === 'shinshu'
 
     // 真宗の切り口には真宗の素材を当てる（足りなければ全体から）
-    const conceptPool = shinshuAngle ? orAll(onlyShinshu(rankedConcepts), rankedConcepts) : rankedConcepts
-    const wordPool = shinshuAngle ? orAll(onlyShinshu(rankedWords), rankedWords) : rankedWords
-    const storyPool = shinshuAngle ? orAll(onlyShinshu(rankedStories), rankedStories) : rankedStories
-    const occasionPoolForAngle = shinshuAngle ? orAll(onlyShinshu(occasions), occasions) : occasions
+    const conceptPool = shinshuAngle ? preferShinshu(rankedConcepts) : rankedConcepts
+    const wordPool = shinshuAngle ? preferShinshu(rankedWords) : rankedWords
+    const storyPool = shinshuAngle ? preferShinshu(rankedStories) : rankedStories
+    const occasionPoolForAngle = shinshuAngle
+      ? orAll(
+          occasions.filter((r) => r.item.tradition === 'shinshu'),
+          occasions,
+        )
+      : occasions
 
     // 御文・歎異抄の切り口は、その出典の一句だけを引く
     const phrasePool =
@@ -617,7 +641,7 @@ export function generateNeta(input: GenerateInput): Neta[] {
     const alignTo = <T extends { emotions: readonly EmotionId[] }>(pool: Ranked<T>[]) =>
       pool
         .map((r) => ({
-          item: r.item,
+          ...r,
           score: r.score + r.item.emotions.filter((e) => conceptTags.has(e)).length * 4,
         }))
         .sort((a, b) => b.score - a.score)
@@ -689,27 +713,38 @@ export function generateNeta(input: GenerateInput): Neta[] {
       cautions.push(`${ctx.occasion.name}：${ctx.occasion.caution}`)
     }
 
-    // 一覧で見比べるための要点。声に出す文ではなく、素材を名詞で並べる。
-    // 入口の差し替え候補（同じ気持ちに当たっている場面）
+    // 一覧で見比べるための要点。
+    // ラベルを並べるのではなく、上から読めば筋が通る順に並べる。
     const modernAlts = alignTo(rankedModerns)
       .slice(0, 6)
       .map((r) => r.item.id)
       .filter((id) => id !== ctx.modern.id)
     const angleAlts = usable.map((x) => x.id).filter((id) => id !== angle.id)
 
-    const outline: string[] = [
-      `入口：${ctx.modern.scene}　※ご自身の一件に差し替え可`,
-      ...(emotionLabels.length > 0 ? [`気持ち：${emotionLabels.join('・')}`] : []),
-      ...(built.uses.phrase ? [`一句：${short(ctx.phrase.text, 24)}／${ctx.phrase.source}`] : []),
-      ...(built.uses.word ? [`語源：${ctx.word.word}＝${nq(ctx.word.origin)}`] : []),
-      `ことば：${ctx.concept.term}＝${nq(ctx.concept.oneLine)}`,
-      `世間：${nq(ctx.concept.misread)}`,
-      `ズレ：${nq(ctx.concept.pivot)}`,
-      ...(built.uses.story ? [`喩え：${ctx.story.title}（${nq(ctx.story.point)}）`] : []),
-      ...(built.uses.occasion ? [`行事：${ctx.occasion.name}`] : []),
-      `一歩：${nq(ctx.concept.step)}`,
-      scene.minutes === 0 ? `尺：${scene.label}（一行）` : `尺：${scene.minutes}分・${scene.label}`,
+    const steps: string[] = [
+      `${ctx.modern.line}　${nq(ctx.concept.everyday)}。`,
+      ...(built.uses.phrase
+        ? [`ここで一句。「${ctx.phrase.text}」（${ctx.phrase.source}）＝${nq(ctx.phrase.gloss)}。`]
+        : []),
+      ...(built.uses.word
+        ? [`じつは「${ctx.word.word}」は仏教の言葉です。${ctx.word.origin}`]
+        : []),
+      `仏教はこれを「${ctx.concept.term}」という。${nq(ctx.concept.oneLine)}。`,
+      `世間では${nq(ctx.concept.misread)}。けれども、${ctx.concept.pivot}`,
+      ...(built.uses.story ? [`${ctx.story.title}の話が、そこに重なる。`] : []),
+      `だから今日は、${nq(ctx.concept.step)}。`,
     ]
+
+    const digest = {
+      summary:
+        emotionLabels.length > 0
+          ? `${emotionLabels.join('・')}——というときに。${ctx.concept.oneLine}`
+          : ctx.concept.oneLine,
+      steps,
+      note: `入口：${ctx.modern.scene}（ご自身の一件に差し替え可）／${
+        scene.minutes === 0 ? scene.label : `${scene.label}・${scene.minutes}分`
+      }`,
+    }
 
     const tradition: Tradition = shinshuAngle
       ? 'shinshu'
@@ -723,7 +758,7 @@ export function generateNeta(input: GenerateInput): Neta[] {
       kojitsuke: angle.kojitsuke,
       title: scene.minutes === 0 ? `${ctx.concept.term} — ${ctx.modern.scene}` : built.title,
       sections,
-      outline,
+      digest,
       alternatives: { modernIds: [ctx.modern.id, ...modernAlts], angleIds: [angle.id, ...angleAlts] },
       sources,
       cautions,

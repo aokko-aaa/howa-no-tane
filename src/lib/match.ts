@@ -16,7 +16,12 @@ export function detectEmotions(text: string): EmotionId[] {
     .map((h) => h.id)
 }
 
-export type Ranked<T> = { item: T; score: number }
+export type Ranked<T> = {
+  item: T
+  score: number
+  /** 選ばれた気持ちにいくつ当たっているか。並べ替えの前に、これで足切りする */
+  match: number
+}
 
 /**
  * 感情タグの一致を主、自由記述の語の一致を従として並べ替える。
@@ -33,15 +38,17 @@ export function rankItems<T>(
   const body = text.trim()
   return items
     .map((item) => {
-      let score = 0
-      const tags = getEmotions(item)
-      for (const t of tags) if (sel.has(t)) score += 3
+      // 気持ちの一致を大きく取る。ここを小さくすると、宗派の加点に負けて
+      // 「イライラする」で死に際の話が出る、といったズレが起きる。
+      let match = 0
+      for (const t of getEmotions(item)) if (sel.has(t)) match++
+      let score = match * 10
       if (body) {
         for (const w of getWords(item)) {
-          if (w && body.includes(w)) score += 2
+          if (w && body.includes(w)) score += 4
         }
       }
-      return { item, score }
+      return { item, score, match }
     })
     .sort((a, b) => b.score - a.score)
 }

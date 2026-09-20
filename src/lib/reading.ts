@@ -33,8 +33,9 @@ const s = (label: string, body: string): NetaSection => ({ label, body })
 const nq = (t: string) => t.replace(/。$/, '')
 
 function top<T>(ranked: Ranked<T>[], rand: Rand, window = 5): T {
-  const positive = ranked.filter((r) => r.score > 0)
-  const pool = (positive.length >= 3 ? positive : ranked).slice(0, window)
+  // 選んだ気持ちに当たっているものがあれば、その中からだけ選ぶ
+  const matched = ranked.filter((r) => r.match > 0)
+  const pool = (matched.length >= 2 ? matched : ranked).slice(0, window)
   return pool[Math.floor(rand() * pool.length) % pool.length].item
 }
 
@@ -49,7 +50,8 @@ export function buildReading(input: ReadingInput): Neta {
   const rand = mulberry32(
     input.seed ^ hashString([...input.primary, ...input.secondary].join(',') + input.shape),
   )
-  const bonus = input.tradition === 'otani' ? 6 : 0
+  // 宗派の優先は、気持ちの一致（primary 5点）を超えない大きさにする
+  const bonus = input.tradition === 'otani' ? 3 : 0
   const P = new Set(input.primary)
   const S = new Set(input.secondary)
 
@@ -62,19 +64,23 @@ export function buildReading(input: ReadingInput): Neta {
     items: readonly T[],
   ): Ranked<T>[] =>
     items
-      .map((item) => ({
-        item,
-        score:
-          fit(item.emotions) +
-          (item.tradition === 'shinshu' ? bonus : item.tradition === 'zen' ? -1 : 0),
-      }))
+      .map((item) => {
+        const match = item.emotions.filter((t) => P.has(t) || S.has(t)).length
+        return {
+          item,
+          match,
+          score:
+            fit(item.emotions) +
+            (item.tradition === 'shinshu' ? bonus : item.tradition === 'zen' ? -1 : 0),
+        }
+      })
       .sort((a, b) => b.score - a.score)
 
   const concept = top(rank(CONCEPTS), rand)
   const tags = new Set(concept.emotions)
   const align = <T extends { emotions: readonly EmotionId[] }>(ranked: Ranked<T>[]) =>
     ranked
-      .map((r) => ({ item: r.item, score: r.score + r.item.emotions.filter((e) => tags.has(e)).length * 3 }))
+      .map((r) => ({ ...r, score: r.score + r.item.emotions.filter((e) => tags.has(e)).length * 3 }))
       .sort((a, b) => b.score - a.score)
 
   const modern = top(align(rank(MODERNS)), rand, 6)

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { ANGLES } from '../data/angles'
 import { CONCEPTS } from '../data/concepts'
+import { EMOTIONS } from '../data/emotions'
 import { PHRASES } from '../data/shinshu/phrases'
 import { MODERNS } from '../data/modern'
 import type { EmotionId } from '../data/types'
@@ -138,49 +139,93 @@ describe('generateNeta', () => {
   })
 })
 
-describe('要点（箇条書き）', () => {
-  it('どの案にも要点がつき、素材が名詞で並ぶ', () => {
+describe('選んだ気持ちから外れない', () => {
+  // 「イライラする」を選んで、死に際の話（平生業成）が出たことへの歯止め。
+  // 宗派の加点が気持ちの一致を上回っていたのが原因だった。
+  it.each(EMOTIONS.map((e) => ({ id: e.id, label: e.label })))(
+    '$label を選ぶと、その気持ちに当たる言葉だけが出る',
+    ({ id }) => {
+      for (const mode of ['otani', 'any'] as const) {
+        for (const n of generateNeta({ ...base, tradition: mode, emotions: [id], count: 6 })) {
+          const c = CONCEPTS.find((x) => x.id === n.materials.conceptId)!
+          expect(c.emotions, `${mode} / ${c.term}`).toContain(id)
+          const m = MODERNS.find((x) => x.id === n.materials.modernId)!
+          expect(m.emotions, `${mode} / ${m.scene}`).toContain(id)
+        }
+      }
+    },
+  )
+
+  it('真宗モードでも、気持ちに合わない真宗の言葉を無理に出さない', () => {
+    // イライラに当たる真宗の言葉は「煩悩具足の凡夫」。それ以外の真宗語は出てはいけない
+    for (const n of generateNeta({ ...base, tradition: 'otani', emotions: ['iraira'], count: 6 })) {
+      const c = CONCEPTS.find((x) => x.id === n.materials.conceptId)!
+      expect(c.emotions).toContain('iraira')
+    }
+  })
+
+  it('気持ちが合う範囲で、真宗の言葉が優先される', () => {
+    // 別れ・喪失には真宗の言葉が複数あるので、そちらが選ばれる
+    const out = generateNeta({ ...base, tradition: 'otani', emotions: ['wakare'], count: 6 })
+    const shinshu = out.filter(
+      (n) => CONCEPTS.find((x) => x.id === n.materials.conceptId)?.tradition === 'shinshu',
+    )
+    expect(shinshu.length).toBeGreaterThanOrEqual(4)
+  })
+})
+
+describe('要点（筋道）', () => {
+  it('上から読めば話が通る形になっている', () => {
     for (const n of generateNeta({ ...base, count: 12 })) {
-      expect(n.outline, n.title).toBeDefined()
-      expect(n.outline!.length).toBeGreaterThanOrEqual(6)
-      for (const line of n.outline!) {
+      const d = n.digest!
+      expect(d, n.title).toBeDefined()
+      expect(d.summary.length).toBeGreaterThan(0)
+      expect(d.steps.length).toBeGreaterThanOrEqual(4)
+      for (const line of d.steps) {
         expect(line.trim().length).toBeGreaterThan(0)
         expect(line).not.toMatch(/undefined|NaN/)
-        // 読み上げ文ではなく「見出し：中身」の形
-        expect(line).toContain('：')
+        // 「入口：」のようなラベルの羅列にしない
+        expect(line.slice(0, 6)).not.toMatch(/^(入口|気持ち|ことば|世間|ズレ|一歩|尺)：/)
+        // 文として終わる
+        expect(line).toMatch(/[。」]$/)
       }
-      const joined = n.outline!.join('\n')
-      expect(joined).toContain('入口：')
-      expect(joined).toContain('ことば：')
-      expect(joined).toContain('一歩：')
-      expect(joined).toContain('尺：')
+      // 筋の順番：入口 → 仏教の言葉 → ひっくり返し → 今日の一歩
+      const joined = d.steps.join('\n')
+      expect(joined).toContain(`「${CONCEPTS.find((c) => c.id === n.materials.conceptId)!.term}」`)
+      expect(joined).toContain('世間では')
+      expect(d.steps[d.steps.length - 1]).toContain('だから今日は')
     }
   })
 
-  it('使った素材だけが要点に並ぶ', () => {
+  it('使った素材だけが筋道に現れる', () => {
     for (const n of generateNeta({ ...base, tradition: 'otani', count: 12 })) {
-      const joined = n.outline!.join('\n')
-      expect(joined.includes('一句：')).toBe(Boolean(n.materials.phraseId))
-      expect(joined.includes('喩え：')).toBe(Boolean(n.materials.storyId))
-      expect(joined.includes('語源：')).toBe(Boolean(n.materials.wordId))
+      const joined = n.digest!.steps.join('\n')
+      expect(joined.includes('ここで一句。')).toBe(Boolean(n.materials.phraseId))
+      expect(joined.includes('は仏教の言葉で')).toBe(Boolean(n.materials.wordId))
     }
   })
 
-  it('要点のコピーは、箇条書きと出典だけになる', () => {
+  it('ひとことに、当てている気持ちとその言葉の意味が並ぶ', () => {
+    const n = generateNeta({ ...base, emotions: ['iraira'], count: 1 })[0]
+    expect(n.digest!.summary).toContain('イライラする')
+    const c = CONCEPTS.find((x) => x.id === n.materials.conceptId)!
+    expect(n.digest!.summary).toContain(c.oneLine)
+  })
+
+  it('入口の差し替えは、要点の添え書きで分かる', () => {
+    const n = generateNeta({ ...base, count: 1 })[0]
+    expect(n.digest!.note).toContain('ご自身の一件に差し替え可')
+  })
+
+  it('要点のコピーは、ひとこと・番号つきの筋道・出典になる', () => {
     const n = generateNeta({ ...base, count: 1 })[0]
     const text = toOutline(n)
     expect(text).toContain('■ ')
-    expect(text.split('\n').filter((l) => l.startsWith('・')).length).toBe(n.outline!.length)
+    expect(text).toContain(n.digest!.summary)
+    expect(text).toContain(`1. ${n.digest!.steps[0]}`)
     expect(text).toContain('出典：')
-    // 語り手向けメモは要点に混ぜない
     const memo = n.sections.find((x) => x.label === SECTION.memo)!
     expect(text).not.toContain(memo.body)
-  })
-
-  it('掲示板の案にも要点がつく', () => {
-    for (const n of generateNeta({ ...base, sceneId: 'keijiban', count: 3 })) {
-      expect(n.outline!.join('\n')).toContain('尺：掲示板のことば（一行）')
-    }
   })
 })
 
@@ -225,15 +270,11 @@ describe('入口と切り口の入れ替え', () => {
     expect(n.materials.modernId).toBe(first)
   })
 
-  it('要点には、自分の一件に差し替えてよいと書いてある', () => {
+  it('入れ替えても、筋道は組み直される', () => {
     const n = generateNeta({ ...base, count: 1 })[0]
-    expect(n.outline!.find((l) => l.startsWith('入口：'))).toContain('ご自身の一件に差し替え可')
-  })
-
-  it('要点に切り口の指定を並べない（見出しの札で足りる）', () => {
-    for (const n of generateNeta({ ...base, count: 6 })) {
-      expect(n.outline!.some((l) => l.startsWith('切り口：'))).toBe(false)
-    }
+    const next = swapMaterial(n, rest, 'modern', 7)
+    expect(next.digest!.steps[0]).not.toBe(n.digest!.steps[0])
+    expect(next.digest!.note).toContain('差し替え可')
   })
 })
 
@@ -291,20 +332,30 @@ describe('条件を指定して作る', () => {
 describe('真宗大谷派モード', () => {
   const otani: GenerateInput = { ...base, tradition: 'otani', emotions: ['wakare', 'shi'] }
 
-  it('最初の一巡が真宗の切り口で埋まる', () => {
+  it('真宗の切り口と、宗派を問わない切り口が交互に並ぶ', () => {
     const out = generateNeta(otani)
     const shinshuAngles = new Set(
       ANGLES.filter((a) => a.tradition === 'shinshu').map((a) => a.id),
     )
-    expect(out.every((n) => shinshuAngles.has(n.angleId))).toBe(true)
+    const flags = out.map((n) => shinshuAngles.has(n.angleId))
+    expect(flags.filter(Boolean).length).toBe(3)
+    expect(flags[0]).toBe(true)
+    expect(flags[1]).toBe(false)
   })
 
-  it('真宗の切り口には真宗の素材が当たる', () => {
-    const out = generateNeta({ ...otani, count: 6 })
-    for (const n of out) {
-      const c = CONCEPTS.find((x) => x.id === n.materials.conceptId)
-      expect(c?.tradition, n.title).toBe('shinshu')
-      expect(n.tradition).toBe('shinshu')
+  it('同じ言葉ばかりにならない', () => {
+    // 真宗の切り口で固めていたころ、イライラでは一語しか出なくなっていた
+    const out = generateNeta({ ...otani, emotions: ['iraira'], count: 6 })
+    expect(new Set(out.map((n) => n.materials.conceptId)).size).toBeGreaterThanOrEqual(3)
+  })
+
+  it('真宗の切り口には、気持ちに合う真宗の素材が当たる', () => {
+    const shinshuAngles = new Set(ANGLES.filter((a) => a.tradition === 'shinshu').map((a) => a.id))
+    for (const n of generateNeta({ ...otani, count: 12 })) {
+      if (!shinshuAngles.has(n.angleId)) continue
+      const c = CONCEPTS.find((x) => x.id === n.materials.conceptId)!
+      expect(c.tradition, n.title).toBe('shinshu')
+      expect(c.emotions.some((e) => otani.emotions.includes(e)), n.title).toBe(true)
     }
   })
 
@@ -316,13 +367,13 @@ describe('真宗大谷派モード', () => {
     expect(out.some((n) => shinshuAngles.has(n.angleId))).toBe(false)
   })
 
-  it('一巡したあとも、真宗の素材が多数を占める', () => {
+  it('気持ちに合う範囲で、真宗の素材が多数を占める', () => {
     const out = generateNeta({ ...otani, count: 18 })
     const shinshu = out.filter((n) => {
       const c = CONCEPTS.find((x) => x.id === n.materials.conceptId)
       return c?.tradition === 'shinshu'
     })
-    expect(shinshu.length / out.length).toBeGreaterThan(0.6)
+    expect(shinshu.length / out.length).toBeGreaterThan(0.5)
   })
 
   it('御文・歎異抄の切り口は、その出典の一句を引く', () => {
