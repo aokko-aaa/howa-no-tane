@@ -72,7 +72,7 @@ export type Concept = {
 export type Story = {
   id: string
   title: string
-  kind: '経典' | '説話' | '禅' | '祖師' | '近代'
+  kind: '経典' | '説話' | '禅' | '祖師' | '近代' | '今の話'
   source: string
   /** そのまま語れる長さの要約 */
   summary: string

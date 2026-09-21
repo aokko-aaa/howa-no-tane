@@ -14,6 +14,7 @@ export const ANGLES: Angle[] = [
   { id: 'hanten', name: '視座の反転', aim: '世間の見方と仏の見方を並べ、落差そのものを見せる', needs: ['concept', 'story'], kojitsuke: 1 },
   { id: 'gyoji', name: '行事に寄せる', aim: '季節や法要の由来から入り、今の気持ちにつなげる', needs: ['concept'], kojitsuke: 2 },
   { id: 'itsuwa', name: '逸話まるごと', aim: '説話を最後まで語り、解説は最小限にする', needs: ['story'], kojitsuke: 1 },
+  { id: 'ima', name: '今のたとえで', aim: 'スマホ・家事・サブスクなど、いまの暮らしの見立てから入って教えへ渡す', needs: ['story'], kojitsuke: 2 },
   { id: 'hito', name: '人の話から', aim: '祖師や弟子の、教科書に載らない一面から入る', needs: ['concept'], kojitsuke: 1 },
   { id: 'yurai', name: '身のまわりの出どころ', aim: 'たくあん・お茶・だるまなど、暮らしの品の名前の由来にいる人から入る', needs: ['concept'], kojitsuke: 2 },
   { id: 'kojitsuke', name: 'こじつけ全開', aim: '語呂や見立てで強引につなぎ、笑ってもらってから本題に入る', needs: ['word', 'concept'], kojitsuke: 3 },

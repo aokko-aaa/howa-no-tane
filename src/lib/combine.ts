@@ -307,10 +307,10 @@ export function combineNetas(netas: Neta[]): Neta | null {
     ),
     s(
       COMBINED.musubi,
-      `${phrase ? `もう一度、あの一句を。${phrase.text}\n\n` : ''}今日お持ち帰りいただくのは、「${
+      `${phrase ? `もう一度、あの一句を。${phrase.text}\n\n` : ''}今日持って帰っていただくのは、「${
         jiku.term
-      }」。一語で十分です。${
-        uke ? `「${uke.term}」のほうは、引っかかった方だけが持って帰ってくだされば。` : ''
+      }」。この一語だけで十分です。${
+        uke ? `「${uke.term}」のほうは、引っかかった方だけ持って帰ってください。` : ''
       }${sceneRef}で立ち止まったとき、これを一つ、思い出してください。`,
     ),
     s(COMBINED.memo, memo.join('\n')),

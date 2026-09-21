@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { ANGLES } from '../data/angles'
 import { CONCEPTS } from '../data/concepts'
+import { STORIES, STORY_BY_ID } from '../data/stories'
 import { EMOTIONS } from '../data/emotions'
 import { FIGURES, FIGURE_BY_ID } from '../data/figures'
 import { PHRASES } from '../data/shinshu/phrases'
@@ -731,6 +732,63 @@ describe('話の大きさ（入口の桁に、仏教語の桁を合わせる）'
 
   it('どの仏教語にも大きさがついている', () => {
     for (const c of CONCEPTS) expect(c.scale, c.term).toBeDefined()
+  })
+})
+
+describe('今の暮らしからのたとえ', () => {
+  const kindOf = (n: { materials: { storyId?: string } }) =>
+    n.materials.storyId ? STORY_BY_ID[n.materials.storyId]?.kind : undefined
+
+  it('出典がないことを、はっきり書いてある', () => {
+    for (const st of STORIES.filter((x) => x.kind === '今の話')) {
+      expect(st.source, st.title).toContain('出典はありません')
+      expect(st.caution, st.title).toContain('経典の話ではありません')
+    }
+  })
+
+  it('「今のたとえで」は、今の話だけを引く', () => {
+    for (const e of ['fuan', 'iraira', 'tsukare', 'ningenkankei'] as const) {
+      const [n] = generateNeta({ ...base, emotions: [e], count: 1, pins: { angleId: 'ima' } })
+      expect(kindOf(n), e).toBe('今の話')
+      expect(n.cautions.join('\n'), e).toContain('経典の話ではありません')
+    }
+  })
+
+  it('通夜・葬儀のあとや死別の話では出さない', () => {
+    for (const [emotions, sceneId] of [
+      [['wakare'], 'howakai'],
+      [['shi'], 'howakai'],
+      [['iraira'], 'sougo'],
+    ] as const) {
+      const out = generateNeta({
+        ...base,
+        emotions: [...emotions],
+        sceneId,
+        tradition: 'otani',
+        count: 12,
+      })
+      for (const n of out) {
+        expect(kindOf(n), `${emotions.join(',')}/${sceneId} / ${n.title}`).not.toBe('今の話')
+      }
+      expect(out.map((n) => n.angleId)).not.toContain('ima')
+    }
+  })
+
+  it('ひと回しが、今のたとえばかりにならない', () => {
+    const out = generateNeta({ ...base, emotions: ['tsukare'], tradition: 'otani', count: 6 })
+    const ima = out.filter((n) => kindOf(n) === '今の話').length
+    expect(ima).toBeLessThanOrEqual(3)
+  })
+
+  it('暮らしの寸法のときは、今のたとえが出てくる', () => {
+    const out = generateNeta({
+      ...base,
+      text: '家事子育てに追われて自分とは何かがわからなくなる',
+      emotions: ['fuan'],
+      tradition: 'otani',
+      count: 12,
+    })
+    expect(out.some((n) => kindOf(n) === '今の話')).toBe(true)
   })
 })
 

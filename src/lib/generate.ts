@@ -173,6 +173,14 @@ const short = (t: string, n = 16) => (t.length > n ? `${t.slice(0, n)}…` : t)
 /** 文の途中に埋めるとき、末尾の句点を外す */
 const nq = (t: string) => t.replace(/。$/, '')
 
+/**
+ * 「ここに自分の◯◯を一つ」と書かせるときの、場面の呼び方。
+ * 自分で書いた一件が入口のときに「ご自身の一件」と書くと、
+ * いま書いたものをもう一度書かせることになる。
+ */
+const ownScene = (c: Ctx) =>
+  c.modern.id === 'typed' ? 'いま話したあの一件' : `「${c.modern.scene}」`
+
 const conceptLine = (c: Concept) =>
   `${c.term}（${c.reading}）。${c.oneLine}　【${c.source}】`
 
@@ -278,13 +286,13 @@ const BUILDERS: Record<string, (c: Ctx) => Built> = {
     sections: [
       s(
         SECTION.iriguchi,
-        `${c.concept.term}（${c.concept.reading}）。${c.concept.source}にある言葉です。今日はこの一行だけ、覚えて帰ってください。`,
+        `${c.concept.term}（${c.concept.reading}）。${c.concept.source}にある言葉です。今日はこの一行だけ、持って帰ってください。`,
       ),
-      s(SECTION.hikkakari, `と申しましても、ふだんの暮らしとは遠い言葉に聞こえます。たとえば、${c.modern.line}`),
+      s(SECTION.hikkakari, `と言われても、ふだんの暮らしとは遠い言葉に聞こえます。たとえば、${c.modern.line}`),
       s(SECTION.zure, `${nq(c.concept.misread)}。ところが、${c.concept.pivot}`),
       s(SECTION.tatoe, `${c.story.title}という話があります。${storyLine(c.story)}`),
       s(SECTION.otoshi, c.concept.step),
-      s(SECTION.musubi, `もう一度だけ申します。${c.concept.term}。${c.concept.oneLine}`),
+      s(SECTION.musubi, `もう一度だけ。${c.concept.term}。${c.concept.oneLine}`),
     ],
   }),
 
@@ -295,11 +303,11 @@ const BUILDERS: Record<string, (c: Ctx) => Built> = {
     sections: [
       s(
         SECTION.iriguchi,
-        `お恥ずかしい話からはじめます。［ここにご自身の失敗を一つ。「${c.modern.scene}」のような、誰にでもある場面が使えます］`,
+        `お恥ずかしい話からはじめます。［ここに自分の失敗を一つ。${ownScene(c)}のような、誰にでもある場面で十分です］`,
       ),
       s(SECTION.hikkakari, `${c.modern.line}　私も、まったく同じところでつまずきました。`),
       s(SECTION.kotoba, conceptLine(c.concept)),
-      s(SECTION.zure, `私もずっと、${nq(c.concept.misread)}と思っておりました。けれども、${c.concept.pivot}`),
+      s(SECTION.zure, `世間では、${nq(c.concept.misread)}。私も長いこと、そう思っていました。けれども、${c.concept.pivot}`),
       s(SECTION.otoshi, c.concept.step),
       s(
         SECTION.musubi,
@@ -313,7 +321,7 @@ const BUILDERS: Record<string, (c: Ctx) => Built> = {
     uses: { concept: true, story: true },
     meta: [c.story.point, '冒頭で言い切ってから理由を出す。順番を入れ替えると弱くなる。'],
     sections: [
-      s(SECTION.iriguchi, `今日は少し、逆のことを申し上げます。${c.modern.line}`),
+      s(SECTION.iriguchi, `今日は少し、逆のことを言います。${c.modern.line}`),
       s(
         SECTION.hikkakari,
         `ふつうなら「もっと努力を」と言われる場面です。けれども、力の入れ方そのものが違っていることがあります。`,
@@ -342,7 +350,7 @@ const BUILDERS: Record<string, (c: Ctx) => Built> = {
       s(SECTION.otoshi, c.concept.step),
       s(
         SECTION.musubi,
-        `見方を変えなさい、とは申しません。もう一つの見方があると知っておくだけで、逃げ場が一つ増えます。`,
+        `見方を変えましょう、という話ではありません。もう一つの見方がある、と知っているだけで、逃げ場が一つ増えます。`,
       ),
     ],
   }),
@@ -352,7 +360,7 @@ const BUILDERS: Record<string, (c: Ctx) => Built> = {
     uses: { concept: true, occasion: true },
     meta: [`行事の由来は一分以内で切り上げ、${c.modern.scene}の話に早めに移る。`],
     sections: [
-      s(SECTION.iriguchi, `${c.occasion.name}の頃になりました。${c.occasion.hook}、という話をいたします。`),
+      s(SECTION.iriguchi, `${c.occasion.name}の頃になりました。${c.occasion.hook}、という話から。`),
       s(SECTION.hikkakari, c.modern.line),
       s(SECTION.kotoba, conceptLine(c.concept)),
       s(SECTION.zure, `${nq(c.concept.misread)}。けれども、${c.concept.pivot}`),
@@ -374,7 +382,7 @@ const BUILDERS: Record<string, (c: Ctx) => Built> = {
       s(SECTION.zure, `私たちも、${c.modern.scene}のたびに、この話と同じところに立っています。`),
       s(SECTION.watashi, conceptLine(c.concept)),
       s(SECTION.otoshi, c.concept.step),
-      s(SECTION.musubi, `話はこれだけです。解説はいたしません。持ち帰って、ふと思い出していただければ十分です。`),
+      s(SECTION.musubi, `話はこれだけです。解説はしません。帰り道でふと思い出したら、それで十分です。`),
     ],
   }),
 
@@ -399,7 +407,7 @@ const BUILDERS: Record<string, (c: Ctx) => Built> = {
     meta: [c.phrase.use, '御文の本文は自坊の勤行本で確かめる。大谷派では「御文」、本願寺派では「御文章」。'],
     sections: [
       s(SECTION.iriguchi, `御文を一通、読ませていただきます。${c.phrase.text}　【${c.phrase.source}】`),
-      s(SECTION.hikkakari, `今の言葉に直すと、${nq(c.phrase.gloss)}ということになりましょうか。`),
+      s(SECTION.hikkakari, `いまの言葉にすると、${nq(c.phrase.gloss)}。そういうことだと思います。`),
       s(SECTION.zure, `${c.modern.line}　五百年前の手紙が、その場面をまっすぐに指しています。`),
       s(SECTION.kotoba, conceptLine(c.concept)),
       s(SECTION.otoshi, c.concept.step),
@@ -413,7 +421,7 @@ const BUILDERS: Record<string, (c: Ctx) => Built> = {
     meta: [c.phrase.use, '唯円の問いを借りて、聴き手が言えずにいることを先に口にする。'],
     sections: [
       s(SECTION.iriguchi, c.modern.line),
-      s(SECTION.honne, `言いにくいことを、先に申します。${c.concept.everyday}`),
+      s(SECTION.honne, `言いにくいことを、先に言ってしまいます。${c.concept.everyday}`),
       s(SECTION.shogyo, `${c.phrase.text}　【${c.phrase.source}】`),
       s(SECTION.hikkakari, c.phrase.gloss),
       s(SECTION.kotoba, conceptLine(c.concept)),
@@ -429,13 +437,13 @@ const BUILDERS: Record<string, (c: Ctx) => Built> = {
     meta: ['真宗の法話は、説く形にすると途端に遠くなる。聞いている側の一人として話す。', '［　］に自分のこととして一つ入れる。'],
     sections: [
       s(SECTION.iriguchi, `${c.modern.line}　これは、よその話ではありません。`),
-      s(SECTION.honne, `［ここに、ご自身が「${c.modern.scene}」で引っかかった場面を一つ］`),
+      s(SECTION.honne, `［ここに、${ownScene(c)}のどこで引っかかったのか、一言］`),
       s(SECTION.kotoba, conceptLine(c.concept)),
-      s(SECTION.zure, `私はずっと、${nq(c.concept.misread)}と思っておりました。けれども、${c.concept.pivot}`),
+      s(SECTION.zure, `世間では、${nq(c.concept.misread)}。私も、ずっとそう思っていました。けれども、${c.concept.pivot}`),
       s(SECTION.otoshi, c.concept.step),
       s(
         SECTION.musubi,
-        `説く側に立ってしまうと、この一句は聞こえません。私も、聞かせていただく側の一人としてここにおります。`,
+        `説く側に立ったとたん、この一句は聞こえなくなります。私も、聞く側の一人としてここに座っています。`,
       ),
     ],
   }),
@@ -460,7 +468,7 @@ const BUILDERS: Record<string, (c: Ctx) => Built> = {
     uses: { concept: true, occasion: true },
     meta: ['供養ではなく報恩、という一点を外さない。由来の説明は短く。'],
     sections: [
-      s(SECTION.iriguchi, `${c.occasion.name}のお勤めです。${c.occasion.hook}、というところから申します。`),
+      s(SECTION.iriguchi, `${c.occasion.name}のお勤めです。${c.occasion.hook}、というところから。`),
       s(SECTION.hikkakari, c.modern.line),
       s(SECTION.kotoba, conceptLine(c.concept)),
       s(SECTION.zure, `${nq(c.concept.misread)}。けれども、${c.concept.pivot}`),
@@ -468,6 +476,30 @@ const BUILDERS: Record<string, (c: Ctx) => Built> = {
       s(
         SECTION.musubi,
         `${c.occasion.name}は、こちらが何かをして差し上げる日ではありません。受けていたことに気づかせていただく日です。`,
+      ),
+    ],
+  }),
+
+  ima: (c) => ({
+    title: `${c.story.title} — ${c.concept.term}`,
+    uses: { concept: true, story: true },
+    meta: [
+      c.story.point,
+      'このたとえに出典はない。「たとえばの話ですが」で始めれば十分。自分の暮らしの一件に差し替えるともっとよい。',
+    ],
+    sections: [
+      s(SECTION.iriguchi, c.modern.line),
+      s(SECTION.tatoe, `たとえばの話ですが。${c.story.summary}`),
+      s(
+        SECTION.zure,
+        `笑い話のようですが、ここで起きていることは、二千年前から言われてきたことと同じです。`,
+      ),
+      s(SECTION.kotoba, conceptLine(c.concept)),
+      s(SECTION.hikkakari, `世間では、${nq(c.concept.misread)}。けれども、${c.concept.pivot}`),
+      s(SECTION.otoshi, c.concept.step),
+      s(
+        SECTION.musubi,
+        `${c.story.title}——その話をした、とだけ覚えて帰ってもらえれば十分です。言葉のほうは、あとからついてきます。`,
       ),
     ],
   }),
@@ -521,9 +553,9 @@ const BUILDERS: Record<string, (c: Ctx) => Built> = {
         `ここから少し強引にまいります。「${c.word.word}」という言葉があります。いまの意味は${nq(c.word.now)}。ところがもとは、${c.word.origin}`,
       ),
       s(SECTION.kotoba, conceptLine(c.concept)),
-      s(SECTION.zure, `こじつけついでに申しますと、${c.concept.pivot}`),
+      s(SECTION.zure, `こじつけついでに言ってしまうと、${c.concept.pivot}`),
       s(SECTION.otoshi, c.concept.step),
-      s(SECTION.musubi, `だいぶ無理をいたしました。それでも覚えて帰っていただけたなら、今日はそれで十分です。`),
+      s(SECTION.musubi, `だいぶ無理をしました。それでも一つ覚えて帰ってもらえたら、今日はそれで十分です。`),
     ],
   }),
 }
@@ -758,6 +790,17 @@ export function generateNeta(input: GenerateInput): Neta[] {
   const PHRASE_SOURCE: Record<string, string> = { ofumi: '御文', tannisho: '歎異抄' }
   // 「身のまわりの出どころ」は、暮らしの品に結びつく人物が気持ちに当たるときだけ。
   // （無いまま出すと、由来の無い人物を由来話として語ることになる）
+  // 通夜・死別の場で「解約し忘れたサブスク」の話はしない。
+  // ここは好みではなく、候補から外す。喩えは背骨ではないので、外しても筋は立つ。
+  const usableStories =
+    target === 3 ? rankedStories.filter((r) => r.item.kind !== '今の話') : rankedStories
+
+  // 「今のたとえで」は、いまの暮らしの見立てが気持ちに当たるときだけ。
+  const hasFitParable =
+    target <= 2 &&
+    rankedStories.some(
+      (r) => r.item.kind === '今の話' && (emotions.length === 0 || r.match > 0 || r.hits > 0),
+    )
   const hasFitFigure =
     emotions.length === 0 || rankedFigures.some((r) => r.match > 0 && r.item.everyday)
 
@@ -768,7 +811,8 @@ export function generateNeta(input: GenerateInput): Neta[] {
           a.kojitsuke <= input.kojitsukeMax &&
           (mode === 'otani' || a.tradition !== 'shinshu') &&
           (!PHRASE_SOURCE[a.id] || hasFitPhrase(PHRASE_SOURCE[a.id])) &&
-          (a.id !== 'yurai' || hasFitFigure),
+          (a.id !== 'yurai' || hasFitFigure) &&
+          (a.id !== 'ima' || hasFitParable),
       )
   // 一句を名指しされたら、その一句を読む切り口を回す（無ければ通常どおり）
   const phraseAngles = usable.filter((a) => ['shogyo', 'ofumi', 'tannisho'].includes(a.id))
@@ -819,6 +863,14 @@ export function generateNeta(input: GenerateInput): Neta[] {
   const scaleCap = Math.max(1, Math.ceil(input.count / Math.max(1, scalesInPlay.length)))
   const scaleUsed = new Map<number, number>()
 
+  // 今の暮らしからのたとえ（スマホの充電、解約し忘れたサブスク…）は、
+  // 置き換えの一手間がいらないぶん、そのまま通じる。
+  // ただし、ひと回しが全部それになると軽くなるので半分まで。
+  // 通夜や死別の話（大きさ3）では出さない。場に合わない。
+  const parableCap = Math.max(1, Math.ceil(input.count / 2))
+  let parableUsed = 0
+  const preferModernParable = target <= 2
+
   const usedConcept = new Set<string>()
   const usedStory = new Set<string>()
   const usedWord = new Set<string>()
@@ -846,7 +898,12 @@ export function generateNeta(input: GenerateInput): Neta[] {
       okScale,
     ]
     const wordPool = shinshuAngle ? preferShinshu(rankedWords) : rankedWords
-    const storyPool = shinshuAngle ? preferShinshu(rankedStories) : rankedStories
+    const storyPool =
+      angle.id === 'ima'
+        ? orAll(usableStories.filter((r) => r.item.kind === '今の話'), usableStories)
+        : shinshuAngle
+          ? preferShinshu(usableStories)
+          : usableStories
     // 由来の切り口では、暮らしの品に結びつく人物だけを引く
     const figurePool =
       angle.id === 'yurai'
@@ -894,7 +951,13 @@ export function generateNeta(input: GenerateInput): Neta[] {
         (pins.modernId ? undefined : typedModern) ??
         takeUnused(alignTo(rankedModerns), usedModern, rand, 8),
       concept,
-      story: (pins.storyId ? STORY_BY_ID[pins.storyId] : undefined) ?? takeUnused(alignTo(storyPool), usedStory, rand, 6),
+      story:
+        (pins.storyId ? STORY_BY_ID[pins.storyId] : undefined) ??
+        takeUnused(alignTo(storyPool), usedStory, rand, 6, [
+          preferModernParable
+            ? (st: Story) => st.kind === '今の話' && parableUsed < parableCap
+            : (st: Story) => st.kind !== '今の話',
+        ]),
       figure:
         (pins.figureId ? FIGURE_BY_ID[pins.figureId] : undefined) ??
         takeUnused(alignTo(figurePool), usedFigure, rand, 6),
@@ -907,11 +970,13 @@ export function generateNeta(input: GenerateInput): Neta[] {
       mode,
     }
 
+    if (ctx.story.kind === '今の話') parableUsed++
+
     const built = BUILDERS[angle.id](ctx)
     const manner = mannerFor(scene, rand)
     const meta = [
       ...built.meta,
-      `避けたい入り方：「${ctx.concept.term}とは——という意味であります」と解説から始めると、そこで顔が下がります。今日の入口は「${ctx.modern.scene}」です。`,
+      `避けたい入り方：「${ctx.concept.term}とは——こういう意味です」と解説から始めると、そこで顔が下がります。今日の入口は「${ctx.modern.scene}」です。`,
       ...(mode === 'otani'
         ? [`大谷派の言い回し：「${manner.avoid}」ではなく「${manner.use}」。${manner.why}`]
         : []),
@@ -991,7 +1056,8 @@ export function generateNeta(input: GenerateInput): Neta[] {
               : `${ctx.figure.name}にも、同じところでのつまずきがある。${nq(ctx.figure.title)}。`,
           ]
         : []),
-      ...(built.uses.story ? [`${ctx.story.title}の話が、そこに重なる。`] : []),
+      // 題が述語で終わるたとえ（「たたんだそばから崩される」）もあるので、かぎ括弧で括る
+      ...(built.uses.story ? [`「${ctx.story.title}」の話が、そこに重なる。`] : []),
       todayStep,
     ]
 

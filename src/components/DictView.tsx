@@ -11,7 +11,11 @@ type Kind = 'phrase' | 'manner' | 'concept' | 'word' | 'story' | 'figure'
 const TABS: { id: Kind; label: string; note: string }[] = [
   { id: 'word', label: 'え、これも仏教語', note: '毎日使っている言葉の、もとの意味' },
   { id: 'concept', label: '仏教語', note: '世間での受け取りと、本来の意味の落差で引ける' },
-  { id: 'story', label: '喩え・逸話', note: 'そのまま語れる長さにしてある' },
+  {
+    id: 'story',
+    label: '喩え・逸話',
+    note: 'そのまま語れる長さにしてある。〈今の話〉は出典のない見立て——経典の話として語らないこと',
+  },
   {
     id: 'figure',
     label: '人の小ネタ',

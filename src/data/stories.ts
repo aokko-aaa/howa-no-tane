@@ -1,4 +1,5 @@
 import { SHINSHU_STORIES } from './shinshu/stories'
+import { PARABLES } from './parables'
 import type { Story } from './types'
 
 // 語りの「山」に使う喩え話・逸話。summary はそのまま声に出せる長さにしている。
@@ -300,8 +301,10 @@ const GENERAL_STORIES: Story[] = [
   },
 ]
 
-// 真宗大谷派の素材を先に置く（真宗モードで優先的に当たるようにするため）
-export const STORIES: Story[] = [...SHINSHU_STORIES, ...GENERAL_STORIES]
+// 真宗大谷派の素材を先に置く（真宗モードで優先的に当たるようにするため）。
+// 今の暮らしからのたとえも、同じ「喩え」の棚に入れる。
+// 置き換えの一手間がいらないぶん、いちばん先に当たってほしいことも多い。
+export const STORIES: Story[] = [...SHINSHU_STORIES, ...PARABLES, ...GENERAL_STORIES]
 
 export const STORY_BY_ID: Record<string, Story> = Object.fromEntries(
   STORIES.map((s) => [s.id, s]),

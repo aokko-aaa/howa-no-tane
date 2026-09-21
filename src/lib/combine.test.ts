@@ -121,7 +121,7 @@ describe('combineNetas', () => {
     const jiku = CONCEPT_BY_ID[out.materials.conceptId!]
     const musubi = out.sections.find((s) => s.label === COMBINED.musubi)!
     expect(musubi.body).toContain(jiku.term)
-    expect(musubi.body).toContain('一語で十分')
+    expect(musubi.body).toContain('この一語だけで十分')
   })
 
   it('語り手向けメモに、軸と、尺の落とし方が入る', () => {
