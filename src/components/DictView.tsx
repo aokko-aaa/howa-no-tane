@@ -10,7 +10,7 @@ type Kind = 'phrase' | 'manner' | 'concept' | 'word' | 'story' | 'figure'
 
 const TABS: { id: Kind; label: string; note: string }[] = [
   { id: 'word', label: 'え、これも仏教語', note: '毎日使っている言葉の、もとの意味' },
-  { id: 'concept', label: '仏教語', note: '世間での受け取りと、本来の意味の落差で引ける' },
+  { id: 'concept', label: '仏教語', note: 'どんな問いに答える言葉か。世間での受け取りとの落差でも引ける' },
   {
     id: 'story',
     label: '喩え・逸話',
@@ -33,7 +33,10 @@ export default function DictView() {
     q.trim() === '' || parts.some((p) => p.includes(q.trim()))
 
   const concepts = useMemo(
-    () => CONCEPTS.filter((c) => hit(c.term, c.reading, c.oneLine, c.everyday, c.misread, c.pivot)),
+    () =>
+      CONCEPTS.filter((c) =>
+        hit(c.term, c.reading, c.oneLine, c.question, c.everyday, c.misread, c.pivot),
+      ),
     [q],
   )
   const words = useMemo(
@@ -80,7 +83,7 @@ export default function DictView() {
       <input
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="言葉で探す（例：本願、御文、無常、我慢）"
+        placeholder="言葉で探す（例：本願、御文、無常、我慢、がんばれば）"
         className="min-h-tap w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
       />
 
@@ -132,6 +135,10 @@ export default function DictView() {
                 <span className="text-xs text-stone-500">{c.reading}</span>
               </div>
               <p className="mt-1 text-[15px] leading-relaxed">{c.oneLine}</p>
+              <p className="mt-2 rounded-lg bg-enji/5 px-3 py-2 text-sm leading-relaxed text-enji">
+                <span className="label text-enji/70">答えている問い </span>
+                {c.question}
+              </p>
               <dl className="mt-2 space-y-1 text-sm leading-relaxed">
                 <div>
                   <dt className="label inline">世間では </dt>

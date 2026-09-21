@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { CONCEPTS, CONCEPT_BY_ID } from '../data/concepts'
 import { wordOfTheDay } from './daily'
 import { toStructured } from './format'
 import { generateNeta, type GenerateInput } from './generate'
@@ -83,5 +84,90 @@ describe('今日の一つ', () => {
       Array.from({ length: 30 }, (_, i) => wordOfTheDay(new Date(2026, 8, i + 1)).id),
     )
     expect(days.size).toBeGreaterThan(8)
+  })
+})
+
+describe('問いの型', () => {
+  const toiBase: GenerateInput = {
+    text: '家事子育てに追われて自分とは何かがわからなくなる',
+    emotions: ['fuan'],
+    sceneId: 'howakai',
+    month: 9,
+    kojitsukeMax: 2,
+    tradition: 'otani',
+    seed: 3,
+    count: 6,
+  }
+  const netas = generateNeta(toiBase)
+
+  it('どの案も、七つの欄が順に並ぶ', () => {
+    for (const n of netas) {
+      const labels = buildStructure(n, 'toi').map((s) => s.label)
+      expect(labels, n.title).toEqual([
+        '① その場面',
+        '② 問い（声に出す）',
+        '③ 間（声に出さない）',
+        '④ 世間の答え',
+        '⑤ 手がかり',
+        '⑥ 問いに戻す',
+        '⑦ 今日の一歩',
+      ])
+    }
+  })
+
+  it('問いは、選ばれた仏教語が答えている問いそのもの', () => {
+    for (const n of netas) {
+      const c = CONCEPT_BY_ID[n.materials.conceptId!]
+      const out = buildStructure(n, 'toi')
+      const toi = out.find((s) => s.label === '② 問い（声に出す）')!
+      const modoru = out.find((s) => s.label === '⑥ 問いに戻す')!
+      expect(toi.body, n.title).toContain(c.question.replace(/。$/, ''))
+      // 同じ問いに戻す（別の問いを立てて終わらない）
+      expect(modoru.body, n.title).toContain(c.question.replace(/。$/, ''))
+    }
+  })
+
+  it('問いの欄で、答えを言ってしまわない', () => {
+    for (const n of netas) {
+      const c = CONCEPT_BY_ID[n.materials.conceptId!]
+      const toi = buildStructure(n, 'toi').find((s) => s.label === '② 問い（声に出す）')!
+      // 仏教語そのものを、問いの段で出さない
+      expect(toi.body, n.title).not.toContain(c.term)
+      expect(toi.body, n.title).not.toContain(c.pivot)
+    }
+  })
+
+  it('結びは答えではなく、問いを持ち帰らせる', () => {
+    for (const n of netas) {
+      const modoru = buildStructure(n, 'toi').find((s) => s.label === '⑥ 問いに戻す')!
+      expect(modoru.body, n.title).toContain('答えは言いません')
+      expect(modoru.body, n.title).toContain('［')
+    }
+  })
+
+  it('間の欄は、語り手への指示だとはっきり書いてある', () => {
+    const ma = buildStructure(netas[0], 'toi').find((s) => s.label === '③ 間（声に出さない）')!
+    expect(ma.body).toContain('答えを言わない')
+  })
+
+  it('本文に未定義や空欄が混ざらない', () => {
+    for (const n of netas) {
+      for (const s of buildStructure(n, 'toi')) {
+        expect(s.body.trim().length, `${n.title} / ${s.label}`).toBeGreaterThan(0)
+        expect(s.body, `${n.title} / ${s.label}`).not.toMatch(/undefined|NaN/)
+      }
+    }
+  })
+
+  it('どの仏教語にも、答えている問いがある', () => {
+    for (const c of CONCEPTS) {
+      expect(c.question, c.term).toBeTruthy()
+      // 教義の語で問いを立てない（聴き手の言葉で書く）。
+      // 「諦める」のように、見出し語そのものが日常語のものだけは例外。
+      const everydayWord = ['akirameru']
+      if (!everydayWord.includes(c.id)) {
+        expect(c.question, c.term).not.toContain(c.term)
+      }
+    }
   })
 })

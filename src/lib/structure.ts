@@ -11,9 +11,14 @@ import { SECTION } from './generate'
  * 気に入った案を、話の型に組み直す。
  * 素材は変えず、並べ方と言い方だけを型に合わせる。
  */
-export type StructureId = 'kishou' | 'prep'
+export type StructureId = 'toi' | 'kishou' | 'prep'
 
 export const STRUCTURES: { id: StructureId; label: string; note: string }[] = [
+  {
+    id: 'toi',
+    label: '問い',
+    note: '答えではなく問いから入り、答えを渡さずに、問いを持って帰ってもらう',
+  },
   { id: 'kishou', label: '起承転結', note: '場面から入り、ひっくり返して、暮らしへ戻す' },
   { id: 'prep', label: 'PREP', note: '言いたいことを先に置き、理由と例で支えて、もう一度言う' },
 ]
@@ -51,6 +56,46 @@ export function buildStructure(neta: Neta, id: StructureId): NetaSection[] {
   const lead = opening(neta)
   const ex = example(neta)
   const musubi = neta.sections.find((s) => s.label === SECTION.musubi)?.body ?? ''
+
+  if (id === 'toi') {
+    // 答えから始めると説教になる。問いを先に置いて、答えは渡さずに帰ってもらう。
+    // 〈間〉を欄として立てているのは、黙る場所が書かれていないと、
+    // 語り手がそのまま答えへ進んでしまうため。
+    return [
+      { label: '① その場面', body: lead },
+      { label: '② 問い（声に出す）', body: `——${nq(c.question)}。` },
+      {
+        label: '③ 間（声に出さない）',
+        body:
+          'ここで答えを言わない。二拍おく。\n聴いている人が、自分の一件を思い出す時間。急ぐと、問いが問いのまま届かない。',
+      },
+      {
+        label: '④ 世間の答え',
+        body: `世間では、${nq(c.misread)}。
+
+それで片づくなら、この問いはとっくに消えています。`,
+      },
+      {
+        label: '⑤ 手がかり',
+        body: `${c.term}（${c.reading}）。${nq(c.oneLine)}。　【${c.source}】
+
+${c.pivot}${
+          ex ? `
+
+${ex}` : ''
+        }`,
+      },
+      {
+        label: '⑥ 問いに戻す',
+        body: `もう一度うかがいます。${nq(c.question)}。
+
+答えは言いません。持ったまま帰っていただくのが、今日のおみやげです。
+
+［ここに、ご自身ならこの問いにどう答えるか、一行だけ］`,
+      },
+      { label: '⑦ 今日の一歩', body: `${nq(c.step)}。${musubi ? `\n\n${musubi}` : ''}` },
+    ]
+  }
 
   if (id === 'kishou') {
     return [

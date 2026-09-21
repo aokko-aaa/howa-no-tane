@@ -55,7 +55,8 @@ export default function NetaCard({
   onRemove,
   onSwap,
   swapKinds = ['modern', 'angle'],
-  defaultView = 'outline',
+  // 既定は〈問い〉。答えを先に見せると、読むほうも説教として読む。
+  defaultView = 'toi',
   picked = false,
   onPick,
   children,
