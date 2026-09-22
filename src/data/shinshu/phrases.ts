@@ -9,6 +9,7 @@ export const PHRASES: Phrase[] = [
     gloss: 'しかるべき縁がもよおせば、人はどんなふるまいもする。',
     use: '「あの人が許せない」「なぜ自分はあんなことを」に。人柄の話を、縁の話に移す。',
     emotions: ['urami', 'iraira', 'zaiakukan', 'jikokeno', 'koukai'],
+    topics: ['naoranai', 'ikari'],
   },
   {
     id: 'wasan-myouri',
@@ -17,6 +18,7 @@ export const PHRASES: Phrase[] = [
     gloss: '善悪の判断もつかない身でありながら、名声と利益を求めて人の師になりたがる。',
     use: '人と比べる・認められたいという気持ちに。祖師自身が同じ穴にいると示す。',
     emotions: ['hikaku', 'shitto', 'shounin', 'mukuwarenai'],
+    topics: ['naoranai', 'miraretakata'],
   },
   {
     id: 'wasan-shouji',
@@ -25,6 +27,7 @@ export const PHRASES: Phrase[] = [
     gloss: '人を思いやる心もない身で、人助けなど言えたものではない。',
     use: '「やさしくできない自分」を責めている人に。',
     emotions: ['jikokeno', 'ningenkankei', 'iraira', 'munashisa', 'kazoku', 'urami'],
+    topics: ['naoranai', 'mukuwarenai'],
   },
   {
     id: 'kyogyoshinsho-yorokobashi',
@@ -33,6 +36,7 @@ export const PHRASES: Phrase[] = [
     gloss: '喜ばしいことだ。この心が、大きな願いの大地に根を下ろした。',
     use: 'うれしいこと・区切りのついたことを、自分の手柄の外側から受け取る。',
     emotions: ['yorokobi', 'kansha', 'tassei', 'hajimari', 'yasuragi'],
+    topics: ['hajimari', 'tayoru'],
   },
   {
     id: 'tannisho-9',
@@ -41,6 +45,7 @@ export const PHRASES: Phrase[] = [
     gloss: '喜べるはずのことを喜べないのは、煩悩のしわざである。',
     use: 'うれしいはずなのに素直に喜べない、という声に。唯円の問いがそのまま使える。',
     emotions: ['yorokobi', 'munashisa', 'jikokeno', 'shitto', 'ochikomi'],
+    topics: ['naoranai', 'wakaranai'],
   },
   {
     id: 'tannisho-1',
@@ -49,6 +54,7 @@ export const PHRASES: Phrase[] = [
     gloss: '年齢も、善し悪しも、選ばれていない。',
     use: '「自分のような者でも」と言う人に、条件がないことを先に置く。',
     emotions: ['jikokeno', 'zaiakukan', 'shi', 'kodoku', 'hikaku', 'shitto'],
+    topics: ['kuraberu', 'tayoru'],
   },
   {
     id: 'tannisho-3',
@@ -57,6 +63,7 @@ export const PHRASES: Phrase[] = [
     gloss: '善人でさえ往生する。まして悪人は。',
     use: '悪人正機。自分を責めている人に。順番が逆に見えるところを説く。',
     emotions: ['zaiakukan', 'jikokeno', 'koukai', 'tsukare', 'urami'],
+    topics: ['naoranai', 'miraretakata'],
   },
   {
     id: 'tannisho-7',
@@ -65,6 +72,7 @@ export const PHRASES: Phrase[] = [
     gloss: '障りが障りでなくなる、ただ一つの道。',
     use: '状況が変わらない苦しみに。消す話ではなく、歩ける話として。',
     emotions: ['tsukare', 'ningenkankei', 'okane', 'shi'],
+    topics: ['naoranai', 'wakaranai'],
   },
   {
     id: 'tannisho-6',
@@ -73,6 +81,7 @@ export const PHRASES: Phrase[] = [
     gloss: '自分の力で信じさせたのでなければ、弟子とは言えない。',
     use: '子育て・後輩指導・介護など、抱え込んでいる人に。',
     emotions: ['kazoku', 'ningenkankei', 'mukuwarenai', 'shounin'],
+    topics: ['hito', 'yakuwari'],
   },
   {
     id: 'tannisho-2',
@@ -81,6 +90,7 @@ export const PHRASES: Phrase[] = [
     gloss: 'だまされて地獄に落ちても、後悔はしない。',
     use: '保証や損得で決めようとする場面に。覚悟の質を示す一句。',
     emotions: ['mayoi', 'fuan', 'okane', 'shi'],
+    topics: ['tayoru', 'wakaranai'],
   },
   {
     id: 'tannisho-kojo',
@@ -89,6 +99,7 @@ export const PHRASES: Phrase[] = [
     gloss: 'みなそらごとたわごとの中で、念仏だけがまこと。',
     use: '情報に振り回されている人に。何を軸にするかの話として。',
     emotions: ['mayoi', 'fuan', 'munashisa', 'isogashii', 'henka'],
+    topics: ['wakaranai', 'tayoru'],
   },
   {
     id: 'tannisho-ichinin',
@@ -97,6 +108,7 @@ export const PHRASES: Phrase[] = [
     gloss: 'あの長い思案は、この私ひとりのためだった。',
     use: '一般論として聞き流されそうなときに、名指しへ引き戻す。',
     emotions: ['kodoku', 'jikokeno', 'munashisa', 'shounin'],
+    topics: ['miraretakata', 'naoranai'],
   },
   {
     id: 'shoshinge-kimyou',
@@ -106,6 +118,7 @@ export const PHRASES: Phrase[] = [
     gloss: '限りないいのちに、はかりしれない光に、身をまかせる。',
     use: 'お勤めの後の法話で、いま称えた一行を開く形に。',
     emotions: ['yasuragi', 'fuan', 'kansha', 'shi'],
+    topics: ['tayoru', 'shi-wakare'],
   },
   {
     id: 'shoshinge-shouge',
@@ -115,6 +128,7 @@ export const PHRASES: Phrase[] = [
     gloss: '煩悩に目をさえぎられて見えないが、大悲は倦むことなく常に私を照らす。',
     use: '実感がないという相談に。見えないことと、届いていないことは別だと示す。',
     emotions: ['jikokeno', 'munashisa', 'kodoku', 'ochikomi'],
+    topics: ['naoranai', 'tayoru'],
   },
   {
     id: 'wasan-hongan',
@@ -123,6 +137,7 @@ export const PHRASES: Phrase[] = [
     gloss: '本願のはたらきに遇えば、むなしく過ぎる人は一人もいない。',
     use: '報われない、意味がないと感じている人に。',
     emotions: ['munashisa', 'mukuwarenai', 'tsukare', 'kodoku', 'henka', 'isogashii'],
+    topics: ['mukuwarenai', 'tayoru'],
   },
   {
     id: 'wasan-ondoku',
@@ -131,6 +146,7 @@ export const PHRASES: Phrase[] = [
     gloss: '返しきれないと知った者の、行き場のない礼。',
     use: '法要の結び。歌って終わる場で、歌詞を一度ほどいておく。',
     emotions: ['kansha', 'wakare', 'mukuwarenai', 'tassei'],
+    topics: ['atarimae', 'mukuwarenai'],
   },
   {
     id: 'wasan-kokedo',
@@ -139,6 +155,7 @@ export const PHRASES: Phrase[] = [
     gloss: '教えに帰したはずの自分に、真実の心がない。',
     use: '「信じきれない」という声に、祖師も同じところに立ったと示す。',
     emotions: ['jikokeno', 'zaiakukan', 'mayoi', 'ochikomi'],
+    topics: ['naoranai', 'miraretakata'],
   },
   {
     id: 'wasan-kichijitsu',
@@ -147,6 +164,7 @@ export const PHRASES: Phrase[] = [
     gloss: '日柄を選び、占いを勤めとすることを、聖人は悲しまれた。',
     use: '仏滅・方角・厄年などの相談に。「門徒もの知らず」の中身を示す。',
     emotions: ['fuan', 'mayoi', 'kazoku', 'hajimari'],
+    topics: ['wakaranai', 'hajimari'],
   },
   {
     id: 'ofumi-hakkotsu',
@@ -155,6 +173,7 @@ export const PHRASES: Phrase[] = [
     gloss: '朝の元気な顔が、夕べには骨になっている身。',
     use: '通夜・葬儀で。順番が決まっていないという事実として読む。',
     emotions: ['shi', 'wakare', 'fuan', 'kazoku', 'henka'],
+    topics: ['shi-wakare'],
   },
   {
     id: 'ofumi-ichiryu',
@@ -163,6 +182,7 @@ export const PHRASES: Phrase[] = [
     gloss: '親鸞聖人の教えの要は、信心ひとつ。',
     use: '報恩講など、真宗の筋を短く示す場面で。',
     emotions: ['mayoi', 'kansha', 'yasuragi'],
+    topics: ['tayoru', 'wakaranai'],
   },
   {
     id: 'ofumi-matsudai',
@@ -171,6 +191,7 @@ export const PHRASES: Phrase[] = [
     gloss: '学問のない、家で暮らす者たちこそ、ただ一つにまかせよ。',
     use: '「難しいことはわからない」と言う人に、その人が名指しされていると示す。',
     emotions: ['jikokeno', 'mayoi', 'kodoku', 'kazoku'],
+    topics: ['tayoru', 'hito'],
   },
   {
     id: 'kyogyoshinsho-tariki',
@@ -179,6 +200,7 @@ export const PHRASES: Phrase[] = [
     gloss: '他力とは、人任せではなく、如来のはたらき。',
     use: '「他力本願」の誤用から入るときの、着地点の一句。',
     emotions: ['tsukare', 'mukuwarenai', 'jikokeno', 'ningenkankei'],
+    topics: ['tayoru'],
   },
   {
     id: 'daikyo-18',
@@ -188,6 +210,7 @@ export const PHRASES: Phrase[] = [
     gloss: '一人でも救われない者があれば、私は仏にならない、という誓い。',
     use: '本願の話の土台。条件が向こう側に置かれていることを示す。',
     emotions: ['jikokeno', 'fuan', 'kodoku', 'zaiakukan'],
+    topics: ['tayoru', 'naoranai'],
   },
   {
     id: 'mattosho-jinen',
@@ -196,6 +219,7 @@ export const PHRASES: Phrase[] = [
     gloss: 'おのずから、そうあらしめられている。私の計らいではない。',
     use: '力みが抜けない人に。晩年の一通として重みが出る。',
     emotions: ['tsukare', 'aseri', 'mayoi', 'yasuragi', 'henka'],
+    topics: ['tayoru', 'sakinobashi'],
   },
   {
     id: 'sankie',
@@ -204,6 +228,7 @@ export const PHRASES: Phrase[] = [
     gloss: '受け難い身を受け、聞き難い法を、いま聞いている。',
     use: '集まりの冒頭で唱えた言葉を、そのまま法話の入口にする。',
     emotions: ['kansha', 'yorokobi', 'munashisa', 'hajimari'],
+    topics: ['hajimari', 'atarimae'],
   },
   {
     id: 'kiyozawa-tenmei',
@@ -212,6 +237,7 @@ export const PHRASES: Phrase[] = [
     gloss: 'まず引き受けてしまってから、できることをする。',
     use: '順番が逆になりがちな現代の努力論に当てる。',
     emotions: ['aseri', 'fuan', 'tsukare', 'mayoi', 'isogashii', 'henka'],
+    topics: ['sakinobashi', 'wakaranai'],
     caution: '近代の言葉。経典の語ではないと断って引く。',
   },
 ]

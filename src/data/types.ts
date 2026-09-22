@@ -144,6 +144,12 @@ export type Modern = {
   scene: string
   /** そのまま語り出しに使える一文 */
   line: string
+  /**
+   * その場面で、人が内心思っていること。
+   * 話したいことと情景を結ぶときは、場面そのものではなく、
+   * そこで動いている心のほうが手がかりになる。
+   */
+  omoi: string
   emotions: EmotionId[]
   topics?: TopicId[]
   keywords?: string[]
@@ -195,6 +201,7 @@ export type Phrase = {
   /** どんな場で効くか */
   use: string
   emotions: EmotionId[]
+  topics?: TopicId[]
   caution?: string
 }
 

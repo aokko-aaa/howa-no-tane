@@ -846,6 +846,7 @@ export function generateNeta(input: GenerateInput): Neta[] {
     ? {
         id: 'typed',
         scene: 'ご自身の一件',
+        omoi: 'ご自身が書かれた一件。',
         line: /[。！？…]$/.test(typed)
           ? typed.length > 160
             ? `${typed.slice(0, 160)}…`

@@ -4,6 +4,7 @@ import DictView from './components/DictView'
 import EmotionPicker from './components/EmotionPicker'
 import NetaCard from './components/NetaCard'
 import SavedView from './components/SavedView'
+import SituationView from './components/SituationView'
 import { ANGLES, SCENES } from './data/angles'
 import { CONCEPTS } from './data/concepts'
 import { FIGURES } from './data/figures'
@@ -30,9 +31,10 @@ import {
 } from './lib/ratings'
 import { savedStore } from './lib/storage'
 
-type Tab = 'make' | 'chart' | 'book' | 'dict'
+type Tab = 'talk' | 'make' | 'chart' | 'book' | 'dict'
 
 const TABS: { id: Tab; label: string }[] = [
+  { id: 'talk', label: '話したいことから' },
   { id: 'make', label: 'つくる' },
   { id: 'chart', label: 'くらし' },
   { id: 'book', label: 'ネタ帳' },
@@ -42,7 +44,7 @@ const TABS: { id: Tab; label: string }[] = [
 const BATCH = 6
 
 export default function App() {
-  const [tab, setTab] = useState<Tab>('make')
+  const [tab, setTab] = useState<Tab>('talk')
   const [text, setText] = useState('')
   const [emotions, setEmotions] = useState<EmotionId[]>([])
   const [reasons, setReasons] = useState<string[]>([])
@@ -649,6 +651,7 @@ export default function App() {
         </div>
       )}
 
+      {tab === 'talk' && <SituationView />}
       {tab === 'chart' && (
         <ChartView tradition={tradition} savedIds={savedIds} onSave={save} />
       )}

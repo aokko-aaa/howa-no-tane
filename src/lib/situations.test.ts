@@ -1,0 +1,96 @@
+import { describe, expect, it } from 'vitest'
+import { MODERNS } from '../data/modern'
+import {
+  findSituations,
+  sourceById,
+  sourcesOf,
+  SOURCE_KINDS,
+  toWorksheet,
+} from './situations'
+
+describe('話したいことから情景を引く', () => {
+  it.each(SOURCE_KINDS)('%s の選択肢が、中身の揃った形で出る', (kind) => {
+    const list = sourcesOf(kind)
+    expect(list.length).toBeGreaterThan(20)
+    for (const s of list) {
+      expect(s.title.length, s.id).toBeGreaterThan(0)
+      expect(s.body.length, s.id).toBeGreaterThan(0)
+      expect(s.hint.length, s.id).toBeGreaterThan(0)
+      expect(s.topics.length, `${s.id}: 話題が無いと情景を引けない`).toBeGreaterThan(0)
+      expect(s.search, s.id).toContain(s.title)
+    }
+    expect(new Set(list.map((x) => x.id)).size).toBe(list.length)
+  })
+
+  it('どの話したいことからも、情景が出る', () => {
+    for (const kind of SOURCE_KINDS) {
+      for (const s of sourcesOf(kind)) {
+        expect(findSituations(s).length, `${kind}/${s.id}: ${s.title}`).toBeGreaterThan(0)
+      }
+    }
+  })
+
+  it('並んだ情景は、必ず話題か気持ちが重なっている', () => {
+    for (const kind of SOURCE_KINDS) {
+      for (const s of sourcesOf(kind)) {
+        for (const x of findSituations(s)) {
+          expect(
+            x.sharedTopics.length + x.sharedEmotions.length,
+            `${s.title} / ${x.modern.scene}`,
+          ).toBeGreaterThan(0)
+        }
+      }
+    }
+  })
+
+  it('話題の重なりが多いものから並ぶ', () => {
+    for (const s of sourcesOf('concept')) {
+      const xs = findSituations(s)
+      for (let i = 1; i < xs.length; i++) {
+        expect(xs[i - 1].score, s.title).toBeGreaterThanOrEqual(xs[i].score)
+      }
+    }
+  })
+
+  it('どの情景にも「そこで思っていること」がある', () => {
+    // 話したいことと情景を結ぶときは、場面そのものより、そこで動いている心が手がかりになる
+    for (const m of MODERNS) {
+      expect(m.omoi?.length, `${m.id}: ${m.scene}`).toBeGreaterThan(5)
+      expect(m.omoi, m.id).not.toBe(m.line)
+    }
+  })
+
+  it('下ごしらえの用紙は、両側を並べてつなぎ目を空ける（機械が結論を書かない）', () => {
+    const s = sourceById('concept', 'mukudoku')!
+    const sheet = toWorksheet(s, findSituations(s)[0])
+    expect(sheet).toContain('話したいこと')
+    expect(sheet).toContain(s.title)
+    expect(sheet).toContain('情景')
+    expect(sheet).toContain('そこで思っていること')
+    expect(sheet).toContain('重なっているところ')
+    expect(sheet).toContain('ここから先は、ご自身の言葉で')
+    expect(sheet).toContain('［　］')
+    // 「だからこうつながります」と機械が言い切らない
+    expect(sheet).not.toMatch(/だから|ですから|つまり/)
+  })
+
+  it('重なりの名前が二度出ない', () => {
+    for (const kind of SOURCE_KINDS) {
+      for (const s of sourcesOf(kind)) {
+        for (const x of findSituations(s, 3)) {
+          const line = toWorksheet(s, x)
+            .split('\n')
+            .find((l) => l.startsWith('■ 重なっているところ'))!
+          const names = line.replace('■ 重なっているところ：', '').split('／')
+          expect(new Set(names).size, line).toBe(names.length)
+        }
+      }
+    }
+  })
+
+  it('無い素材を指定しても落ちない', () => {
+    expect(sourceById('concept', 'nope')).toBeUndefined()
+    expect(sourceById('phrase', 'nope')).toBeUndefined()
+    expect(sourceById('figure', 'nope')).toBeUndefined()
+  })
+})
