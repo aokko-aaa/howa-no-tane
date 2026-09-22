@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Neta } from '../data/types'
 import { combineNetas } from '../lib/combine'
+import {
+  BRIEF_FORMS,
+  DEFAULT_BRIEF,
+  toAIBrief,
+  type BriefForm,
+  type BriefOptions,
+} from '../lib/brief'
 import { copyText, toMarkdown } from '../lib/format'
 import {
   ratingStore,
@@ -26,6 +33,7 @@ export default function SavedView({ onChange, ratings, onRatingsChange }: Props)
   const [picked, setPicked] = useState<string[]>([])
   const [combined, setCombined] = useState<Neta | null>(null)
   const combinedRef = useRef<HTMLElement>(null)
+  const [brief, setBrief] = useState<BriefOptions>(DEFAULT_BRIEF)
 
   useEffect(() => {
     setList(savedStore.list())
@@ -80,6 +88,13 @@ export default function SavedView({ onChange, ratings, onRatingsChange }: Props)
     setTimeout(() => setMsg(null), 2600)
   }
 
+  /** 素材と守ってほしいことを一枚にして、AIに渡す */
+  const copyBrief = async (items: SavedNeta[], what: string) => {
+    const ok = await copyText(toAIBrief(items, brief))
+    setMsg(ok ? `${what}をコピーしました。AIに貼ってください` : 'コピーできませんでした')
+    setTimeout(() => setMsg(null), 3000)
+  }
+
   const togglePick = (id: string) =>
     setPicked((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
 
@@ -115,6 +130,89 @@ export default function SavedView({ onChange, ratings, onRatingsChange }: Props)
       }),
     )
   }
+
+  const briefPanel = (
+    <section className="card px-4 py-3">
+      <h2 className="text-sm font-bold">AIに渡して、法話に成形してもらう</h2>
+      <p className="mt-1 text-xs leading-relaxed text-stone-500">
+        素材と、守ってほしいことを一枚にまとめて書き出します。ChatGPTやClaudeに貼れば下書きが返ります。
+        このアプリは文章を組み立てません。書くのは向こう側、素材と縛りを渡すのがここの役目です。
+      </p>
+
+      <div className="mt-2.5 flex flex-col gap-2.5">
+        <div>
+          <div className="label mb-1.5">組み立て</div>
+          <div className="flex flex-wrap gap-1.5">
+            {BRIEF_FORMS.map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                className={`chip ${brief.form === f.id ? 'chip-on' : ''}`}
+                onClick={() => setBrief((p) => ({ ...p, form: f.id as BriefForm }))}
+                title={f.note}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-end gap-4">
+          <div>
+            <div className="label mb-1.5">長さ</div>
+            <div className="flex flex-wrap gap-1.5">
+              {[0, 3, 5, 10].map((mi) => (
+                <button
+                  key={mi}
+                  type="button"
+                  className={`chip ${brief.minutes === mi ? 'chip-on' : ''}`}
+                  onClick={() => setBrief((p) => ({ ...p, minutes: mi }))}
+                >
+                  {mi === 0 ? '掲示板・SNS' : `${mi}分`}
+                </button>
+              ))}
+            </div>
+          </div>
+          <label className="flex cursor-pointer items-center gap-1.5 text-sm">
+            <input
+              type="checkbox"
+              checked={brief.otani}
+              onChange={(e) => setBrief((p) => ({ ...p, otani: e.target.checked }))}
+              className="h-4 w-4 accent-enji"
+            />
+            真宗大谷派の作法に合わせる
+          </label>
+        </div>
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button
+          type="button"
+          className="btn-primary"
+          disabled={picked.length === 0}
+          onClick={() =>
+            copyBrief(
+              list.filter((x) => picked.includes(x.neta.id)),
+              `えらんだ${picked.length}件の指示書`,
+            )
+          }
+        >
+          {picked.length === 0
+            ? '〈組む〉で選ぶと、まとめて渡せます'
+            : `えらんだ${picked.length}件をAIに渡す`}
+        </button>
+        <button type="button" className="btn-ghost" onClick={() => copyBrief(list, 'ネタ帳全部の指示書')}>
+          ネタ帳ぜんぶ（{list.length}件）
+        </button>
+      </div>
+
+      <p className="mt-2 text-xs leading-relaxed text-amber-700">
+        出典は書き出した範囲だけを使うよう指示していますが、
+        <span className="font-bold">AIはそれでも作り話を混ぜます。</span>
+        返ってきた引用は、語る前に必ず原典でお確かめください。
+      </p>
+    </section>
+  )
 
   const ratingPanel = (
     <section className="card px-4 py-3">
@@ -169,6 +267,7 @@ export default function SavedView({ onChange, ratings, onRatingsChange }: Props)
 
   return (
     <div className="flex flex-col gap-3">
+      {briefPanel}
       {ratingPanel}
       <div className="flex items-center gap-2">
         <span className="text-sm text-stone-600">{list.length}件</span>
@@ -228,9 +327,18 @@ export default function SavedView({ onChange, ratings, onRatingsChange }: Props)
               className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
               placeholder="例：来月の月参り、Aさんのお宅で"
             />
-            <p className="mt-1 text-xs text-stone-400">
-              {new Date(item.savedAt).toLocaleString('ja-JP')} に保存
-            </p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() => copyBrief([item], 'この一件の指示書')}
+              >
+                この一件をAIに渡す
+              </button>
+              <span className="text-xs text-stone-400">
+                {new Date(item.savedAt).toLocaleString('ja-JP')} に保存
+              </span>
+            </div>
           </div>
         </NetaCard>
       ))}

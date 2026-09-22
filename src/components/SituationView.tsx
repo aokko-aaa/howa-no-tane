@@ -1,13 +1,16 @@
 import { useMemo, useState } from 'react'
 import { copyText } from '../lib/format'
+import { savedStore } from '../lib/storage'
 import {
   emotionLabel,
   findSituations,
   sourcesOf,
   SOURCE_KINDS,
   SOURCE_LABEL,
+  situationNeta,
   toWorksheet,
   topicLabel,
+  type Situation,
   type Source,
   type SourceKind,
 } from '../lib/situations'
@@ -16,11 +19,19 @@ import {
  * 話したいことから、いまの情景を引っ張り出す。
  * ここでは文章を組み立てない。両側を並べて、つなぐのは語り手。
  */
-export default function SituationView() {
+type Props = {
+  /** ネタ帳の中身が変わったことを、タブの件数へ返す */
+  onSaved?: (ids: string[]) => void
+}
+
+export default function SituationView({ onSaved }: Props) {
   const [kind, setKind] = useState<SourceKind>('concept')
   const [q, setQ] = useState('')
   const [picked, setPicked] = useState<Source | null>(null)
   const [msg, setMsg] = useState<string | null>(null)
+  const [savedIds, setSavedIds] = useState<string[]>(() =>
+    savedStore.list().map((x) => x.neta.id),
+  )
 
   const list = useMemo(() => {
     const all = sourcesOf(kind)
@@ -34,6 +45,24 @@ export default function SituationView() {
     const ok = await copyText(text)
     setMsg(ok ? `${what}をコピーしました` : 'コピーできませんでした')
     setTimeout(() => setMsg(null), 2200)
+  }
+
+  /** ネタ帳へ。あとでメモを足して、AIに渡す一枚にできる */
+  const save = (sit: Situation) => {
+    if (!picked) return
+    const neta = situationNeta(picked, sit)
+    const next = savedStore.add({
+      neta,
+      memo: '',
+      savedAt: new Date().toISOString(),
+      fromEmotions: sit.sharedEmotions,
+      fromText: '',
+    })
+    const ids = next.map((x) => x.neta.id)
+    setSavedIds(ids)
+    onSaved?.(ids)
+    setMsg('ネタ帳に入れました。メモを足して〈AIに渡す〉へ')
+    setTimeout(() => setMsg(null), 2600)
   }
 
   const switchKind = (k: SourceKind) => {
@@ -170,6 +199,13 @@ export default function SituationView() {
                   >
                     下ごしらえの用紙をコピー
                   </button>
+                  {savedIds.includes(situationNeta(picked, sit).id) ? (
+                    <span className="btn-ghost text-stone-400">ネタ帳に入れた</span>
+                  ) : (
+                    <button type="button" className="btn-primary" onClick={() => save(sit)}>
+                      ネタ帳に入れる
+                    </button>
+                  )}
                 </div>
               </article>
             ))}

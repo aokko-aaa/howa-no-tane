@@ -4,7 +4,8 @@ import { FIGURE_BY_ID, FIGURES } from '../data/figures'
 import { MODERNS } from '../data/modern'
 import { PHRASE_BY_ID, PHRASES } from '../data/shinshu/phrases'
 import { TOPIC_BY_ID } from '../data/topics'
-import type { EmotionId, Modern, TopicId } from '../data/types'
+import type { EmotionId, Modern, Neta, TopicId } from '../data/types'
+import { hashString } from './random'
 
 /**
  * 話したいことから、いまの情景を引っ張り出す。
@@ -126,6 +127,76 @@ export function findSituations(source: Source, limit = 12): Situation[] {
 
 export const topicLabel = (id: TopicId) => TOPIC_BY_ID[id]?.label ?? id
 export const emotionLabel = (id: EmotionId) => EMOTION_BY_ID[id]?.label ?? id
+
+/**
+ * ネタ帳に入れるための形。
+ * 器は Neta と同じにして、保存・メモ・評価・書き出しを共用する。
+ * ただし digest は持たせない。筋道や起承転結に組み直すと、
+ * 素材をまたいで機械が文章を作ることになり、ここで避けたかったことに戻る。
+ */
+export function situationNeta(source: Source, sit: Situation): Neta {
+  const m = sit.modern
+  const kasanari = Array.from(
+    new Set([...sit.sharedTopics.map(topicLabel), ...sit.sharedEmotions.map(emotionLabel)]),
+  ).join('／')
+  return {
+    id: `sit-${source.kind}-${source.id}-${m.id}-${hashString(source.title + m.scene)}`,
+    angleId: 'situation',
+    angleName: '話したいことから',
+    aim: '話したいことに、いまの情景を結びつける',
+    kojitsuke: 1,
+    title: `${source.title}／${m.scene}`,
+    sections: [
+      { label: '話したいこと', body: `${source.title}${source.sub ? `（${source.sub}）` : ''}\n${source.body}\n${source.hint}` },
+      { label: '情景', body: m.scene },
+      { label: '語り出し', body: m.line },
+      { label: 'そこで思っていること', body: m.omoi },
+      { label: '重なっているところ', body: kasanari || '—' },
+      {
+        label: 'つなぎ目（ご自身の言葉で）',
+        body: '・この情景のどこを、その言葉へ渡すか：［　］\n・聴いている人に、先に言ってしまうこと：［　］\n・今日の一歩：［　］',
+      },
+    ],
+    sources: sourceCitation(source),
+    cautions: sourceCaution(source),
+    materials: {
+      conceptId: source.kind === 'concept' ? source.id : undefined,
+      phraseId: source.kind === 'phrase' ? source.id : undefined,
+      figureId: source.kind === 'figure' ? source.id : undefined,
+      modernId: m.id,
+      modernScene: m.scene,
+      modernLine: m.line,
+    },
+    minutes: 0,
+    tradition:
+      (source.kind === 'concept' ? CONCEPT_BY_ID[source.id]?.tradition : undefined) ??
+      (source.kind === 'figure' ? FIGURE_BY_ID[source.id]?.tradition : undefined) ??
+      'common',
+  }
+}
+
+function sourceCitation(source: Source): string[] {
+  if (source.kind === 'concept') {
+    const c = CONCEPT_BY_ID[source.id]
+    return c ? [`${c.term}：${c.source}`] : []
+  }
+  if (source.kind === 'phrase') {
+    const p = PHRASE_BY_ID[source.id]
+    return p ? [`一節：${p.source}`] : []
+  }
+  const f = FIGURE_BY_ID[source.id]
+  return f ? [`${f.name}：${f.era}`] : []
+}
+
+function sourceCaution(source: Source): string[] {
+  const c =
+    source.kind === 'concept'
+      ? CONCEPT_BY_ID[source.id]?.caution
+      : source.kind === 'phrase'
+        ? PHRASE_BY_ID[source.id]?.caution
+        : FIGURE_BY_ID[source.id]?.caution
+  return c ? [`${source.title}：${c}`] : []
+}
 
 /**
  * 下ごしらえの用紙。

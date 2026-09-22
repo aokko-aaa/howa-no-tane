@@ -651,7 +651,7 @@ export default function App() {
         </div>
       )}
 
-      {tab === 'talk' && <SituationView />}
+      {tab === 'talk' && <SituationView onSaved={setSavedIds} />}
       {tab === 'chart' && (
         <ChartView tradition={tradition} savedIds={savedIds} onSave={save} />
       )}
