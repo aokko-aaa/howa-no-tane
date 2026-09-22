@@ -21,6 +21,13 @@ import {
   type ScaleMode,
 } from './lib/generate'
 import { detectEmotions } from './lib/match'
+import {
+  ratingStore,
+  snapshotOf,
+  type Rating,
+  type Verdict,
+  type Where,
+} from './lib/ratings'
 import { savedStore } from './lib/storage'
 
 type Tab = 'make' | 'chart' | 'book' | 'dict'
@@ -52,10 +59,42 @@ export default function App() {
   const resultsRef = useRef<HTMLElement>(null)
   const [openPins, setOpenPins] = useState(false)
   const [savedIds, setSavedIds] = useState<string[]>([])
+  const [ratings, setRatings] = useState<Rating[]>([])
 
   useEffect(() => {
     setSavedIds(savedStore.list().map((x) => x.neta.id))
+    setRatings(ratingStore.list())
   }, [])
+
+  /**
+   * 評価はアプリの出し方を変えない。端末に溜めて、書き出して、人が直すための記録。
+   * （数十件では統計にならないので、重みづけにすると候補が痩せるだけになる）
+   */
+  const rate = (neta: Neta, verdict: Verdict | null, where: Where[], memo: string) => {
+    if (verdict === null) {
+      setRatings(ratingStore.remove(neta.id))
+      return
+    }
+    setRatings(
+      ratingStore.set({
+        netaId: neta.id,
+        verdict,
+        where: verdict === 'off' ? where : [],
+        memo,
+        at: new Date().toISOString(),
+        snapshot: snapshotOf(neta),
+        context: {
+          text,
+          emotions: effective,
+          reasons,
+          sceneId,
+          tradition,
+          scale,
+        },
+      }),
+    )
+  }
+  const ratingOf = (id: string) => ratings.find((x) => x.netaId === id)
 
   const detected = useMemo(() => detectEmotions(text), [text])
   /** 選んだ気持ちが無ければ、書かれた文から拾ったものを使う */
@@ -199,7 +238,9 @@ export default function App() {
             onClick={() => setTab(t.id)}
           >
             {t.label}
-            {t.id === 'book' && savedIds.length > 0 ? `（${savedIds.length}）` : ''}
+            {t.id === 'book' && savedIds.length + ratings.length > 0
+              ? `（${savedIds.length}${ratings.length > 0 ? `・評価${ratings.length}` : ''}）`
+              : ''}
           </button>
         ))}
       </nav>
@@ -546,6 +587,8 @@ export default function App() {
                 saved={savedIds.includes(combined.id)}
                 onSave={save}
                 defaultView="prose"
+                rating={ratingOf(combined.id)}
+                onRate={rate}
               />
             </section>
           )}
@@ -565,6 +608,8 @@ export default function App() {
                   onSwap={swap}
                   picked={picked.includes(n.id)}
                   onPick={togglePick}
+                  rating={ratingOf(n.id)}
+                  onRate={rate}
                 />
                 </div>
               ))}
@@ -607,7 +652,9 @@ export default function App() {
       {tab === 'chart' && (
         <ChartView tradition={tradition} savedIds={savedIds} onSave={save} />
       )}
-      {tab === 'book' && <SavedView onChange={setSavedIds} />}
+      {tab === 'book' && (
+        <SavedView onChange={setSavedIds} ratings={ratings} onRatingsChange={setRatings} />
+      )}
       {tab === 'dict' && <DictView />}
 
       <footer className="mt-10 border-t border-stone-200 pt-4 text-xs leading-relaxed text-stone-500">

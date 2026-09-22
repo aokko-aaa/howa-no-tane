@@ -2,15 +2,25 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Neta } from '../data/types'
 import { combineNetas } from '../lib/combine'
 import { copyText, toMarkdown } from '../lib/format'
+import {
+  ratingStore,
+  snapshotOf,
+  toRatingsMarkdown,
+  type Rating,
+  type Verdict,
+  type Where,
+} from '../lib/ratings'
 import { savedStore, type SavedNeta } from '../lib/storage'
 import NetaCard from './NetaCard'
 
 type Props = {
   /** ネタ帳の中身が変わったことを、タブの件数へ返す */
   onChange?: (ids: string[]) => void
+  ratings: Rating[]
+  onRatingsChange: (list: Rating[]) => void
 }
 
-export default function SavedView({ onChange }: Props) {
+export default function SavedView({ onChange, ratings, onRatingsChange }: Props) {
   const [list, setList] = useState<SavedNeta[]>([])
   const [msg, setMsg] = useState<string | null>(null)
   const [picked, setPicked] = useState<string[]>([])
@@ -33,6 +43,41 @@ export default function SavedView({ onChange }: Props) {
     const ok = await copyText(toMarkdown(list.map((x) => ({ neta: x.neta, memo: x.memo }))))
     setMsg(ok ? 'ネタ帳をまるごとコピーしました' : 'コピーできませんでした')
     setTimeout(() => setMsg(null), 2200)
+  }
+
+  const ratingOf = (id: string) => ratings.find((x) => x.netaId === id)
+
+  const rate = (neta: Neta, verdict: Verdict | null, where: Where[], memo: string) => {
+    if (verdict === null) {
+      onRatingsChange(ratingStore.remove(neta.id))
+      return
+    }
+    const prev = ratingOf(neta.id)
+    onRatingsChange(
+      ratingStore.set({
+        netaId: neta.id,
+        verdict,
+        where: verdict === 'off' ? where : [],
+        memo,
+        at: new Date().toISOString(),
+        snapshot: snapshotOf(neta),
+        // ネタ帳からの評価は、保存したときの条件を使う
+        context: prev?.context ?? {
+          text: list.find((x) => x.neta.id === neta.id)?.fromText ?? '',
+          emotions: list.find((x) => x.neta.id === neta.id)?.fromEmotions ?? [],
+          reasons: [],
+          sceneId: '',
+          tradition: neta.tradition,
+          scale: '',
+        },
+      }),
+    )
+  }
+
+  const exportRatings = async () => {
+    const ok = await copyText(toRatingsMarkdown(ratings))
+    setMsg(ok ? `評価${ratings.length}件をコピーしました` : 'コピーできませんでした')
+    setTimeout(() => setMsg(null), 2600)
   }
 
   const togglePick = (id: string) =>
@@ -71,18 +116,60 @@ export default function SavedView({ onChange }: Props) {
     )
   }
 
+  const ratingPanel = (
+    <section className="card px-4 py-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <h2 className="text-sm font-bold">評価の記録</h2>
+        <span className="text-sm text-stone-600">
+          {ratings.length}件（◎ {ratings.filter((x) => x.verdict === 'good').length} ／ △{' '}
+          {ratings.filter((x) => x.verdict === 'off').length}）
+        </span>
+        <button
+          type="button"
+          className="btn-ghost ml-auto"
+          disabled={ratings.length === 0}
+          onClick={exportRatings}
+        >
+          評価を書き出す（Markdown）
+        </button>
+      </div>
+      <p className="mt-1.5 text-xs leading-relaxed text-stone-500">
+        評価はアプリの出し方を変えません。端末に溜めておいて、書き出して、
+        直すときの材料にするためのものです。〈書き出す〉でコピーして、そのまま渡せます。
+      </p>
+      {ratings.length > 0 && (
+        <button
+          type="button"
+          className="mt-2 text-xs text-stone-400 underline"
+          onClick={() => {
+            if (confirm(`評価${ratings.length}件を消します。よろしいですか。`)) {
+              onRatingsChange(ratingStore.clear())
+            }
+          }}
+        >
+          評価を全部消す
+        </button>
+      )}
+    </section>
+  )
+
   if (list.length === 0) {
     return (
-      <p className="text-sm leading-relaxed text-stone-500">
-        まだ何も入っていません。「つくる」で出たネタを〈ネタ帳に入れる〉と、ここに溜まります。
-        <br />
-        保存先はこの端末のブラウザです（サーバーには送っていません）。
-      </p>
+      <div className="flex flex-col gap-3">
+        {ratingPanel}
+        {msg && <p className="text-xs text-matcha">{msg}</p>}
+        <p className="text-sm leading-relaxed text-stone-500">
+          ネタ帳にはまだ何も入っていません。「つくる」で出たネタを〈ネタ帳に入れる〉と、ここに溜まります。
+          <br />
+          保存先はこの端末のブラウザです（サーバーには送っていません）。
+        </p>
+      </div>
     )
   }
 
   return (
     <div className="flex flex-col gap-3">
+      {ratingPanel}
       <div className="flex items-center gap-2">
         <span className="text-sm text-stone-600">{list.length}件</span>
         <button type="button" className="btn-ghost ml-auto" onClick={exportAll}>
@@ -111,6 +198,8 @@ export default function SavedView({ onChange }: Props) {
             saved={savedIds.includes(combined.id)}
             onSave={saveCombined}
             defaultView="prose"
+            rating={ratingOf(combined.id)}
+            onRate={rate}
           />
         </section>
       )}
@@ -124,6 +213,8 @@ export default function SavedView({ onChange }: Props) {
           onRemove={remove}
           picked={picked.includes(item.neta.id)}
           onPick={list.length > 1 ? togglePick : undefined}
+          rating={ratingOf(item.neta.id)}
+          onRate={rate}
         >
           <div className="mt-3">
             <label className="label" htmlFor={`memo-${item.neta.id}`}>

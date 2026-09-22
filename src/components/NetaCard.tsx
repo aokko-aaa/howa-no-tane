@@ -1,6 +1,13 @@
 import { useState } from 'react'
 import type { Neta } from '../data/types'
 import { copyText, toOutline, toProse, toScript, toStructured } from '../lib/format'
+import {
+  WHERE_LABEL,
+  WHERE_ORDER,
+  type Rating,
+  type Verdict,
+  type Where,
+} from '../lib/ratings'
 import { buildStructure, STRUCTURES, type StructureId } from '../lib/structure'
 
 type View = 'outline' | 'prose' | StructureId
@@ -19,6 +26,9 @@ type Props = {
   /** 組み合わせ用のチェック（渡したときだけ出る） */
   picked?: boolean
   onPick?: (id: string) => void
+  /** 評価（渡したときだけ出る）。アプリは学習しない。書き出して人が直すための記録 */
+  rating?: Rating
+  onRate?: (neta: Neta, verdict: Verdict | null, where: Where[], memo: string) => void
   children?: React.ReactNode
 }
 
@@ -59,6 +69,8 @@ export default function NetaCard({
   defaultView = 'toi',
   picked = false,
   onPick,
+  rating,
+  onRate,
   children,
 }: Props) {
   const hasOutline = (neta.digest?.steps.length ?? 0) > 0
@@ -90,6 +102,16 @@ export default function NetaCard({
   }
 
   const structure = STRUCTURES.find((x) => x.id === view)
+
+  const rate = (verdict: Verdict) =>
+    onRate?.(neta, rating?.verdict === verdict ? null : verdict, rating?.where ?? [], rating?.memo ?? '')
+  const toggleWhere = (w: Where) => {
+    if (!rating) return
+    const next = rating.where.includes(w)
+      ? rating.where.filter((x) => x !== w)
+      : [...rating.where, w]
+    onRate?.(neta, rating.verdict, next, rating.memo)
+  }
 
   return (
     <article className={`card overflow-hidden ${picked ? 'ring-2 ring-enji/40' : ''}`}>
@@ -232,6 +254,61 @@ export default function NetaCard({
               <button type="button" className="chip" onClick={() => onSwap(neta, 'angle')}>
                 切り口を変える
               </button>
+            )}
+          </div>
+        )}
+
+        {onRate && (
+          <div className="mt-3 rounded-lg border border-stone-200 bg-stone-50/70 px-3 py-2.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="label">この案は</span>
+              <button
+                type="button"
+                className={`chip ${rating?.verdict === 'good' ? 'chip-on' : ''}`}
+                onClick={() => rate('good')}
+              >
+                ◎ 使える
+              </button>
+              <button
+                type="button"
+                className={`chip ${rating?.verdict === 'off' ? 'chip-on' : ''}`}
+                onClick={() => rate('off')}
+              >
+                △ ちがう
+              </button>
+              {rating && (
+                <span className="text-xs text-stone-400">
+                  {new Date(rating.at).toLocaleString('ja-JP')}
+                </span>
+              )}
+            </div>
+
+            {rating?.verdict === 'off' && (
+              <div className="mt-2">
+                <div className="label mb-1">どこが？（任意・いくつでも）</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {WHERE_ORDER.map((w) => (
+                    <button
+                      key={w}
+                      type="button"
+                      className={`chip ${rating.where.includes(w) ? 'chip-on' : ''}`}
+                      onClick={() => toggleWhere(w)}
+                    >
+                      {WHERE_LABEL[w]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {rating && (
+              <textarea
+                value={rating.memo}
+                onChange={(e) => onRate?.(neta, rating.verdict, rating.where, e.target.value)}
+                rows={2}
+                placeholder="一言（例：問いが硬い／このたとえは使えない／入口だけ差し替えたい）"
+                className="mt-2 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+              />
             )}
           </div>
         )}
