@@ -17,6 +17,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '今日「これは今しかない」と思った場面を、ひとつだけ言葉にして残す。',
     scale: 2,
     emotions: ['wakare', 'munashisa', 'henka', 'shi', 'yorokobi', 'tassei'],
+    topics: ['tebanasu', 'shi-wakare'],
     keywords: ['変わる', '続かない', '無常'],
   },
   {
@@ -32,6 +33,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '今日の成果を、関わった人の名前で三つ数えてみる。',
     scale: 2,
     emotions: ['shounin', 'jikokeno', 'tassei', 'kansha', 'mukuwarenai', 'shitto', 'hikaku', 'yorokobi'],
+    topics: ['tayoru', 'yakuwari'],
   },
   {
     id: 'issai-kaiku',
@@ -46,6 +48,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '今日うまくいかなかったことを、「予定外」と言い換えて書いてみる。',
     scale: 2,
     emotions: ['iraira', 'aseri', 'mukuwarenai', 'tsukare', 'fuan'],
+    topics: ['owaranai', 'wakaranai'],
     keywords: ['思い通り', '予定', '計画', 'うまくいか'],
   },
   {
@@ -61,6 +64,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '今の苦しさが八つのどれに当たるか、当てはめてみる。',
     scale: 2,
     emotions: ['ningenkankei', 'tsukare', 'shi', 'wakare', 'mukuwarenai', 'okane', 'shitto'],
+    topics: ['wakaranai', 'owaranai'],
     keywords: ['大変', 'しんど', '重な'],
   },
   {
@@ -76,6 +80,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: 'うまくいかない一件について、変えられる条件をひとつだけ探す。',
     scale: 1,
     emotions: ['urami', 'ningenkankei', 'okane', 'mayoi', 'iraira', 'yorokobi', 'hajimari', 'tassei'],
+    topics: ['wakaranai', 'ikari'],
     keywords: ['おかげ', 'たまたま', '偶然', 'めぐり', 'タイミング', 'ふと', 'めぐりあわせ'],
   },
   {
@@ -91,6 +96,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '事実だけを一行書き、その下に「自分が足した言葉」を書き分ける。',
     scale: 1,
     emotions: ['ochikomi', 'koukai', 'jikokeno', 'iraira', 'zaiakukan', 'urami', 'fuan'],
+    topics: ['naoranai', 'ikari'],
     keywords: ['引きず', '反省', '思い出し', 'くよくよ', '思い出して', '不安'],
   },
   {
@@ -106,6 +112,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '今日出た三毒を、寝る前に一つずつ名指ししてみる。',
     scale: 1,
     emotions: ['iraira', 'urami', 'shitto', 'okane', 'hikaku'],
+    topics: ['ikari', 'naoranai'],
   },
   {
     id: 'chudo',
@@ -120,6 +127,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '今の自分の弦が「張りすぎ」か「ゆるみすぎ」か、どちらかを選ぶ。',
     scale: 1,
     emotions: ['tsukare', 'aseri', 'isogashii', 'mayoi', 'fuan'],
+    topics: ['owaranai', 'isogashii'],
     keywords: ['頑張りすぎ', '無理', '休め', 'やりすぎ', '家事', '子育て', '追われ', '手が回ら'],
   },
   {
@@ -135,6 +143,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '悩みを「症状／原因／どうなれば治るか／最初の一手」の四行に分けて書く。',
     scale: 2,
     emotions: ['mayoi', 'fuan', 'ochikomi', 'tsukare', 'okane'],
+    topics: ['wakaranai', 'owaranai'],
   },
   {
     id: 'hasshodo',
@@ -149,6 +158,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '八つのうち、今いちばん崩れている一つだけを選んで手当てする。',
     scale: 2,
     emotions: ['tsukare', 'mayoi', 'isogashii', 'jikokeno'],
+    topics: ['wakaranai', 'yakuwari'],
   },
   {
     id: 'jihi',
@@ -163,6 +173,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '目の前の人に必要なのが「慈」か「悲」か、口を開く前に決める。',
     scale: 2,
     emotions: ['ningenkankei', 'kazoku', 'wakare', 'kodoku'],
+    topics: ['hito', 'owaranai'],
   },
   {
     id: 'zuiki',
@@ -177,6 +188,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: 'うらやましいと思った相手に、ひとことだけ祝いの言葉を送る。',
     scale: 1,
     emotions: ['shitto', 'hikaku', 'shounin', 'mukuwarenai'],
+    topics: ['kuraberu', 'hito'],
   },
   {
     id: 'sha',
@@ -191,6 +203,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '苦手な人への返信を、好きな人と同じ速さで返してみる。',
     scale: 1,
     emotions: ['ningenkankei', 'urami', 'iraira'],
+    topics: ['hito', 'ikari'],
   },
   {
     id: 'ninniku',
@@ -205,6 +218,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '腹が立った相手に返す言葉から、仕返しの分だけを引く。',
     scale: 1,
     emotions: ['iraira', 'urami', 'ningenkankei', 'mukuwarenai'],
+    topics: ['ikari', 'hito'],
     keywords: ['我慢', '言い返', '耐え'],
   },
   {
@@ -220,6 +234,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '七つのうち一つを選んで、今日のうちに一回だけやる。',
     scale: 1,
     emotions: ['okane', 'mukuwarenai', 'munashisa', 'kansha', 'kodoku', 'yorokobi'],
+    topics: ['okane', 'hito'],
     keywords: ['笑顔', '席を譲', '手伝', '親切', '家事', '子育て'],
   },
   {
@@ -235,6 +250,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '欲しいものを一つ、買う前に一週間だけ書いて寝かせる。',
     scale: 1,
     emotions: ['okane', 'hikaku', 'mukuwarenai', 'munashisa', 'shitto'],
+    topics: ['okane', 'kuraberu'],
     keywords: ['欲し', '買っ', '足りな', '満足'],
   },
   {
@@ -250,6 +266,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '今日を「よい・悪い」で採点するのを一日だけやめてみる。',
     scale: 1,
     emotions: ['yasuragi', 'tsukare', 'ochikomi', 'henka', 'yorokobi', 'fuan'],
+    topics: ['atarimae', 'isogashii'],
     keywords: ['気分', '機嫌', '天気', '雨の日'],
     tradition: 'zen',
   },
@@ -266,6 +283,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '今日会う人に、相手を選ばず同じ態度で挨拶する。',
     scale: 1,
     emotions: ['ningenkankei', 'isogashii', 'kodoku', 'tsukare'],
+    topics: ['hito', 'atarimae'],
     tradition: 'zen',
   },
   {
@@ -281,6 +299,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '「昔は〜だったのに」と言いかけたら、そこで一度止めてみる。',
     scale: 2,
     emotions: ['koukai', 'henka', 'jikokeno', 'shi'],
+    topics: ['tebanasu', 'hajimari'],
     keywords: ['昔は', '以前は', '戻りた'],
     tradition: 'zen',
   },
@@ -297,6 +316,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '一日に一度、「今ここにいるか」と自分に声をかける。',
     scale: 1,
     emotions: ['mayoi', 'shounin', 'jikokeno', 'munashisa', 'fuan', 'isogashii', 'kazoku'],
+    topics: ['yakuwari', 'naoranai'],
     keywords: ['自分とは', '自分らし', '自分を見失', '何者', 'わからなくなる'],
     tradition: 'zen',
   },
@@ -313,6 +333,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '「もう気にしていない」と言いたくなったら、言わずにおく。',
     scale: 1,
     emotions: ['koukai', 'urami', 'tsukare', 'shounin'],
+    topics: ['tebanasu', 'mukuwarenai'],
     keywords: ['手放', '置いて', 'こだわ', '忘れよう', '諦めていた', 'やめたら'],
     tradition: 'zen',
   },
@@ -329,6 +350,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '今日した親切をひとつ、誰にも言わないでおく。',
     scale: 1,
     emotions: ['mukuwarenai', 'shounin', 'munashisa', 'kazoku', 'shitto', 'tassei'],
+    topics: ['mukuwarenai', 'miraretakata'],
     keywords: ['誰も見て', '評価', 'お礼', '感謝され'],
     tradition: 'zen',
   },
@@ -345,6 +367,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '今の持ち場で、自分の判断で決めていいことを一つ見つける。',
     scale: 1,
     emotions: ['mukuwarenai', 'isogashii', 'henka', 'munashisa', 'tassei', 'fuan', 'kazoku'],
+    topics: ['yakuwari', 'mukuwarenai'],
     keywords: ['家事', '子育て', '育児', 'ワンオペ', '主婦'],
     tradition: 'zen',
   },
@@ -361,6 +384,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '家を出る前に、履物の向きをそろえる。',
     scale: 1,
     emotions: ['aseri', 'mayoi', 'isogashii', 'fuan'],
+    topics: ['isogashii', 'sakinobashi'],
     keywords: ['足元', '散らか', '手が回ら'],
     tradition: 'zen',
   },
@@ -377,6 +401,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '不安を書き出し、「事実」と「予想」に印をつける。',
     scale: 1,
     emotions: ['fuan', 'koukai', 'aseri', 'ochikomi'],
+    topics: ['wakaranai', 'sakinobashi'],
     keywords: ['心配', '考えすぎ', '眠れな', '取り越し'],
     tradition: 'zen',
   },
@@ -393,6 +418,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '自分と誰かを比べている物差しの名前を、口に出してみる。',
     scale: 1,
     emotions: ['hikaku', 'jikokeno', 'shitto', 'shounin', 'yorokobi'],
+    topics: ['kuraberu', 'naoranai'],
     keywords: ['比べ', '向いてな', 'できる人'],
     tradition: 'zen',
   },
@@ -409,6 +435,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '腹が立った場面を、相手の席から見た文章で書き直す。',
     scale: 1,
     emotions: ['ningenkankei', 'iraira', 'hikaku', 'urami', 'shitto'],
+    topics: ['hito', 'wakaranai'],
     keywords: ['誤解', 'すれ違', '言い分'],
   },
   {
@@ -424,6 +451,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '自分についての決めつけを一つ選び、反例を一つ思い出す。',
     scale: 2,
     emotions: ['jikokeno', 'munashisa', 'henka', 'ochikomi'],
+    topics: ['tebanasu', 'wakaranai'],
   },
   {
     id: 'akunin-shoki',
@@ -438,6 +466,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '誰かに「助けてほしい」と、具体的に一つだけ頼む。',
     scale: 3,
     emotions: ['zaiakukan', 'jikokeno', 'tsukare', 'koukai'],
+    topics: ['naoranai', 'miraretakata'],
     tradition: 'shinshu',
   },
   {
@@ -453,6 +482,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '今日、人に任せていい仕事を一つだけ手放す。',
     scale: 2,
     emotions: ['tsukare', 'fuan', 'mukuwarenai', 'jikokeno'],
+    topics: ['tayoru', 'atarimae'],
     keywords: ['自分の力', 'おかげ', '助け', '支え', 'ひとりで', '力を抜', '助かっ'],
     tradition: 'shinshu',
   },
@@ -469,6 +499,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '次に会う約束のある人に、今日できる準備を一つする。',
     scale: 2,
     emotions: ['wakare', 'kansha', 'yorokobi', 'kazoku', 'hajimari'],
+    topics: ['hajimari', 'shi-wakare'],
     keywords: ['最後', '一度きり', '会え', '別れ際'],
     caution: '茶の湯の語。禅の影響下にあるが経典の語ではない。',
   },
@@ -485,6 +516,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '今日、家族に向ける最初の一言の顔を、外向きの顔に揃える。',
     scale: 1,
     emotions: ['ningenkankei', 'kansha', 'kazoku', 'yorokobi'],
+    topics: ['hito', 'okane'],
   },
   {
     id: 'ichigu-wo-terasu',
@@ -499,6 +531,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '職場や家で、自分しか照らしていない隅をひとつ言葉にする。',
     scale: 1,
     emotions: ['mukuwarenai', 'munashisa', 'shounin', 'kazoku', 'tassei', 'hajimari'],
+    topics: ['mukuwarenai', 'yakuwari'],
   },
   {
     id: 'moko-rita',
@@ -513,6 +546,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '人のためにする一件を決め、同時に自分の休みも一つ決める。',
     scale: 1,
     emotions: ['kazoku', 'tsukare', 'mukuwarenai', 'kansha', 'fuan'],
+    topics: ['owaranai', 'mukuwarenai'],
     keywords: ['家事', '子育て', '育児', '世話', '追われ'],
   },
   {
@@ -528,6 +562,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '返信を書き終えてから、仕返しの一文だけ消して送る。',
     scale: 1,
     emotions: ['urami', 'iraira', 'ningenkankei', 'zaiakukan'],
+    topics: ['ikari', 'hito'],
     keywords: ['仕返し', '言い返', '許せ', '恨'],
   },
   {
@@ -543,6 +578,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '人の投稿を見た時間と、自分の手を動かした時間を並べて書く。',
     scale: 1,
     emotions: ['hikaku', 'shitto', 'munashisa', 'shounin', 'okane'],
+    topics: ['kuraberu', 'okane'],
     keywords: ['SNS', 'インスタ', '見てしま', '比べ'],
   },
   {
@@ -558,6 +594,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '今日、自分が知らないことを一つ、人に教わる。',
     scale: 1,
     emotions: ['jikokeno', 'shounin', 'mayoi', 'ningenkankei'],
+    topics: ['miraretakata', 'naoranai'],
   },
   {
     id: 'inga-fumai',
@@ -572,6 +609,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: 'うやむやにしている一件を、事実だけで一行書く。',
     scale: 2,
     emotions: ['koukai', 'zaiakukan', 'urami', 'fuan'],
+    topics: ['naoranai', 'wakaranai'],
     keywords: ['ごまか', 'なかったこと', '隠し'],
   },
   {
@@ -587,6 +625,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '今日の小さな良い行いを、将来の自分宛ての積立だと思ってやる。',
     scale: 1,
     emotions: ['koukai', 'urami', 'mukuwarenai', 'zaiakukan'],
+    topics: ['naoranai', 'ikari'],
     keywords: ['自業自得', 'ざまあ', '因果応報'],
   },
   {
@@ -602,6 +641,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '今日の「ありがとう」を一回だけ、「めったにないことです」と言い換えてみる。',
     scale: 1,
     emotions: ['kansha', 'yorokobi', 'wakare', 'yasuragi', 'tassei', 'hajimari'],
+    topics: ['atarimae', 'shi-wakare'],
     keywords: ['ありがとう', 'めったに', '偶然', 'たまたま', '見つか', '出てき', '戻っ', 'でてき', 'ひょっこり', '無くし', 'なくし', '落とし', '忘れ物', '探し物'],
   },
   {
@@ -617,6 +657,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: 'できないことを一つ、はっきり言葉にして人に伝える。',
     scale: 1,
     emotions: ['mayoi', 'koukai', 'tsukare', 'henka', 'ochikomi'],
+    topics: ['tebanasu', 'sakinobashi'],
     keywords: ['諦め', 'あきらめ', '無理だ', 'もうだめ', '探しても', '見つからな', '探していた'],
     caution: '日本語「あきらめる」と仏教語「諦」の関係は語感の重なりとして語られる。語源説明として断定しすぎない。',
   },
@@ -633,6 +674,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '決めたあとの考えを、一度だけ立ち上がって見直す。',
     scale: 2,
     emotions: ['mayoi', 'henka', 'koukai', 'fuan'],
+    topics: ['tebanasu', 'isogashii'],
   },
   {
     id: 'shoji-jidai',
@@ -647,6 +689,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '今日やらなくてよいことを一つ決めて、外す。',
     scale: 3,
     emotions: ['shi', 'isogashii', 'aseri', 'wakare'],
+    topics: ['shi-wakare', 'sakinobashi'],
     keywords: ['後回し', '先延ばし', '時間がな'],
     tradition: 'zen',
   },
@@ -663,6 +706,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '今の困りごとを、誰かに渡せる経験として一行書いておく。',
     scale: 2,
     emotions: ['ochikomi', 'tsukare', 'zaiakukan', 'jikokeno', 'urami', 'koukai'],
+    topics: ['yakuwari', 'naoranai'],
     keywords: ['どん底', 'つらい', '経験'],
   },
   {
@@ -678,6 +722,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '見返りを求めない時間を、一日三分だけ確保する。',
     scale: 2,
     emotions: ['isogashii', 'tsukare', 'munashisa', 'yasuragi'],
+    topics: ['mukuwarenai', 'sakinobashi'],
     tradition: 'zen',
   },
   {
@@ -693,6 +738,7 @@ const GENERAL_CONCEPTS: Concept[] = [
     step: '目標ではなく、明日の最初の三分の行動だけを決める。',
     scale: 1,
     emotions: ['hajimari', 'mayoi', 'tassei', 'aseri', 'jikokeno', 'yorokobi'],
+    topics: ['hajimari', 'sakinobashi'],
     keywords: ['始め', '続かな', '三日坊主', 'やる気'],
   },
 ]

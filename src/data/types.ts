@@ -5,6 +5,35 @@
 
 export type EmotionId = string
 
+/**
+ * 話題。素材どうしをつなぐための層。
+ * 気持ちのタグだけでつなぐと、入口・問い・たとえが別々の話になる。
+ */
+export type TopicId =
+  | 'tayoru'
+  | 'owaranai'
+  | 'sakinobashi'
+  | 'kuraberu'
+  | 'naoranai'
+  | 'miraretakata'
+  | 'mukuwarenai'
+  | 'isogashii'
+  | 'ikari'
+  | 'tebanasu'
+  | 'yakuwari'
+  | 'shi-wakare'
+  | 'okane'
+  | 'atarimae'
+  | 'hito'
+  | 'hajimari'
+  | 'wakaranai'
+
+export type Topic = {
+  id: TopicId
+  label: string
+  note: string
+}
+
 /** 素材の系統。指定がなければ宗派を問わない共通のもの。 */
 export type Tradition = 'shinshu' | 'zen' | 'common'
 
@@ -60,6 +89,8 @@ export type Concept = {
   /** 日常への落とし込み（聴き手が今日できる一歩） */
   step: string
   emotions: EmotionId[]
+  /** この言葉が扱っている話題。入口・たとえを合わせるために使う */
+  topics?: TopicId[]
   keywords?: string[]
   /**
    * 話の大きさ。入口の場面と桁が合っていないと、こじつけ以前に届かない。
@@ -84,6 +115,7 @@ export type Story = {
   /** この話の使いどころ・落としどころ */
   point: string
   emotions: EmotionId[]
+  topics?: TopicId[]
   /** 書かれた文から拾うための語 */
   keywords?: string[]
   caution?: string
@@ -113,6 +145,7 @@ export type Modern = {
   /** そのまま語り出しに使える一文 */
   line: string
   emotions: EmotionId[]
+  topics?: TopicId[]
   keywords?: string[]
   /** この場面では使わない（通夜・葬儀で軽く響くものなど） */
   avoidScenes?: SceneId[]
@@ -144,6 +177,7 @@ export type Figure = {
   /** いまの暮らしとの接点（たくあん・お茶・だるま…） */
   everyday?: string
   emotions: EmotionId[]
+  topics?: TopicId[]
   keywords?: string[]
   caution?: string
   tradition?: Tradition

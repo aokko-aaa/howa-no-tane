@@ -3,6 +3,7 @@ import { ANGLES, SCENES } from './angles'
 import { CONCEPTS } from './concepts'
 import { EMOTIONS } from './emotions'
 import { FIGURES } from './figures'
+import { TOPICS, TOPIC_IDS } from './topics'
 import { MODERNS } from './modern'
 import { OCCASIONS } from './occasions'
 import { REASONS, reasonsFor } from './reasons'
@@ -80,6 +81,37 @@ describe('データの整合', () => {
   it('暮らしの品に結びつく人の小ネタが、いくつもある', () => {
     // 「身のまわりの出どころ」の切り口は、ここが薄いと成り立たない
     expect(FIGURES.filter((f) => f.everyday).length).toBeGreaterThanOrEqual(8)
+  })
+
+  it('話題のidが重複していない', () => {
+    expect(new Set(TOPIC_IDS).size).toBe(TOPICS.length)
+  })
+
+  it('どの素材にも話題がついている', () => {
+    // 話題が無いと、入口・問い・たとえをつなぐものが気持ちのタグだけになる。
+    // それだと〈自己嫌悪〉の一語で、鏡と他力本願とサブスクが同じ話にされる。
+    for (const xs of [CONCEPTS, MODERNS, STORIES, FIGURES]) {
+      for (const x of xs as { id: string; topics?: string[] }[]) {
+        expect(x.topics?.length, x.id).toBeGreaterThan(0)
+      }
+    }
+  })
+
+  it('話題のidがすべて実在する', () => {
+    const known = new Set<string>(TOPIC_IDS)
+    for (const xs of [CONCEPTS, MODERNS, STORIES, FIGURES]) {
+      for (const x of xs as { id: string; topics?: string[] }[]) {
+        for (const tp of x.topics ?? []) expect(known.has(tp), `${x.id}: ${tp}`).toBe(true)
+      }
+    }
+  })
+
+  it('どの話題にも、仏教語・入口・たとえが揃っている', () => {
+    for (const tp of TOPIC_IDS) {
+      expect(CONCEPTS.some((c) => c.topics?.includes(tp)), `concept: ${tp}`).toBe(true)
+      expect(MODERNS.some((m) => m.topics?.includes(tp)), `modern: ${tp}`).toBe(true)
+      expect(STORIES.some((s) => s.topics?.includes(tp)), `story: ${tp}`).toBe(true)
+    }
   })
 
   it('お聖教の一句に、出典と意味と使いどころが揃っている', () => {

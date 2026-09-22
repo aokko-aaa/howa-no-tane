@@ -792,6 +792,60 @@ describe('今の暮らしからのたとえ', () => {
   })
 })
 
+describe('話題（入口・問い・たとえを同じ話に揃える）', () => {
+  it('入口が、選んだ言葉と同じ話題を向いている', () => {
+    // 「鏡に映った自分」と「他力本願」が〈自己嫌悪〉の一語だけで
+    // 結ばれていた。気持ちのタグは荒すぎるので、話題の層で揃える。
+    // 全件ではなく割合で見る。理由は二つ。
+    // 1) 気持ちで絞ったあと、話題の合う入口が一つも無い組み合わせが残る
+    //    （気持ち×仏教語 358通りのうち26通り）
+    // 2) ひと回し6案で、同じ話題の入口を使い切る
+    // 素材が尽きたときに話題を外すのは正しい。同じ入口を二度出すほうが悪い。
+    let hit = 0
+    let total = 0
+    for (const e of EMOTIONS) {
+      for (const tradition of ['otani', 'any'] as const) {
+        for (const n of generateNeta({ ...base, emotions: [e.id], tradition, count: 6 })) {
+          const c = CONCEPT_BY_ID[n.materials.conceptId!]
+          const m = MODERNS.find((x) => x.id === n.materials.modernId)
+          if (!c?.topics?.length || !m) continue
+          total++
+          if ((m.topics ?? []).some((tp) => c.topics!.includes(tp))) hit++
+        }
+      }
+    }
+    expect(total).toBeGreaterThan(100)
+    expect(hit / total, `${hit}/${total}`).toBeGreaterThan(0.75)
+  })
+
+  it('たとえも、選んだ言葉と同じ話題を向いている', () => {
+    let hit = 0
+    let total = 0
+    for (const e of EMOTIONS) {
+      for (const n of generateNeta({ ...base, emotions: [e.id], tradition: 'otani', count: 6 })) {
+        const c = CONCEPT_BY_ID[n.materials.conceptId!]
+        const s = n.materials.storyId ? STORY_BY_ID[n.materials.storyId] : undefined
+        if (!c?.topics?.length || !s) continue
+        total++
+        if ((s.topics ?? []).some((tp) => c.topics!.includes(tp))) hit++
+      }
+    }
+    expect(total).toBeGreaterThan(20)
+    expect(hit / total, `${hit}/${total}`).toBeGreaterThan(0.85)
+  })
+
+  it('話題より、選んだ気持ちのほうが先（話題で気持ちを外さない）', () => {
+    for (const e of EMOTIONS) {
+      for (const n of generateNeta({ ...base, emotions: [e.id], tradition: 'otani', count: 6 })) {
+        const c = CONCEPT_BY_ID[n.materials.conceptId!]
+        expect(c.emotions, `${e.id} / ${c.term}`).toContain(e.id)
+        const m = MODERNS.find((x) => x.id === n.materials.modernId)!
+        expect(m.emotions, `${e.id} / ${m.scene}`).toContain(e.id)
+      }
+    }
+  })
+})
+
 describe('detectEmotions', () => {
   it('書かれた文から気持ちを拾う', () => {
     expect(detectEmotions('同級生のSNSを見て、つい比べてしまう')).toContain('hikaku')

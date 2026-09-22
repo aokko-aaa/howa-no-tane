@@ -25,6 +25,7 @@ import type {
   Scene,
   SceneId,
   Story,
+  TopicId,
   Word,
 } from '../data/types'
 import { rankItems, type Ranked } from './match'
@@ -940,6 +941,14 @@ export function generateNeta(input: GenerateInput): Neta[] {
         }))
         .sort((a, b) => b.score - a.score)
 
+    // 入口・たとえ・人物は、選んだ言葉と同じ話題のものから引く。
+    // 気持ちのタグだけでつなぐと、〈自己嫌悪〉という一語で
+    // 「鏡に映った自分」と「他力本願」と「解約し忘れたサブスク」が
+    // 同じ話にされてしまう。話題が合っていないと、①②⑤が別々の話になる。
+    const conceptTopics = new Set<TopicId>(concept.topics ?? [])
+    const sameTopic = (x: { topics?: TopicId[] }) =>
+      conceptTopics.size === 0 || (x.topics ?? []).some((tp) => conceptTopics.has(tp))
+
     const ctx: Ctx = {
       emotionLabels,
       primaryLabel,
@@ -949,18 +958,27 @@ export function generateNeta(input: GenerateInput): Neta[] {
         (pins.modernId === 'typed' ? typedModern : undefined) ??
         (pins.modernId ? MODERN_BY_ID[pins.modernId] : undefined) ??
         (pins.modernId ? undefined : typedModern) ??
-        takeUnused(alignTo(rankedModerns), usedModern, rand, 8),
+        takeUnused(alignTo(rankedModerns), usedModern, rand, 8, [sameTopic]),
       concept,
       story:
         (pins.storyId ? STORY_BY_ID[pins.storyId] : undefined) ??
         takeUnused(alignTo(storyPool), usedStory, rand, 6, [
+          // 1) 話題が合っていて、いまの register にも合うたとえ
+          // 2) 話題が合っているたとえ
+          // 3) register だけ合うたとえ
+          (st: Story) =>
+            sameTopic(st) &&
+            (preferModernParable
+              ? st.kind === '今の話' && parableUsed < parableCap
+              : st.kind !== '今の話'),
+          sameTopic,
           preferModernParable
             ? (st: Story) => st.kind === '今の話' && parableUsed < parableCap
             : (st: Story) => st.kind !== '今の話',
         ]),
       figure:
         (pins.figureId ? FIGURE_BY_ID[pins.figureId] : undefined) ??
-        takeUnused(alignTo(figurePool), usedFigure, rand, 6),
+        takeUnused(alignTo(figurePool), usedFigure, rand, 6, [sameTopic]),
       word: (pins.wordId ? WORD_BY_ID[pins.wordId] : undefined) ?? takeUnused(alignTo(wordPool), usedWord, rand, 6),
       occasion: takeUnused(occasionPoolForAngle, usedOccasion, rand, 6),
       phrase:
