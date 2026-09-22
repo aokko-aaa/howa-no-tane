@@ -103,6 +103,15 @@ describe('AIに渡す指示書', () => {
     expect(toAIBrief([saved(generateNeta(base)[0])])).not.toContain('一本にまとめる')
   })
 
+  it('言葉と情景がどこで重なるかを、AIにも渡す', () => {
+    // ここを渡さないと、AIの側でも二つが別々の話のままになる
+    const md = toAIBrief([saved(sitNeta)])
+    expect(md).toContain('この言葉と、この情景が重なるところ')
+    expect(md).toContain('この場面では、')
+    expect(md).toContain('この言葉は、')
+    expect(md).toContain('どう渡すか。そこを書いてください')
+  })
+
   it('注意書きのある素材は、注意も一緒に渡す', () => {
     const withCaution = generateNeta({ ...base, count: 12 }).find((n) => n.cautions.length > 0)!
     const md = toAIBrief([saved(withCaution)])

@@ -148,6 +148,26 @@ export function findSituations(source: Source, limit = 18): Situation[] {
 }
 
 export const topicLabel = (id: TopicId) => TOPIC_BY_ID[id]?.label ?? id
+
+/**
+ * なぜ結びつくのか、その一段。
+ *
+ * 「重なっています：たよる」とラベルの名前を出すだけでは、
+ * なぜその場面でその言葉が要るのかが分からない。
+ * 全組み合わせ（仏教語70×場面56＝3,920通り）は書けないので、
+ * 話題を経由して、場面の側と言葉の側の両方を並べる。
+ * 最後のひと渡しは機械が書かない。そこは語り手の仕事。
+ */
+export type Bridge = { topic: TopicId; label: string; scene: string; teaching: string }
+
+export function bridges(sit: Situation): Bridge[] {
+  return sit.sharedTopics
+    .map((id) => {
+      const tp = TOPIC_BY_ID[id]
+      return tp ? { topic: id, label: tp.label, scene: tp.scene, teaching: tp.teaching } : undefined
+    })
+    .filter((x): x is Bridge => x !== undefined)
+}
 export const emotionLabel = (id: EmotionId) => EMOTION_BY_ID[id]?.label ?? id
 
 /**
@@ -240,6 +260,12 @@ export function toWorksheet(source: Source, sit: Situation): string {
     `そこで思っていること：${m.omoi}`,
     '',
     `■ 重なっているところ：${kasanari || '—'}`,
+    ...bridges(sit).flatMap((b) => [
+      '',
+      `〈${b.label}〉`,
+      `　この場面では：${b.scene}`,
+      `　この言葉は　：${b.teaching}`,
+    ]),
     '',
     '── ここから先は、ご自身の言葉で ──',
     '・この情景のどこを、その言葉へ渡すか：［　］',

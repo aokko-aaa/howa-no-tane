@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { copyText } from '../lib/format'
 import {
+  bridges,
   CLOSENESS_LABEL,
   CLOSENESS_NOTE,
   emotionLabel,
@@ -10,7 +11,6 @@ import {
   SOURCE_KINDS,
   SOURCE_LABEL,
   toWorksheet,
-  topicLabel,
   type Closeness,
   type Situation,
   type Source,
@@ -116,16 +116,45 @@ export default function SituationView({ onSaved }: { onSaved?: (ids: string[]) =
             <div className="label">語り出しに使える一文</div>
             <p className="mt-1 text-[15px] leading-relaxed">{m.line}</p>
 
-            <p className="mt-2.5 text-xs leading-relaxed text-stone-500">
-              重なっているところ：
-              <span className="text-enji">{sit.sharedTopics.map(topicLabel).join('・')}</span>
-              {sit.sharedEmotions.length > 0 && (
-                <>
-                  {sit.sharedTopics.length > 0 && '／'}
-                  {sit.sharedEmotions.map(emotionLabel).join('・')}
-                </>
-              )}
-            </p>
+            {/*
+              なぜ結びつくのか。ラベルの名前だけでは分からないので、
+              話題ごとに、場面の側と言葉の側を並べる。
+              最後のひと渡しは書かない。そこは語り手の仕事。
+            */}
+            <div className="mt-3 rounded-lg bg-stone-50 px-3 py-2.5">
+              <div className="label mb-1.5">どこで重なるか</div>
+              <div className="flex flex-col gap-2">
+                {bridges(sit).map((b) => (
+                  <div key={b.topic}>
+                    <div className="text-xs font-bold text-enji">〈{b.label}〉</div>
+                    <dl className="mt-0.5 space-y-0.5 text-sm leading-relaxed">
+                      <div className="flex gap-2">
+                        <dt className="w-[5.5rem] shrink-0 text-xs text-stone-500">この場面では</dt>
+                        <dd>{b.scene}</dd>
+                      </div>
+                      <div className="flex gap-2">
+                        <dt className="w-[5.5rem] shrink-0 text-xs text-stone-500">この言葉は</dt>
+                        <dd>{b.teaching}</dd>
+                      </div>
+                    </dl>
+                  </div>
+                ))}
+                {bridges(sit).length === 0 && (
+                  <p className="text-sm leading-relaxed text-stone-600">
+                    話題は違います。重なっているのは気持ちのほうだけです。
+                  </p>
+                )}
+              </div>
+              <p className="mt-2 text-xs leading-relaxed text-stone-500">
+                このあいだをどう渡すかは、機械には書けません。ご自身の言葉で。
+                {sit.sharedEmotions.length > 0 && (
+                  <>
+                    <br />
+                    気持ちの重なり：{sit.sharedEmotions.map(emotionLabel).join('・')}
+                  </>
+                )}
+              </p>
+            </div>
 
             <div className="mt-3 flex flex-wrap gap-2">
               <button type="button" className="btn-ghost" onClick={() => copy(m.line, '語り出し')}>

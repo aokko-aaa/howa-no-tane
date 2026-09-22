@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { MODERNS } from '../data/modern'
+import { TOPICS } from '../data/topics'
 import {
+  bridges,
   findSituations,
   sourceById,
   sourcesOf,
@@ -86,6 +88,45 @@ describe('話したいことから情景を引く', () => {
         }
       }
     }
+  })
+
+  it('どの話題にも、場面の側と言葉の側の両方がある', () => {
+    // 「重なっています：たよる」とラベルの名前を出すだけでは、
+    // なぜその場面でその言葉が要るのかが分からない。
+    for (const tp of TOPICS) {
+      expect(tp.scene.length, tp.id).toBeGreaterThan(10)
+      expect(tp.teaching.length, tp.id).toBeGreaterThan(10)
+      expect(tp.scene, tp.id).not.toBe(tp.teaching)
+    }
+  })
+
+  it('重なった話題の数だけ、橋が出る', () => {
+    for (const kind of SOURCE_KINDS) {
+      for (const s of sourcesOf(kind)) {
+        for (const x of findSituations(s, 5)) {
+          expect(bridges(x).length, `${s.title} / ${x.modern.scene}`).toBe(x.sharedTopics.length)
+          for (const b of bridges(x)) {
+            expect(b.scene.length).toBeGreaterThan(0)
+            expect(b.teaching.length).toBeGreaterThan(0)
+          }
+        }
+      }
+    }
+  })
+
+  it('下ごしらえの用紙に、どこで重なるかが両側とも入る', () => {
+    const s = sourceById('concept', 'namuamidabutsu')!
+    const sit = findSituations(s).find((x) => x.modern.id === 'byoushitsu')!
+    const sheet = toWorksheet(s, sit)
+    for (const b of bridges(sit)) {
+      expect(sheet).toContain(b.label)
+      expect(sheet).toContain(b.scene)
+      expect(sheet).toContain(b.teaching)
+    }
+    expect(sheet).toContain('この場面では')
+    expect(sheet).toContain('この言葉は')
+    // 最後のひと渡しは、機械が書かない
+    expect(sheet).toContain('［　］')
   })
 
   it('無い素材を指定しても落ちない', () => {

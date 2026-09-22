@@ -4,6 +4,7 @@ import { FIGURE_BY_ID } from '../data/figures'
 import { MODERN_BY_ID } from '../data/modern'
 import { PHRASE_BY_ID } from '../data/shinshu/phrases'
 import { STORY_BY_ID } from '../data/stories'
+import { TOPIC_BY_ID } from '../data/topics'
 import type { Neta } from '../data/types'
 import { WORD_BY_ID } from '../data/words'
 import type { SavedNeta } from './storage'
@@ -129,6 +130,18 @@ function materials(neta: Neta): string[] {
       line('語り出しに使える一文', lead),
       line('そこで人が思っていること', mo?.omoi),
     )
+  }
+  // なぜこの言葉とこの情景が並んでいるのか。
+  // ここを渡さないと、AIの側でも二つが別々の話のままになる。
+  const shared = (c?.topics ?? []).filter((tp) => (mo?.topics ?? []).includes(tp))
+  if (shared.length > 0) {
+    out.push('#### この言葉と、この情景が重なるところ')
+    for (const id of shared) {
+      const tp = TOPIC_BY_ID[id]
+      if (!tp) continue
+      out.push(`- 〈${tp.label}〉この場面では、${tp.scene}／この言葉は、${tp.teaching}`)
+    }
+    out.push('- この二つのあいだを、どう渡すか。そこを書いてください')
   }
   return out.filter(Boolean)
 }
