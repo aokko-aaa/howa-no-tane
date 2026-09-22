@@ -197,6 +197,34 @@ export type Figure = {
   tradition?: Tradition
 }
 
+/**
+ * 話の案。「この言葉でどういう話ができるか」に答えるもの。
+ *
+ * 組み合わせでは、ここには届かない。素材をいくら並べても
+ * 「材料の一覧」にしかならず、「こういう話ができます」にはならない。
+ * 一案ずつ手で書くしかない。
+ */
+export type Take = {
+  id: string
+  /** どの言葉・一節・人物の案か */
+  ofKind: 'concept' | 'phrase' | 'figure'
+  ofId: string
+  /** 案の題 */
+  title: string
+  /** 話の芯。ここがその案の全部 */
+  core: string
+  /** 入口。現代の場面を、短い語で */
+  openings: string[]
+  /** 内蔵の場面と結べるもの（語り出しの一文が引ける） */
+  openingIds?: string[]
+  /** 今日の一歩 */
+  step: string
+  /** 典拠。確かなものだけ書く */
+  source?: string
+  /** 語る前に確かめること */
+  caution?: string
+}
+
 /** お聖教の一句（真宗の法話は、ここから始めることが多い） */
 export type Phrase = {
   id: string

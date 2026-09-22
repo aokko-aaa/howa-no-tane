@@ -10,12 +10,18 @@ import {
   sourcesOf,
   SOURCE_KINDS,
   SOURCE_LABEL,
+  takeCount,
+  takeNeta,
+  takeOpenings,
+  takesOf,
+  takeSheet,
   toWorksheet,
   type Closeness,
   type Situation,
   type Source,
   type SourceKind,
 } from '../lib/situations'
+import type { Take } from '../data/types'
 import { savedStore } from '../lib/storage'
 
 /**
@@ -36,6 +42,7 @@ const ORDER: Closeness[] = ['near', 'some', 'far']
 export default function SituationView({ onSaved }: { onSaved?: (ids: string[]) => void }) {
   const [kind, setKind] = useState<SourceKind>('concept')
   const [q, setQ] = useState('')
+  const [onlyTakes, setOnlyTakes] = useState(false)
   const [picked, setPicked] = useState<Source | null>(null)
   const [openId, setOpenId] = useState<string | null>(null)
   // 近いところは全部出す。それ以外は、はじめ数件だけにして畳んでおく。
@@ -49,8 +56,14 @@ export default function SituationView({ onSaved }: { onSaved?: (ids: string[]) =
   const list = useMemo(() => {
     const all = sourcesOf(kind)
     const term = q.trim()
-    return term === '' ? all : all.filter((s) => s.search.includes(term))
-  }, [kind, q])
+    const hit = term === '' ? all : all.filter((s) => s.search.includes(term))
+    // 案のあるものを先に。まだ書けていない言葉のほうが多いので
+    const withCount = hit.map((s) => ({ s, n: takeCount(s.kind, s.id) }))
+    const sorted = [...withCount].sort((a, b) => b.n - a.n)
+    return (onlyTakes ? sorted.filter((x) => x.n > 0) : sorted)
+  }, [kind, q, onlyTakes])
+
+  const takes = useMemo(() => (picked ? takesOf(picked) : []), [picked])
 
   const groups = useMemo(() => {
     const found = picked ? findSituations(picked) : []
@@ -62,6 +75,21 @@ export default function SituationView({ onSaved }: { onSaved?: (ids: string[]) =
     const ok = await copyText(text)
     setMsg(ok ? `${what}をコピーしました` : 'コピーできませんでした')
     setTimeout(() => setMsg(null), 2200)
+  }
+
+  const addToBook = (neta: ReturnType<typeof situationNeta>, emotions: string[]) => {
+    const next = savedStore.add({
+      neta,
+      memo: '',
+      savedAt: new Date().toISOString(),
+      fromEmotions: emotions,
+      fromText: '',
+    })
+    const ids = next.map((x) => x.neta.id)
+    setSavedIds(ids)
+    onSaved?.(ids)
+    setMsg('ネタ帳に入れました。メモを足して〈AIに渡す〉へ')
+    setTimeout(() => setMsg(null), 2600)
   }
 
   const save = (sit: Situation) => {
@@ -212,9 +240,20 @@ export default function SituationView({ onSaved }: { onSaved?: (ids: string[]) =
           }
           className="min-h-tap w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
         />
-        <p className="text-xs text-stone-500">{list.length}件</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs text-stone-500">{list.length}件</span>
+          <label className="ml-auto flex cursor-pointer items-center gap-1.5 text-xs text-stone-600">
+            <input
+              type="checkbox"
+              checked={onlyTakes}
+              onChange={(e) => setOnlyTakes(e.target.checked)}
+              className="h-4 w-4 accent-enji"
+            />
+            話の案があるものだけ
+          </label>
+        </div>
         <div className="flex flex-col gap-2">
-          {list.map((s) => (
+          {list.map(({ s, n }) => (
             <button
               key={s.id}
               type="button"
@@ -224,6 +263,11 @@ export default function SituationView({ onSaved }: { onSaved?: (ids: string[]) =
               <div className="flex flex-wrap items-baseline gap-2">
                 <h3 className="text-base font-bold leading-snug">{s.title}</h3>
                 <span className="text-xs text-stone-500">{s.sub}</span>
+                {n > 0 && (
+                  <span className="ml-auto shrink-0 rounded bg-enji/10 px-1.5 py-0.5 text-xs font-bold text-enji">
+                    話の案 {n}
+                  </span>
+                )}
               </div>
               <p className="mt-1 text-sm leading-relaxed text-stone-700">{s.body}</p>
               <p className="mt-1 text-xs leading-relaxed text-enji">{s.hint}</p>
@@ -252,6 +296,75 @@ export default function SituationView({ onSaved }: { onSaved?: (ids: string[]) =
       </section>
 
       {msg && <p className="text-xs text-matcha">{msg}</p>}
+
+      {takes.length > 0 && (
+        <section className="flex flex-col gap-2">
+          <div className="flex flex-wrap items-baseline gap-x-2">
+            <h3 className="text-sm font-bold text-enji">この言葉でできる話</h3>
+            <span className="text-xs text-stone-500">{takes.length}案</span>
+          </div>
+          {takes.map((take: Take) => (
+            <article key={take.id} className="card px-4 py-3">
+              <h4 className="text-[15px] font-bold leading-snug">{take.title}</h4>
+              <p className="mt-1.5 text-[15px] leading-relaxed">{take.core}</p>
+
+              <div className="mt-2.5 rounded-lg bg-stone-50 px-3 py-2">
+                <div className="label">入口</div>
+                <ul className="mt-1 flex flex-col gap-1 text-sm leading-relaxed">
+                  {takeOpenings(take).map((o) => (
+                    <li key={o.label}>
+                      ・{o.label}
+                      {o.line && <span className="block pl-3 text-stone-500">{o.line}</span>}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <p className="mt-2 text-sm leading-relaxed">
+                <span className="label">一歩 </span>
+                {take.step}
+              </p>
+              {take.source && <p className="mt-1.5 text-xs text-stone-500">典拠：{take.source}</p>}
+              {take.caution && (
+                <p className="mt-1 text-xs text-amber-700">語る前に確認：{take.caution}</p>
+              )}
+
+              <div className="mt-2.5 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() => picked && copy(takeSheet(picked, take), 'この案')}
+                >
+                  この案をコピー
+                </button>
+                {picked && savedIds.includes(takeNeta(picked, take).id) ? (
+                  <span className="btn-ghost text-stone-400">ネタ帳に入れた</span>
+                ) : (
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    onClick={() => picked && addToBook(takeNeta(picked, take), [])}
+                  >
+                    ネタ帳に入れる
+                  </button>
+                )}
+              </div>
+            </article>
+          ))}
+        </section>
+      )}
+
+      {takes.length === 0 && (
+        <p className="rounded-lg bg-stone-50 px-3 py-2.5 text-sm leading-relaxed text-stone-600">
+          この言葉の<span className="font-bold">話の案</span>は、まだ書けていません。
+          下の情景から、ご自身で組み立ててください。
+        </p>
+      )}
+
+      <div className="mt-2 flex flex-wrap items-baseline gap-x-2 border-t border-stone-200 pt-3">
+        <h3 className="text-sm font-bold text-stone-600">近いところにある情景</h3>
+        <span className="text-xs text-stone-500">案に使われていない入口も含めて、近い順に</span>
+      </div>
 
       {groups.map((g) => {
         const open = g.closeness === 'near' || expanded.includes(g.closeness)
