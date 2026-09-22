@@ -95,19 +95,39 @@ export function sourceById(kind: SourceKind, id: string): Source | undefined {
   return sourcesOf(kind).find((s) => s.id === id)
 }
 
+/**
+ * どれくらい近いか。
+ * 並べる順だけでは、画面で見たときに一件目と十二件目の違いが分からない。
+ * 束に分けて、見出しで示す。
+ */
+export type Closeness = 'near' | 'some' | 'far'
+
+export const CLOSENESS_LABEL: Record<Closeness, string> = {
+  near: '近いところ',
+  some: 'すこし離れる',
+  far: '気持ちだけ重なる',
+}
+
+export const CLOSENESS_NOTE: Record<Closeness, string> = {
+  near: '話題が二つ以上重なっています',
+  some: '話題が一つ重なっています',
+  far: '話題は違いますが、気持ちのほうが重なっています',
+}
+
 /** なぜこの情景が並んでいるのか */
 export type Situation = {
   modern: Modern
   sharedTopics: TopicId[]
   sharedEmotions: EmotionId[]
   score: number
+  closeness: Closeness
 }
 
 /**
  * 話したいことに近い情景を並べる。
  * 話題の重なりを強く見る。気持ちは同じでも話題が違うと、別の話になるため。
  */
-export function findSituations(source: Source, limit = 12): Situation[] {
+export function findSituations(source: Source, limit = 18): Situation[] {
   const topics = new Set(source.topics)
   const emotions = new Set(source.emotions)
   return MODERNS.map((modern) => {
@@ -118,6 +138,8 @@ export function findSituations(source: Source, limit = 12): Situation[] {
       sharedTopics,
       sharedEmotions,
       score: sharedTopics.length * 3 + sharedEmotions.length,
+      closeness:
+        sharedTopics.length >= 2 ? 'near' : sharedTopics.length === 1 ? 'some' : ('far' as Closeness),
     }
   })
     .filter((x) => x.score > 0)
