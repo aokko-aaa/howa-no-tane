@@ -27,6 +27,13 @@ export const SOURCE_LABEL: Record<SourceKind, string> = {
   figure: 'この人物の話をしたい',
 }
 
+/** 狭い画面で三つ並べるときの短い名 */
+export const SOURCE_SHORT: Record<SourceKind, string> = {
+  concept: '言葉',
+  phrase: '一節',
+  figure: '人物',
+}
+
 export const SOURCE_KINDS: SourceKind[] = ['concept', 'phrase', 'figure']
 
 /** 話したいこと。種類が違っても、同じ形で扱えるようにする */

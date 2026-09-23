@@ -10,6 +10,7 @@ import {
   sourcesOf,
   SOURCE_KINDS,
   SOURCE_LABEL,
+  SOURCE_SHORT,
   takeCount,
   takeNeta,
   takeOpenings,
@@ -220,22 +221,28 @@ export default function SituationView({ onSaved }: { onSaved?: (ids: string[]) =
   if (!picked) {
     return (
       <div className="flex flex-col gap-3">
-        <div className="flex flex-wrap gap-1.5">
+{/*
+          三つの棚は、折り返すと「いまどれか」が分からなくなる。
+          一体の切り替えにして、選んでいるものだけを白く浮かせる。
+        */}
+        <div className="flex gap-1 rounded-2xl bg-[#ede7d6] p-1">
           {SOURCE_KINDS.map((k) => (
             <button
               key={k}
               type="button"
-              className={`chip ${kind === k ? 'chip-on' : ''}`}
+              aria-pressed={kind === k}
+              className={`min-h-tap flex-1 rounded-xl px-2 text-sm transition-colors ${
+                kind === k
+                  ? 'bg-white font-bold text-sumi shadow-sm'
+                  : 'font-bold text-stone-600 hover:bg-white/50'
+              }`}
               onClick={() => switchKind(k)}
             >
-              {SOURCE_LABEL[k]}
+              <span className="sm:hidden">{SOURCE_SHORT[k]}</span>
+              <span className="hidden sm:inline">{SOURCE_LABEL[k]}</span>
             </button>
           ))}
         </div>
-        <p className="text-xs leading-relaxed text-stone-500">
-          話したいことを選ぶと、それに近い<span className="font-bold">いまの情景</span>が並びます。
-          文章は組み立てません。つなぐところは、ご自身の言葉で。
-        </p>
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}

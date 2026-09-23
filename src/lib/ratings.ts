@@ -187,7 +187,7 @@ const SCALE_NAME: Record<string, string> = {
 
 /** 貼って渡せる形に書き出す */
 export function toRatingsMarkdown(list: Rating[]): string {
-  if (list.length === 0) return '# 法話の種／評価\n\nまだ評価がありません。\n'
+  if (list.length === 0) return '# 法話のタネ／評価\n\nまだ評価がありません。\n'
   const off = list.filter((x) => x.verdict === 'off')
   const good = list.filter((x) => x.verdict === 'good')
 
@@ -240,7 +240,7 @@ export function toRatingsMarkdown(list: Rating[]): string {
       : []
 
   return `${[
-    '# 法話の種／評価',
+    '# 法話のタネ／評価',
     `評価 ${list.length}件（◎ ${good.length} ／ △ ${off.length}）`,
     'これはアプリの学習用ではありません。読んで直すための記録です。',
     ...table,

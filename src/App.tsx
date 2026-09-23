@@ -33,13 +33,39 @@ import { savedStore } from './lib/storage'
 
 type Tab = 'talk' | 'make' | 'chart' | 'book' | 'dict'
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'talk', label: '話したいことから' },
-  { id: 'make', label: 'つくる' },
-  { id: 'chart', label: 'くらし' },
-  { id: 'book', label: 'ネタ帳' },
-  { id: 'dict', label: 'ことば' },
+const TABS: { id: Tab; label: string; short: string }[] = [
+  { id: 'talk', label: '話したいことから', short: '話したいこと' },
+  { id: 'make', label: 'つくる', short: 'つくる' },
+  { id: 'chart', label: 'くらし', short: 'くらし' },
+  { id: 'book', label: 'ネタ帳', short: 'ネタ帳' },
+  { id: 'dict', label: 'ことば', short: 'ことば' },
 ]
+
+/** 下のタブバーの絵。線だけ、22px */
+function TabIcon({ id }: { id: Tab }) {
+  const p: Record<Tab, string> = {
+    talk: 'M4 7 A2 2 0 0 1 6 5 H18 A2 2 0 0 1 20 7 V14 A2 2 0 0 1 18 16 H10 L6 19.5 V16 A2 2 0 0 1 4 14 Z',
+    make: 'M4.5 19.5 L5 15.5 L16 4.5 A2.1 2.1 0 0 1 19.5 8 L8.5 19 Z',
+    chart: 'M4 11 L12 4.5 L20 11 M6 10 V19 A1 1 0 0 0 7 20 H17 A1 1 0 0 0 18 19 V10',
+    book: 'M7 4 H17 A1 1 0 0 1 18 5 V20 L12 16 L6 20 V5 A1 1 0 0 1 7 4 Z',
+    dict: 'M12 6.5 C 10 4.8, 7 4.5, 5 5 V18 C 7 17.5, 10 17.8, 12 19.5 C 14 17.8, 17 17.5, 19 18 V5 C 17 4.5, 14 4.8, 12 6.5 Z M12 6.5 V19.5',
+  }
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.9"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d={p[id]} />
+    </svg>
+  )
+}
 
 const BATCH = 6
 
@@ -204,12 +230,9 @@ export default function App() {
   }
 
   return (
-    <div className="mx-auto min-h-screen max-w-3xl px-4 pb-24 pt-4">
+    <div className="mx-auto min-h-screen max-w-3xl px-4 pb-32 pt-4 sm:pb-24">
       <header className="mb-4">
-        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <h1 className="font-maru text-2xl font-medium tracking-wide">法話の種</h1>
-          <p className="text-sm text-stone-600">その気持ちに、仏教はもう名前をつけている</p>
-        </div>
+        <h1 className="font-maru text-2xl font-medium tracking-wide">法話のタネ</h1>
         <details className="mt-1 text-xs text-stone-500">
           <summary className="cursor-pointer">これは何？</summary>
           <div className="mt-1.5 space-y-1 leading-relaxed">
@@ -231,7 +254,8 @@ export default function App() {
         </details>
       </header>
 
-      <nav className="mb-4 flex gap-1.5">
+      {/* 広い画面は、これまでどおり上に並べる */}
+      <nav className="mb-4 hidden flex-wrap gap-1.5 sm:flex">
         {TABS.map((t) => (
           <button
             key={t.id}
@@ -243,6 +267,37 @@ export default function App() {
             {t.id === 'book' && savedIds.length + ratings.length > 0
               ? `（${savedIds.length}${ratings.length > 0 ? `・評価${ratings.length}` : ''}）`
               : ''}
+          </button>
+        ))}
+      </nav>
+
+      {/*
+        スマホでは、押すものを親指の届く下へ。
+        上に五つ並べると折り返して、いちばん押しにくい場所に居座る。
+      */}
+      <nav
+        aria-label="おもな画面"
+        className="fixed inset-x-0 bottom-0 z-30 flex border-t border-[#eae2ce] bg-white pb-[env(safe-area-inset-bottom)] shadow-[0_-2px_10px_rgba(61,50,40,0.05)] sm:hidden"
+      >
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            aria-current={tab === t.id ? 'page' : undefined}
+            className={`relative flex min-h-tap flex-1 flex-col items-center gap-0.5 px-1 py-2 transition-colors ${
+              tab === t.id ? 'text-enji' : 'text-stone-500'
+            }`}
+            onClick={() => setTab(t.id)}
+          >
+            <TabIcon id={t.id} />
+            <span className={`text-[10px] leading-none ${tab === t.id ? 'font-bold' : ''}`}>
+              {t.short}
+            </span>
+            {t.id === 'book' && savedIds.length > 0 && (
+              <span className="absolute right-[18%] top-1 min-w-[17px] rounded-full bg-enji px-1 text-center text-[10px] font-bold leading-[17px] text-white">
+                {savedIds.length}
+              </span>
+            )}
           </button>
         ))}
       </nav>
