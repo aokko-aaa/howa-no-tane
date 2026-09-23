@@ -677,7 +677,7 @@ export default function App() {
           )}
 
           {picked.length > 0 && (
-            <div className="fixed inset-x-0 bottom-0 z-10 border-t border-stone-200 bg-white/95 px-4 py-2.5 backdrop-blur">
+            <div className="fixed inset-x-0 bottom-[calc(44px+env(safe-area-inset-bottom))] z-20 border-t border-stone-200 bg-white/95 px-4 py-2.5 backdrop-blur sm:bottom-0">
               <div className="mx-auto flex max-w-3xl flex-wrap items-center gap-2">
                 <span className="text-sm">
                   <span className="font-bold text-enji">{picked.length}件</span>を選んでいます

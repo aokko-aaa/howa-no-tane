@@ -392,12 +392,21 @@ export default function SituationView({ onSaved }: { onSaved?: (ids: string[]) =
         </p>
       )}
 
+      {/*
+        案のある言葉では、情景の一覧を出さない。
+        気持ちが重なるというだけで並ぶので、案の下に置くと
+        「これも使える入口」に見えて、かえって分からなくなる。
+        案の中に、その案のための入口が入っている。
+        案のまだ無い言葉では、ここが唯一の手がかりなので残す。
+      */}
+      {takes.length === 0 && (
       <div className="mt-2 flex flex-wrap items-baseline gap-x-2 border-t border-stone-200 pt-3">
         <h3 className="text-sm font-bold text-stone-600">近いところにある情景</h3>
-        <span className="text-xs text-stone-500">案に使われていない入口も含めて、近い順に</span>
+        <span className="text-xs text-stone-500">気持ちや話題が重なるもの。近い順に</span>
       </div>
+      )}
 
-      {groups.map((g) => {
+      {takes.length === 0 && groups.map((g) => {
         const open = g.closeness === 'near' || expanded.includes(g.closeness)
         const shown = open ? g.items : g.items.slice(0, g.closeness === 'some' ? 3 : 0)
         const rest = g.items.length - shown.length
@@ -431,7 +440,7 @@ export default function SituationView({ onSaved }: { onSaved?: (ids: string[]) =
         )
       })}
 
-      {groups.length === 0 && (
+      {takes.length === 0 && groups.length === 0 && (
         <p className="text-sm leading-relaxed text-stone-500">
           近い情景が見つかりませんでした。別の言葉で試してみてください。
         </p>

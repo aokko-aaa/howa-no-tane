@@ -32,6 +32,7 @@ export default function SavedView({ onChange, ratings, onRatingsChange }: Props)
   const [msg, setMsg] = useState<string | null>(null)
   const [picked, setPicked] = useState<string[]>([])
   const [combined, setCombined] = useState<Neta | null>(null)
+  const [cannot, setCannot] = useState<string | null>(null)
   const combinedRef = useRef<HTMLElement>(null)
   const [brief, setBrief] = useState<BriefOptions>(DEFAULT_BRIEF)
 
@@ -111,6 +112,12 @@ export default function SavedView({ onChange, ratings, onRatingsChange }: Props)
     const chosen = list.filter((x) => picked.includes(x.neta.id)).map((x) => x.neta)
     const next = combineNetas(chosen)
     setCombined(next)
+    // 組めないまま黙っていると、壊れているようにしか見えない
+    setCannot(
+      next
+        ? null
+        : '選んだものに仏教語が入っていないので、一本には組めません。人物や一節から入れた案どうしは、いまのところ組めない形です。下の〈えらんだ◯件をAIに渡す〉で、まとめて渡せます。',
+    )
     if (!next) return
     requestAnimationFrame(() => {
       combinedRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -284,6 +291,12 @@ export default function SavedView({ onChange, ratings, onRatingsChange }: Props)
         </p>
       )}
 
+      {cannot && (
+        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm leading-relaxed text-amber-800">
+          {cannot}
+        </p>
+      )}
+
       {combined && (
         <section ref={combinedRef} className="flex flex-col gap-2 scroll-mt-3">
           <div className="flex flex-wrap items-baseline gap-x-2">
@@ -344,7 +357,7 @@ export default function SavedView({ onChange, ratings, onRatingsChange }: Props)
       ))}
 
       {picked.length > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-10 border-t border-stone-200 bg-white/95 px-4 py-2.5 backdrop-blur">
+        <div className="fixed inset-x-0 bottom-[calc(44px+env(safe-area-inset-bottom))] z-20 border-t border-stone-200 bg-white/95 px-4 py-2.5 backdrop-blur sm:bottom-0">
           <div className="mx-auto flex max-w-3xl flex-wrap items-center gap-2">
             <span className="text-sm">
               ネタ帳から<span className="font-bold text-enji">{picked.length}件</span>
@@ -363,6 +376,7 @@ export default function SavedView({ onChange, ratings, onRatingsChange }: Props)
               onClick={() => {
                 setPicked([])
                 setCombined(null)
+                setCannot(null)
               }}
             >
               えらび直す
