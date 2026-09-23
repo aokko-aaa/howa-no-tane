@@ -53,6 +53,11 @@ describe('話の案', () => {
     }
   })
 
+  it('題が違っても、中身が同じ案を作らない', () => {
+    expect(new Set(TAKES.map((t) => t.core)).size).toBe(TAKES.length)
+    expect(new Set(TAKES.map((t) => t.step)).size).toBe(TAKES.length)
+  })
+
   it('案のある言葉は、選ぶと案が出る', () => {
     const s = sourceById('concept', 'namuamidabutsu')!
     const takes = takesOf(s)
