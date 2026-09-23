@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { STEP1, STEP2, STEP3, type Shape } from '../data/paths'
-import { WORDS } from '../data/words'
 import { wordOfTheDay } from '../lib/daily'
 import type { Neta, TraditionMode } from '../data/types'
 import { buildReading } from '../lib/reading'
@@ -58,9 +57,6 @@ export default function ChartView({ tradition, savedIds, onSave }: Props) {
         </dl>
         <p className="mt-2 text-[15px] leading-relaxed text-stone-700">{today.gap}</p>
         {today.caution && <p className="mt-1 text-xs text-amber-700">確認：{today.caution}</p>}
-        <p className="mt-2 text-xs text-stone-500">
-          こういう言葉が、ほかにも{WORDS.length - 1}語あります。「ことば」から引けます。
-        </p>
       </section>
 
       <p className="text-sm text-stone-600">

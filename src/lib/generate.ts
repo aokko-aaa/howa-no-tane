@@ -980,7 +980,16 @@ export function generateNeta(input: GenerateInput): Neta[] {
       figure:
         (pins.figureId ? FIGURE_BY_ID[pins.figureId] : undefined) ??
         takeUnused(alignTo(figurePool), usedFigure, rand, 6, [sameTopic]),
-      word: (pins.wordId ? WORD_BY_ID[pins.wordId] : undefined) ?? takeUnused(alignTo(wordPool), usedWord, rand, 6),
+      // 同じ語が仏教語にも日常語にもあると「こじつけですが —「縁起」と縁起」が出る。
+      // 同名は外す（外して空になるときだけ元に戻す）。
+      word:
+        (pins.wordId ? WORD_BY_ID[pins.wordId] : undefined) ??
+        takeUnused(
+          alignTo(orAll(wordPool.filter((r) => r.item.word !== concept.term), wordPool)),
+          usedWord,
+          rand,
+          6,
+        ),
       occasion: takeUnused(occasionPoolForAngle, usedOccasion, rand, 6),
       phrase:
         (pins.phraseId ? PHRASE_BY_ID[pins.phraseId] : undefined) ??

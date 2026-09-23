@@ -98,6 +98,13 @@ export const MANNERS: Manner[] = [
     why: '真宗では亡くなるとただちに仏と成らしめられると受け取るため、霊の前という表書きを用いない。',
     scenes: ['sougo', 'houji'],
   },
+  {
+    id: 'kaigen',
+    avoid: '開眼供養・魂入れ',
+    use: '入仏法要・御移徙（おわたまし）',
+    why: '仏像に眼を入れて魂を迎える、という受け取りを真宗は取らない。新しくお内仏を迎えるときは入仏法要と言う。ただし呼び方は地域と自坊で幅があるので、実際に合わせる。',
+    scenes: ['houji', 'howakai'],
+  },
 ]
 
 export const MANNER_BY_ID: Record<string, Manner> = Object.fromEntries(
