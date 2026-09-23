@@ -30,7 +30,16 @@ describe('話の案', () => {
       expect(t.core.length, t.id).toBeLessThan(220)
       expect(t.title.length, t.id).toBeGreaterThan(3)
       expect(t.openings.length, t.id).toBeGreaterThan(0)
-      expect(t.step.length, t.id).toBeGreaterThan(5)
+      if (t.short) {
+        // 五分の案は、ご遺族に何かさせる「一歩」を置かない。
+        // かわりに、席に入る一言と、合掌へ渡す結びを持つ。
+        expect(t.step, t.id).toBeUndefined()
+        expect(t.firstWord?.length, t.id).toBeGreaterThan(5)
+        expect(t.closing?.length, t.id).toBeGreaterThan(5)
+        expect(t.caution?.length, t.id).toBeGreaterThan(10)
+      } else {
+        expect(t.step?.length, t.id).toBeGreaterThan(5)
+      }
     }
   })
 
@@ -55,7 +64,9 @@ describe('話の案', () => {
 
   it('題が違っても、中身が同じ案を作らない', () => {
     expect(new Set(TAKES.map((t) => t.core)).size).toBe(TAKES.length)
-    expect(new Set(TAKES.map((t) => t.step)).size).toBe(TAKES.length)
+    // 五分の案は一歩を置かないので、置いてあるものだけを見る
+    const steps = TAKES.map((t) => t.step).filter((s): s is string => s !== undefined)
+    expect(new Set(steps).size).toBe(steps.length)
   })
 
   it('案のある言葉は、選ぶと案が出る', () => {
@@ -80,7 +91,7 @@ describe('話の案', () => {
     const sheet = takeSheet(s, t)
     expect(sheet).toContain(t.title)
     expect(sheet).toContain(t.core)
-    expect(sheet).toContain(t.step)
+    expect(sheet).toContain(t.step!)
     expect(sheet).toContain('ここから先は、ご自身の言葉で')
     expect(sheet).toContain('［　］')
   })

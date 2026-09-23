@@ -172,21 +172,31 @@ export function takeSheet(source: Source, take: Take): string {
     `■ 話したいこと：${source.title}${source.sub ? `（${source.sub}）` : ''}`,
     source.body,
     '',
+    ...(take.short ? ['■ 五分で話しきる形（通夜・葬儀の席で）', ''] : []),
+    ...(take.firstWord ? [`■ 最初の一言`, take.firstWord, ''] : []),
     `■ 案：${take.title}`,
     take.core,
     '',
     `■ 入口の候補`,
     ...takeOpenings(take).map((o) => (o.line ? `・${o.label}\n　　${o.line}` : `・${o.label}`)),
     '',
-    `■ 今日の一歩`,
-    take.step,
-    '',
+    ...(take.step ? [`■ 今日の一歩`, take.step, ''] : []),
+    ...(take.closing ? [`■ 結び`, take.closing, ''] : []),
     ...(take.source ? [`■ 典拠：${take.source}`, ''] : []),
     ...(take.caution ? [`■ 語る前に確認：${take.caution}`, ''] : []),
     '── ここから先は、ご自身の言葉で ──',
-    '・どの入口から入るか：［　］',
-    '・聴いている人に、先に言ってしまうこと：［　］',
-    '・自分の一件を、どこに置くか：［　］',
+    ...(take.short
+      ? [
+          '（五分のうち三分は、故人のことで埋まります。こちらが渡すのは残りの二分ぶんです）',
+          '・故人の一事を、どの一文のあとに置くか：［　］',
+          '・ご遺族に、先にかける一言：［　］',
+          '・その一事が出てこなかったときに、かわりに置くもの：［　］',
+        ]
+      : [
+          '・どの入口から入るか：［　］',
+          '・聴いている人に、先に言ってしまうこと：［　］',
+          '・自分の一件を、どこに置くか：［　］',
+        ]),
     '',
   ].join('\n')
 }
@@ -202,6 +212,8 @@ export function takeNeta(source: Source, take: Take): Neta {
     title: `${source.title}／${take.title}`,
     sections: [
       { label: '話したいこと', body: `${source.title}${source.sub ? `（${source.sub}）` : ''}\n${source.body}` },
+      // 短い案は、席に入って出るまでの順に並べる
+      ...(take.firstWord ? [{ label: '最初の一言', body: take.firstWord }] : []),
       { label: `案：${take.title}`, body: take.core },
       {
         label: '入口の候補',
@@ -209,10 +221,13 @@ export function takeNeta(source: Source, take: Take): Neta {
           .map((o) => (o.line ? `・${o.label}\n　　${o.line}` : `・${o.label}`))
           .join('\n'),
       },
-      { label: '今日の一歩', body: take.step },
+      ...(take.step ? [{ label: '今日の一歩', body: take.step }] : []),
+      ...(take.closing ? [{ label: '結び', body: take.closing }] : []),
       {
         label: 'ここから先は、ご自身の言葉で',
-        body: '・どの入口から入るか：［　］\n・先に言ってしまうこと：［　］\n・自分の一件を、どこに置くか：［　］',
+        body: take.short
+          ? '（五分のうち三分は、故人のことで埋まります。こちらが渡すのは残りの二分ぶん）\n・故人の一事を、どの一文のあとに置くか：［　］\n・ご遺族に、先にかける一言：［　］\n・その一事が出てこなかったときに、かわりに置くもの：［　］'
+          : '・どの入口から入るか：［　］\n・先に言ってしまうこと：［　］\n・自分の一件を、どこに置くか：［　］',
       },
     ],
     sources: [...sourceCitation(source), ...(take.source ? [`${take.title}：${take.source}`] : [])],
