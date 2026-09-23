@@ -124,7 +124,7 @@ export const PHRASES: Phrase[] = [
     id: 'shoshinge-shouge',
     text: '煩悩障眼雖不見　大悲無倦常照我',
     reading: 'ぼんのうしょうげんすいふけん　だいひむけんじょうしょうが',
-    source: '『正信偈』（『教行信証』行巻）',
+    source: '『正信偈』源信章（『教行信証』行巻）',
     gloss: '煩悩に目をさえぎられて見えないが、大悲は倦むことなく常に私を照らす。',
     use: '実感がないという相談に。見えないことと、届いていないことは別だと示す。',
     emotions: ['jikokeno', 'munashisa', 'kodoku', 'ochikomi'],
