@@ -58,6 +58,25 @@ describe('ふだんの言い方で探せる', () => {
     expect(new Set(terms).size).toBe(terms.length)
   })
 
+  it('〈語る前に確認〉にしか無かった語でも探せる', () => {
+    // 注意書きは検索に入らない。そこにしか書いていない語は、
+    // 手がかりの語へ移しておかないと「二河白道」で〇件になる。
+    for (const term of [
+      '二河白道',
+      '一枚起請文',
+      '往生要集',
+      '御伝鈔',
+      '盂蘭盆経',
+      '真宗本廟',
+      '十住毘婆沙論',
+      '浄土論',
+      '恵信尼消息',
+      '口あい',
+    ]) {
+      expect(hits(term).length, term).toBeGreaterThan(0)
+    }
+  })
+
   it('小ネタの手がかりの語でも探せる', () => {
     // keywords が検索から漏れていたことがある
     expect(hits('不器用').length).toBeGreaterThan(0)
