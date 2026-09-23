@@ -78,7 +78,8 @@ export function sourcesOf(kind: SourceKind): Source[] {
       kind,
       id: p.id,
       title: p.text,
-      sub: p.source,
+      // 読みが画面に出ていなかった。一節は声に出すものなので、出どころの横に添える
+      sub: p.reading ? `${p.source}　${p.reading}` : p.source,
       body: p.gloss,
       hint: `使いどころ：${p.use}`,
       topics: p.topics ?? [],
