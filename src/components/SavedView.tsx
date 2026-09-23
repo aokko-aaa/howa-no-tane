@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Neta } from '../data/types'
 import { combineNetas } from '../lib/combine'
+import { groundOf, groundSheet } from '../lib/ground'
 import {
   BRIEF_FORMS,
   DEFAULT_BRIEF,
@@ -116,7 +117,7 @@ export default function SavedView({ onChange, ratings, onRatingsChange }: Props)
     setCannot(
       next
         ? null
-        : '選んだものに仏教語が入っていないので、一本には組めません。人物や一節から入れた案どうしは、いまのところ組めない形です。下の〈えらんだ◯件をAIに渡す〉で、まとめて渡せます。',
+        : '選んだものに仏教語が入っていないので、一本には組み直せません。かわりに、下の〈重なっているところ〉をご覧ください。',
     )
     if (!next) return
     requestAnimationFrame(() => {
@@ -137,6 +138,12 @@ export default function SavedView({ onChange, ratings, onRatingsChange }: Props)
       }),
     )
   }
+
+  /** えらんだものの、重なっているところ。組み直せない組み合わせでも出る */
+  const ground = useMemo(() => {
+    const chosen = list.filter((x) => picked.includes(x.neta.id)).map((x) => x.neta)
+    return groundOf(chosen)
+  }, [list, picked])
 
   const briefPanel = (
     <section className="card px-4 py-3">
@@ -289,6 +296,66 @@ export default function SavedView({ onChange, ratings, onRatingsChange }: Props)
           〈組む〉を入れて二つ以上えらぶと、日をまたいで溜めたものを一本に組み直せます。
           組んだものをネタ帳に入れれば、それをまた次の材料にできます。
         </p>
+      )}
+
+      {ground && (
+        <section className="card flex flex-col gap-2.5 px-4 py-3">
+          <div className="flex flex-wrap items-baseline gap-2">
+            <h2 className="text-sm font-bold text-enji">重なっているところ</h2>
+            <span className="text-xs text-stone-500">えらんだ{ground.items.length}件から</span>
+            <button
+              type="button"
+              className="ml-auto text-xs text-stone-500 underline"
+              onClick={async () => {
+                const ok = await copyText(groundSheet(ground))
+                setMsg(ok ? '重なっているところをコピーしました' : 'コピーできませんでした')
+                setTimeout(() => setMsg(null), 2200)
+              }}
+            >
+              用紙をコピー
+            </button>
+          </div>
+
+          {ground.shared.length === 0 && ground.partial.length === 0 && (
+            <p className="text-sm leading-relaxed text-stone-600">
+              話題は重なっていません。別々の話として持っておくほうがよさそうです。
+            </p>
+          )}
+
+          {[...ground.shared, ...ground.partial].map((tp) => (
+            <div key={tp.id} className="rounded-lg bg-stone-50 px-3 py-2.5">
+              <div className="flex flex-wrap items-baseline gap-2">
+                <span className="text-xs font-bold text-enji">〈{tp.label}〉</span>
+                <span className="text-xs text-stone-500">
+                  {tp.from.length === ground.items.length
+                    ? 'ぜんぶに'
+                    : `${tp.from.length}件に`}
+                </span>
+              </div>
+              <dl className="mt-1 space-y-0.5 text-sm leading-relaxed">
+                <div className="flex gap-2">
+                  <dt className="w-[5.5rem] shrink-0 text-xs text-stone-500">この場面では</dt>
+                  <dd>{tp.scene}</dd>
+                </div>
+                <div className="flex gap-2">
+                  <dt className="w-[5.5rem] shrink-0 text-xs text-stone-500">この教えは</dt>
+                  <dd>{tp.teaching}</dd>
+                </div>
+              </dl>
+              <p className="mt-1 text-xs leading-relaxed text-stone-500">{tp.from.join('／')}</p>
+            </div>
+          ))}
+
+          {ground.emotions.length > 0 && (
+            <p className="text-xs leading-relaxed text-stone-500">
+              気持ちの重なり：{ground.emotions.map((e) => e.label).join('・')}
+            </p>
+          )}
+
+          <p className="text-xs leading-relaxed text-stone-500">
+            どう渡すかは書きません。重なっているところを並べるだけにしてあります。
+          </p>
+        </section>
       )}
 
       {cannot && (
