@@ -256,9 +256,12 @@ export default function SituationView({ onSaved }: { onSaved?: (ids: string[]) =
           className="min-h-tap w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
         />
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs text-stone-500">
-            {list.length}件{q.trim() !== '' && list.length > 0 && '（三つの棚から）'}
-          </span>
+          {/* 打つ前の「28件」は棚の総数でしかなく、読む意味がない */}
+          {q.trim() !== '' && (
+            <span className="text-xs text-stone-500">
+              {list.length}件{list.length > 0 && '（三つの棚から）'}
+            </span>
+          )}
           <label className="ml-auto flex cursor-pointer items-center gap-1.5 text-xs text-stone-600">
             <input
               type="checkbox"
