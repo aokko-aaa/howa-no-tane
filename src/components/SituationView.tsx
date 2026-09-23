@@ -8,7 +8,6 @@ import {
   findSituations,
   situationNeta,
   sourcesOf,
-  countByKind,
   SOURCE_KINDS,
   SOURCE_LABEL,
   takeCount,
@@ -55,24 +54,22 @@ export default function SituationView({ onSaved }: { onSaved?: (ids: string[]) =
   )
 
   const list = useMemo(() => {
-    const all = sourcesOf(kind)
     const term = q.trim()
-    const hit = term === '' ? all : all.filter((s) => s.search.includes(term))
+    // 打っているあいだは棚をまたいで探す。
+    // 「釈迦」は仏教語の棚に無く人物の棚にあるので、棚ごとに探すと〇件になる。
+    // 探している側からすれば、どの棚にあるかは打つ前には分からない。
+    const hit =
+      term === ''
+        ? sourcesOf(kind)
+        : SOURCE_KINDS.flatMap((k) => sourcesOf(k)).filter((s) => s.search.includes(term))
     // 案のあるものを先に。まだ書けていない言葉のほうが多いので
     const withCount = hit.map((s) => ({ s, n: takeCount(s.kind, s.id) }))
-    const sorted = [...withCount].sort((a, b) => b.n - a.n)
-    return (onlyTakes ? sorted.filter((x) => x.n > 0) : sorted)
+    // いま選んでいる棚のものを先に出す。選んだことは無駄にしない
+    const sorted = [...withCount].sort(
+      (a, b) => Number(b.s.kind === kind) - Number(a.s.kind === kind) || b.n - a.n,
+    )
+    return onlyTakes ? sorted.filter((x) => x.n > 0) : sorted
   }, [kind, q, onlyTakes])
-
-  // この棚に無くても、別の棚にあることが多い（「釈迦」は人物の棚にある）
-  const elsewhere = useMemo(() => {
-    if (q.trim() === '') return []
-    const counts = countByKind(q)
-    return SOURCE_KINDS.filter((k) => k !== kind && counts[k] > 0).map((k) => ({
-      kind: k,
-      n: counts[k],
-    }))
-  }, [kind, q])
 
   const takes = useMemo(() => (picked ? takesOf(picked) : []), [picked])
 
@@ -125,10 +122,10 @@ export default function SituationView({ onSaved }: { onSaved?: (ids: string[]) =
     setExpanded([])
   }
 
-  const switchKind = (k: SourceKind, keepTerm = false) => {
+  const switchKind = (k: SourceKind) => {
     setKind(k)
     setPicked(null)
-    if (!keepTerm) setQ('')
+    setQ('')
   }
 
   /** 一件ぶん。畳んだ状態は、場面の名と思いの一行だけ */
@@ -252,7 +249,9 @@ export default function SituationView({ onSaved }: { onSaved?: (ids: string[]) =
           className="min-h-tap w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
         />
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs text-stone-500">{list.length}件</span>
+          <span className="text-xs text-stone-500">
+            {list.length}件{q.trim() !== '' && list.length > 0 && '（三つの棚から）'}
+          </span>
           <label className="ml-auto flex cursor-pointer items-center gap-1.5 text-xs text-stone-600">
             <input
               type="checkbox"
@@ -263,32 +262,26 @@ export default function SituationView({ onSaved }: { onSaved?: (ids: string[]) =
             話の案があるものだけ
           </label>
         </div>
-        {elsewhere.length > 0 && (
+        {q.trim() !== '' && list.length === 0 && (
           <div className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-xs leading-relaxed text-stone-600">
-            {list.length === 0 ? 'この棚にはありませんでした。' : 'ほかの棚にもあります。'}
-            <span className="ml-1 inline-flex flex-wrap gap-1.5">
-              {elsewhere.map((e) => (
-                <button
-                  key={e.kind}
-                  type="button"
-                  className="chip"
-                  onClick={() => switchKind(e.kind, true)}
-                >
-                  {SOURCE_LABEL[e.kind]} {e.n}件
-                </button>
-              ))}
-            </span>
+            三つの棚のどこにもありませんでした。別の言い方でも探しています（釈迦・お釈迦さま・戒名・天国など）。
+            それでも出ないときは、まだ材料がありません。
           </div>
         )}
         <div className="flex flex-col gap-2">
           {list.map(({ s, n }) => (
             <button
-              key={s.id}
+              key={`${s.kind}:${s.id}`}
               type="button"
               className="card px-4 py-3 text-left transition-colors hover:bg-stone-50"
               onClick={() => choose(s)}
             >
               <div className="flex flex-wrap items-baseline gap-2">
+                {s.kind !== kind && (
+                  <span className="shrink-0 rounded bg-stone-100 px-1.5 py-0.5 text-xs text-stone-600">
+                    {SOURCE_LABEL[s.kind]}
+                  </span>
+                )}
                 <h3 className="text-base font-bold leading-snug">{s.title}</h3>
                 <span className="text-xs text-stone-500">{s.sub}</span>
                 {n > 0 && (

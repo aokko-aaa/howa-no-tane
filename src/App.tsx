@@ -663,6 +663,7 @@ export default function App() {
       <footer className="mt-10 border-t border-stone-200 pt-4 text-xs leading-relaxed text-stone-500">
         出典は通称です。語る前に原典をご確認ください。諸説あるものはカードの「語る前に確認」に出ます。
         入力と保存は、この端末の中だけに残ります。
+        <span className="mt-1 block text-stone-400">更新 {__BUILT_AT__}</span>
       </footer>
     </div>
   )
