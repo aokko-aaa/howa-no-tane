@@ -1,14 +1,58 @@
 import { describe, expect, it } from 'vitest'
 import { MODERNS } from '../data/modern'
 import { TOPICS } from '../data/topics'
+import { SEARCH_ALIASES } from '../data/aliases'
 import {
   bridges,
+  countByKind,
   findSituations,
   sourceById,
   sourcesOf,
   SOURCE_KINDS,
   toWorksheet,
 } from './situations'
+
+/** その言葉で探したとき、どの棚に何件出るか */
+const hits = (term: string) =>
+  SOURCE_KINDS.flatMap((k) => sourcesOf(k).filter((s) => s.search.includes(term)))
+
+describe('ふだんの言い方で探せる', () => {
+  // 表に出す言い方は大谷派のものに揃えてあるので、
+  // ふだん口にする言い方で打つと〇件になる。それを防ぐ。
+  it('「釈迦」で探して、釈尊の素材が出る', () => {
+    const found = hits('釈迦')
+    expect(found.length).toBeGreaterThan(0)
+    expect(found.some((s) => s.search.includes('釈尊'))).toBe(true)
+  })
+
+  it.each(['お釈迦さま', 'ブッダ', '御文章', '戒名', '天国', 'なんまんだぶ', '他力本願'])(
+    '「%s」で探して、何か出る',
+    (term) => {
+      expect(hits(term).length).toBeGreaterThan(0)
+    },
+  )
+
+  it('別の呼び名は、その語が本文にある素材にだけ付く', () => {
+    // 「釈迦」で探したのに、釈尊の出てこないものが混ざらない
+    for (const s of hits('ブッダ')) expect(s.search.includes('釈尊'), s.id).toBe(true)
+  })
+
+  it('別の呼び名の表に、元の語の重複がない', () => {
+    const terms = SEARCH_ALIASES.map((a) => a.term)
+    expect(new Set(terms).size).toBe(terms.length)
+  })
+
+  it('小ネタの手がかりの語でも探せる', () => {
+    // keywords が検索から漏れていたことがある
+    expect(hits('不器用').length).toBeGreaterThan(0)
+  })
+
+  it('別の棚に何件あるかを数えられる', () => {
+    const c = countByKind('釈迦')
+    expect(c.figure).toBeGreaterThan(0)
+    expect(c.concept + c.phrase + c.figure).toBe(hits('釈迦').length)
+  })
+})
 
 describe('話したいことから情景を引く', () => {
   it.each(SOURCE_KINDS)('%s の選択肢が、中身の揃った形で出る', (kind) => {

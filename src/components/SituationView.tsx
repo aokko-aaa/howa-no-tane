@@ -8,6 +8,7 @@ import {
   findSituations,
   situationNeta,
   sourcesOf,
+  countByKind,
   SOURCE_KINDS,
   SOURCE_LABEL,
   takeCount,
@@ -63,6 +64,16 @@ export default function SituationView({ onSaved }: { onSaved?: (ids: string[]) =
     return (onlyTakes ? sorted.filter((x) => x.n > 0) : sorted)
   }, [kind, q, onlyTakes])
 
+  // この棚に無くても、別の棚にあることが多い（「釈迦」は人物の棚にある）
+  const elsewhere = useMemo(() => {
+    if (q.trim() === '') return []
+    const counts = countByKind(q)
+    return SOURCE_KINDS.filter((k) => k !== kind && counts[k] > 0).map((k) => ({
+      kind: k,
+      n: counts[k],
+    }))
+  }, [kind, q])
+
   const takes = useMemo(() => (picked ? takesOf(picked) : []), [picked])
 
   const groups = useMemo(() => {
@@ -114,10 +125,10 @@ export default function SituationView({ onSaved }: { onSaved?: (ids: string[]) =
     setExpanded([])
   }
 
-  const switchKind = (k: SourceKind) => {
+  const switchKind = (k: SourceKind, keepTerm = false) => {
     setKind(k)
     setPicked(null)
-    setQ('')
+    if (!keepTerm) setQ('')
   }
 
   /** 一件ぶん。畳んだ状態は、場面の名と思いの一行だけ */
@@ -235,8 +246,8 @@ export default function SituationView({ onSaved }: { onSaved?: (ids: string[]) =
             kind === 'concept'
               ? '言葉や問いで探す（例：報われない、がんばれば、無常）'
               : kind === 'phrase'
-                ? '一節や出典で探す（例：歎異抄、御文、恩徳讃）'
-                : '人物や品物で探す（例：たくあん、お茶、掃除）'
+                ? '一節や出典で探す（例：歎異抄、御文章、恩徳讃）'
+                : '人物や品物で探す（例：釈迦、たくあん、お茶、掃除）'
           }
           className="min-h-tap w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
         />
@@ -252,6 +263,23 @@ export default function SituationView({ onSaved }: { onSaved?: (ids: string[]) =
             話の案があるものだけ
           </label>
         </div>
+        {elsewhere.length > 0 && (
+          <div className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-xs leading-relaxed text-stone-600">
+            {list.length === 0 ? 'この棚にはありませんでした。' : 'ほかの棚にもあります。'}
+            <span className="ml-1 inline-flex flex-wrap gap-1.5">
+              {elsewhere.map((e) => (
+                <button
+                  key={e.kind}
+                  type="button"
+                  className="chip"
+                  onClick={() => switchKind(e.kind, true)}
+                >
+                  {SOURCE_LABEL[e.kind]} {e.n}件
+                </button>
+              ))}
+            </span>
+          </div>
+        )}
         <div className="flex flex-col gap-2">
           {list.map(({ s, n }) => (
             <button

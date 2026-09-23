@@ -1,3 +1,4 @@
+import { withAliases } from '../data/aliases'
 import { CONCEPT_BY_ID, CONCEPTS } from '../data/concepts'
 import { EMOTION_BY_ID } from '../data/emotions'
 import { FIGURE_BY_ID, FIGURES } from '../data/figures'
@@ -57,7 +58,9 @@ export function sourcesOf(kind: SourceKind): Source[] {
       hint: `答えている問い：${c.question}`,
       topics: c.topics ?? [],
       emotions: c.emotions,
-      search: [c.term, c.reading, c.oneLine, c.question, c.everyday, c.misread, c.pivot].join(' '),
+      search: withAliases(
+        [c.term, c.reading, c.oneLine, c.question, c.everyday, c.misread, c.pivot].join(' '),
+      ),
     }))
   }
   if (kind === 'phrase') {
@@ -70,7 +73,7 @@ export function sourcesOf(kind: SourceKind): Source[] {
       hint: `使いどころ：${p.use}`,
       topics: p.topics ?? [],
       emotions: p.emotions,
-      search: [p.text, p.reading ?? '', p.source, p.gloss, p.use].join(' '),
+      search: withAliases([p.text, p.reading ?? '', p.source, p.gloss, p.use].join(' ')),
     }))
   }
   return FIGURES.map((f) => ({
@@ -82,8 +85,22 @@ export function sourcesOf(kind: SourceKind): Source[] {
     hint: `使いどころ：${f.hook}`,
     topics: f.topics ?? [],
     emotions: f.emotions,
-    search: [f.name, f.era, f.title, f.story, f.hook, f.everyday ?? ''].join(' '),
+    search: withAliases(
+      [f.name, f.era, f.title, f.story, f.hook, f.everyday ?? '', ...(f.keywords ?? [])].join(' '),
+    ),
   }))
+}
+
+/**
+ * その言葉が、どの棚に何件あるか。
+ * 探すのは棚ごとなので、「釈迦」と打って〇件でも、
+ * 人物の棚には四件ある、ということが起きる。それを言えるようにする。
+ */
+export function countByKind(term: string): Record<SourceKind, number> {
+  const q = term.trim()
+  const count = (k: SourceKind) =>
+    q === '' ? sourcesOf(k).length : sourcesOf(k).filter((s) => s.search.includes(q)).length
+  return { concept: count('concept'), phrase: count('phrase'), figure: count('figure') }
 }
 
 /** その言葉に案がいくつあるか（一覧で分かるように） */
