@@ -231,6 +231,18 @@ export const PHRASES: Phrase[] = [
     topics: ['hajimari', 'atarimae'],
   },
   {
+    id: 'shoshinge-koushusse',
+    text: '如来所以興出世　唯説弥陀本願海',
+    reading: 'にょらいしょいこうしゅっせ　ゆいせつみだほんがんかい',
+    source: '『教行信証』行巻・正信念仏偈（依経段）',
+    gloss:
+      '読み下せば「如来、世に興出したまふゆゑは、ただ弥陀の本願海を説かんがためなり」。釈尊がこの世にお出ましになったわけは、ただ一つ、弥陀の本願を説くためだった。',
+    use: '釈尊のお話をしたあと、真宗の話へ渡すところで。『教行信証』教巻と、大経の出世本懐の文を隣に置く。',
+    emotions: ['mayoi', 'munashisa', 'kansha', 'yasuragi'],
+    topics: ['wakaranai', 'yakuwari', 'atarimae'],
+    caution: '「唯説」を、ほかの経やほかの宗を否定する意味で語らない。',
+  },
+  {
     id: 'kiyozawa-tenmei',
     text: '天命に安んじて人事を尽くす',
     source: '清沢満之（大谷派・1863–1903）',
