@@ -207,7 +207,7 @@ export default function App() {
     <div className="mx-auto min-h-screen max-w-3xl px-4 pb-24 pt-4">
       <header className="mb-4">
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <h1 className="text-xl font-bold tracking-wide">法話の種</h1>
+          <h1 className="font-maru text-2xl font-medium tracking-wide">法話の種</h1>
           <p className="text-sm text-stone-600">その気持ちに、仏教はもう名前をつけている</p>
         </div>
         <details className="mt-1 text-xs text-stone-500">

@@ -14,36 +14,43 @@ body,
 
 body {
   margin: 0;
-  font-family: 'Hiragino Mincho ProN', 'Yu Mincho', 'YuMincho', 'Noto Serif JP',
-    'Hiragino Kaku Gothic ProN', serif;
-  color: #2b2622;
-  background: #f7f3ea;
+  /* 角をぜんぶ落とす。丸ゴシック一本で、操作系も本文も同じ手ざわりに */
+  font-family: 'Zen Maru Gothic', 'Hiragino Maru Gothic ProN', 'Hiragino Sans',
+    'Noto Sans JP', 'Yu Gothic', system-ui, sans-serif;
+  color: #3d3228;
+  /* 上だけ陽が当たっている地。下へゆくほど生成りに戻る */
+  background-color: #faf6ec;
+  background-image: linear-gradient(
+    180deg,
+    rgba(240, 224, 160, 0.9) 0,
+    rgba(227, 227, 180, 0.55) 96px,
+    rgba(250, 246, 236, 0) 260px
+  );
+  background-repeat: no-repeat;
   -webkit-font-smoothing: antialiased;
   overscroll-behavior-y: none;
 }
 
-/* 操作系はゴシックのほうが読み取りやすい */
 button,
 input,
 select,
 textarea {
-  font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Noto Sans JP',
-    'Yu Gothic', system-ui, sans-serif;
+  font-family: inherit;
 }
 
 @layer components {
   .chip {
-    @apply rounded-full border px-3 py-2 text-sm leading-none transition-colors;
-    @apply border-stone-300 bg-white text-stone-600;
+    @apply rounded-full border px-3 py-2 text-sm font-bold leading-none transition-colors;
+    @apply border-[#e0d7c2] bg-white text-stone-600;
   }
   .chip-on {
     @apply border-enji bg-enji text-white;
   }
   .card {
-    @apply rounded-xl border border-stone-200 bg-white shadow-sm;
+    @apply rounded-2xl border border-[#ede6d4] bg-white shadow-sm;
   }
   .btn {
-    @apply min-h-tap rounded-lg px-4 py-2 text-sm font-bold transition-colors;
+    @apply min-h-tap rounded-xl px-4 py-2 text-sm font-bold transition-colors;
   }
   .btn-primary {
     @apply btn bg-enji text-white hover:bg-enji/90 disabled:opacity-40;
