@@ -12,10 +12,49 @@ export type Alias = {
   term: string
   /** 同じものを指して打たれそうな言い方 */
   also: string[]
+  /**
+   * これを含むときは付けない。
+   * 「六波羅蜜寺」は寺の名で、六波羅蜜の教えの話ではない。
+   * 語の一致だけで拾うと、こういう取り違えが起きる。
+   */
+  except?: string[]
 }
 
+/** お釈迦さまの呼ばれ方 */
+const SHAKA = ['釈迦', '釈尊', 'お釈迦さま', 'おしゃかさま', 'ブッダ', '仏陀']
+
+/**
+ * お釈迦さまが説かれたと受け取られている出どころ。
+ *
+ * 仏教語は一つひとつ別の名前で並んでいるけれど、元をたどればみな
+ * お釈迦さまの説かれたところへ戻る。「釈迦」で探したときに、
+ * 人物の棚だけでなく、ここから来た仏教語も出るようにする。
+ */
+const SHAKA_SOURCES: { term: string; except?: string[] }[] = [
+  { term: '無量寿経' },
+  { term: '阿弥陀経' },
+  { term: '阿含経' },
+  { term: '増支部' },
+  { term: '法句経' },
+  { term: '涅槃経' },
+  { term: '般若心経' },
+  { term: '金剛般若経' },
+  { term: '維摩経' },
+  { term: '雑宝蔵経' },
+  { term: '仏遺教経' },
+  { term: '初転法輪' },
+  { term: '四諦' },
+  { term: '八正道' },
+  { term: '三法印' },
+  { term: '四法印' },
+  { term: '四無量心' },
+  { term: '六波羅蜜', except: ['六波羅蜜寺'] },
+  { term: '四苦八苦' },
+]
+
 export const SEARCH_ALIASES: Alias[] = [
-  { term: '釈尊', also: ['釈迦', 'お釈迦さま', 'おしゃかさま', 'ブッダ', 'ゴータマ', '仏陀'] },
+  ...SHAKA_SOURCES.map((s) => ({ ...s, also: SHAKA })),
+  { term: '釈尊', also: [...SHAKA, 'ゴータマ', 'シッダールタ'] },
   { term: '親鸞', also: ['しんらん', '聖人', '宗祖'] },
   { term: '蓮如', also: ['れんにょ', '蓮如上人'] },
   { term: '阿弥陀', also: ['あみだ', '阿弥陀さま', '如来さま'] },
@@ -43,6 +82,8 @@ export const SEARCH_ALIASES: Alias[] = [
  * 本文に出てこない語の呼び名は足さない（無関係なものが引っかかる）。
  */
 export function withAliases(text: string): string {
-  const extra = SEARCH_ALIASES.filter((a) => text.includes(a.term)).flatMap((a) => a.also)
+  const extra = SEARCH_ALIASES.filter(
+    (a) => text.includes(a.term) && !(a.except ?? []).some((x) => text.includes(x)),
+  ).flatMap((a) => a.also)
   return extra.length === 0 ? text : `${text} ${extra.join(' ')}`
 }

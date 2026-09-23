@@ -32,9 +32,25 @@ describe('ふだんの言い方で探せる', () => {
     },
   )
 
-  it('別の呼び名は、その語が本文にある素材にだけ付く', () => {
-    // 「釈迦」で探したのに、釈尊の出てこないものが混ざらない
-    for (const s of hits('ブッダ')) expect(s.search.includes('釈尊'), s.id).toBe(true)
+  it('「釈迦」で、お釈迦さまの説かれた仏教語も出る', () => {
+    // 仏教語は別々の名前で並んでいるが、出どころはお釈迦さまへ戻る。
+    // source が検索から漏れていて、経の名でも出てこなかった。
+    const c = sourcesOf('concept').filter((s) => s.search.includes('釈迦')).map((s) => s.title)
+    expect(c.length).toBeGreaterThan(10)
+    for (const term of ['四諦', '八正道', '中道', '諸行無常']) {
+      expect(c, term).toContain(term)
+    }
+  })
+
+  it('出どころの語が、語の一致だけで取り違えられない', () => {
+    // 「六波羅蜜寺」は寺の名で、六波羅蜜の教えの話ではない
+    const kuuya = sourcesOf('figure').find((s) => s.id === 'kuuya')!
+    expect(kuuya.search.includes('六波羅蜜寺')).toBe(true)
+    expect(kuuya.search.includes('釈迦'), '空也が釈迦で出てしまう').toBe(false)
+  })
+
+  it('仏教語を、出どころの名でも探せる', () => {
+    expect(sourcesOf('concept').filter((s) => s.search.includes('歎異抄')).length).toBeGreaterThan(0)
   })
 
   it('別の呼び名の表に、元の語の重複がない', () => {

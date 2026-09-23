@@ -59,7 +59,10 @@ export function sourcesOf(kind: SourceKind): Source[] {
       topics: c.topics ?? [],
       emotions: c.emotions,
       search: withAliases(
-        [c.term, c.reading, c.oneLine, c.question, c.everyday, c.misread, c.pivot].join(' '),
+        // source（出どころ）が抜けていた。経の名で探しても出てこなかった
+        [c.term, c.reading, c.oneLine, c.source, c.question, c.everyday, c.misread, c.pivot].join(
+          ' ',
+        ),
       ),
     }))
   }
