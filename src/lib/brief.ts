@@ -5,7 +5,8 @@ import { MODERN_BY_ID } from '../data/modern'
 import { PHRASE_BY_ID } from '../data/shinshu/phrases'
 import { STORY_BY_ID } from '../data/stories'
 import { TOPIC_BY_ID } from '../data/topics'
-import type { Neta } from '../data/types'
+import { SCENE_BY_ID } from '../data/angles'
+import type { Neta, SceneId } from '../data/types'
 import { WORD_BY_ID } from '../data/words'
 import type { SavedNeta } from './storage'
 
@@ -34,9 +35,43 @@ export type BriefOptions = {
   minutes: number
   /** 真宗大谷派の作法に合わせるか */
   otani: boolean
+  /** どの席で話すか。尺と、語り口の縛りが変わる */
+  scene?: SceneId
 }
 
 export const DEFAULT_BRIEF: BriefOptions = { form: 'toi', minutes: 5, otani: true }
+
+/**
+ * 席ごとに、語り口として守ってほしいこと。
+ * 教えの中身ではなく、話し方の縛りだけを書く（中身は素材の側にある）。
+ */
+const SCENE_RULES: Record<SceneId, string[]> = {
+  houji: [
+    '- 聴いているのはご遺族と親族。故人に触れてよいが、どういう方だったかを決めつけない',
+    '- 年回の席なので、時間が経っていることを踏まえる。悲しみが終わった前提にも、続いている前提にもしない',
+  ],
+  tsukimairi: [
+    '- 一対一。大勢に語る言い方をしない。話しかける形で',
+    '- 立ち話に近い距離なので、短く。言い切って終わらない',
+  ],
+  sougo: [
+    '- 悲しみの最中。教えを急がない。説明も説得もしない',
+    '- 励まさない。立ち直らせようとしない。慰めの言葉で締めくくらない',
+    '- ご遺族が使われた言葉を言い直させない',
+  ],
+  howakai: [
+    '- ある程度の尺があるので構成して語る。ただし問いは一つに絞る',
+    '- 聴き手は何度も聴いている方が多い。知っている前提で走らない',
+  ],
+  keijiban: [
+    '- 一行で立ち止まらせる。説明を足さない',
+    '- 読む人は通りすがり。前置きが要らない形にする',
+  ],
+  sns: [
+    '- 短く、読み物として。語りかけの口調にしない',
+    '- 前後の文脈なしで読まれる。一つだけ持って帰れる形に',
+  ],
+}
 
 const FORM_BODY: Record<BriefForm, string> = {
   toi: [
@@ -183,6 +218,8 @@ export function toAIBrief(items: SavedNeta[], opts: BriefOptions = DEFAULT_BRIEF
       ? '掲示板やSNSに貼れる長さ（一行の案を3つと、200字ほどの短文を1つ）'
       : `話して約${opts.minutes}分（${opts.minutes * 300}字前後）`
 
+  const scene = opts.scene ? SCENE_BY_ID[opts.scene] : undefined
+
   const rules = [
     '- 教義の説明から始めない。聴き手がいる場面から始める',
     '- 仏教の言葉を出したら、必ずその場で日常の言葉に置き換える',
@@ -196,6 +233,11 @@ export function toAIBrief(items: SavedNeta[], opts: BriefOptions = DEFAULT_BRIEF
           '- 亡き方を「供養する」ではなく、受けていたことに気づく（報恩）という形にする',
         ]
       : []),
+    ...(opts.scene ? SCENE_RULES[opts.scene] : []),
+    // 長い尺は、一本の話を引き延ばすと薄くなる。めぐらせる形にしてもらう
+    opts.minutes >= 20
+      ? '- 長い尺なので、区切りを三つほど置く。話を足して伸ばすのではなく、一つの問いを角度を変えて三度めぐる形にする'
+      : '',
     many ? '- 下の素材を一本にまとめる。全部を詰め込まず、軸になる一つを決めて、ほかは支えに回す' : '',
   ].filter(Boolean)
 
@@ -204,6 +246,7 @@ export function toAIBrief(items: SavedNeta[], opts: BriefOptions = DEFAULT_BRIEF
     '',
     'あなたは、日本の僧侶の下ごしらえを手伝う書き手です。',
     `下の素材をもとに、法話の下書きを一本書いてください。${length}。`,
+    ...(scene ? ['', `話す席は「${scene.label}」です。${scene.note}。`] : []),
     '',
     '## 守ってほしいこと',
     rules.join('\n'),

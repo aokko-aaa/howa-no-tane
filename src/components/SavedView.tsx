@@ -18,6 +18,7 @@ import {
   type Verdict,
   type Where,
 } from '../lib/ratings'
+import { SCENES, SCENE_BY_ID } from '../data/angles'
 import { savedStore, type SavedNeta } from '../lib/storage'
 import NetaCard from './NetaCard'
 
@@ -54,7 +55,7 @@ export default function SavedView({ onChange, ratings, onRatingsChange }: Props)
 
   const exportAll = async () => {
     const ok = await copyText(toMarkdown(list.map((x) => ({ neta: x.neta, memo: x.memo }))))
-    setMsg(ok ? 'ネタ帳をまるごとコピーしました' : 'コピーできませんでした')
+    setMsg(ok ? `ネタ帳${list.length}件を手控えの形でコピーしました（AIへの指示書ではありません）` : 'コピーできませんでした')
     setTimeout(() => setMsg(null), 2200)
   }
 
@@ -181,11 +182,41 @@ export default function SavedView({ onChange, ratings, onRatingsChange }: Props)
           </div>
         </div>
 
+        <div>
+          <div className="label mb-1.5">どの席で話すか</div>
+          <div className="flex flex-wrap gap-1.5">
+            {SCENES.filter((sc) => sc.minutes > 0).map((sc) => (
+              <button
+                key={sc.id}
+                type="button"
+                className={`chip ${brief.scene === sc.id ? 'chip-on' : ''}`}
+                title={sc.note}
+                onClick={() => {
+                  // 同じものをもう一度押したら、席の指定を外す
+                  setBrief((p) =>
+                    p.scene === sc.id
+                      ? { ...p, scene: undefined }
+                      : { ...p, scene: sc.id, minutes: sc.minutes },
+                  )
+                  setBriefText(null)
+                }}
+              >
+                {sc.label}
+              </button>
+            ))}
+          </div>
+          <p className="mt-1 text-xs text-stone-500">
+            {brief.scene
+              ? SCENE_BY_ID[brief.scene].note + '。長さもこの席の目安に合わせました'
+              : '選ぶと、長さの目安と、語り口の縛りが指示書に入ります。もう一度押すと外れます。掲示板とSNSは〈長さ〉の側にあります'}
+          </p>
+        </div>
+
         <div className="flex flex-wrap items-end gap-4">
           <div>
             <div className="label mb-1.5">長さ</div>
             <div className="flex flex-wrap gap-1.5">
-              {[0, 3, 5, 10].map((mi) => (
+              {[0, 3, 5, 10, 20, 30].map((mi) => (
                 <button
                   key={mi}
                   type="button"
@@ -370,10 +401,19 @@ export default function SavedView({ onChange, ratings, onRatingsChange }: Props)
       {ratingPanel}
       <div className="flex items-center gap-2">
         <span className="text-sm text-stone-600">{list.length}件</span>
-        <button type="button" className="btn-ghost ml-auto" onClick={exportAll}>
-          まるごとコピー（Markdown）
+        <button
+          type="button"
+          className="btn-ghost ml-auto"
+          onClick={exportAll}
+          title="AIへの指示書ではなく、ネタ帳の中身をそのまま書き出します"
+        >
+          手控えに書き出す（Markdown）
         </button>
       </div>
+      <p className="text-xs leading-relaxed text-stone-500">
+        上の〈指示書をつくる〉は、AIに貼るためのもの（守ってほしいこと・組み立て・席・長さが付きます）。
+        こちらは案をそのまま書き出すだけで、AIには渡しません。手控えや、印刷して持っていく用です。
+      </p>
       {msg && <p className="text-xs text-matcha">{msg}</p>}
 
       {list.length > 1 && (

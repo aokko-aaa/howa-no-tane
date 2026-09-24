@@ -119,3 +119,28 @@ describe('AIに渡す指示書', () => {
     expect(md).toContain(withCaution.cautions[0])
   })
 })
+
+describe('席のえらび', () => {
+  const n = [saved(generateNeta(base)[0])]
+
+  it('席を選ぶと、席の名と語り口の縛りが指示書に入る', () => {
+    const md = toAIBrief(n, { ...DEFAULT_BRIEF, scene: 'sougo' })
+    expect(md).toContain('通夜・葬儀のあと')
+    expect(md).toContain('励まさない')
+  })
+
+  it('席を選ばなければ、席の話は入らない', () => {
+    expect(toAIBrief(n, DEFAULT_BRIEF)).not.toContain('話す席は')
+  })
+
+  it('席ごとに縛りが違う', () => {
+    expect(toAIBrief(n, { ...DEFAULT_BRIEF, scene: 'tsukimairi' })).toContain('一対一')
+    expect(toAIBrief(n, { ...DEFAULT_BRIEF, scene: 'houji' })).toContain('ご遺族と親族')
+  })
+
+  it('長い尺では、引き延ばさずにめぐらせるよう指示する', () => {
+    expect(toAIBrief(n, { ...DEFAULT_BRIEF, minutes: 30 })).toContain('三度めぐる')
+    expect(toAIBrief(n, { ...DEFAULT_BRIEF, minutes: 30 })).toContain('約30分')
+    expect(toAIBrief(n, { ...DEFAULT_BRIEF, minutes: 5 })).not.toContain('三度めぐる')
+  })
+})
