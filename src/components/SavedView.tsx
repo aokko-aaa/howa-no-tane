@@ -35,7 +35,10 @@ export default function SavedView({ onChange, ratings, onRatingsChange }: Props)
   const [combined, setCombined] = useState<Neta | null>(null)
   const [cannot, setCannot] = useState<string | null>(null)
   const combinedRef = useRef<HTMLElement>(null)
+  const briefRef = useRef<HTMLDivElement>(null)
   const [brief, setBrief] = useState<BriefOptions>(DEFAULT_BRIEF)
+  /** 書き出した指示書。コピーだけだと何が起きたか見えないので、その場に出す */
+  const [briefText, setBriefText] = useState<{ what: string; body: string; copied: boolean } | null>(null)
 
   useEffect(() => {
     setList(savedStore.list())
@@ -92,9 +95,13 @@ export default function SavedView({ onChange, ratings, onRatingsChange }: Props)
 
   /** 素材と守ってほしいことを一枚にして、AIに渡す */
   const copyBrief = async (items: SavedNeta[], what: string) => {
-    const ok = await copyText(toAIBrief(items, brief))
-    setMsg(ok ? `${what}をコピーしました。AIに貼ってください` : 'コピーできませんでした')
-    setTimeout(() => setMsg(null), 3000)
+    const body = toAIBrief(items, brief)
+    const ok = await copyText(body)
+    // コピーは目に見えない。押した手ごたえとして、指示書そのものをその場に出す。
+    setBriefText({ what, body, copied: ok })
+    requestAnimationFrame(() => {
+      briefRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    })
   }
 
   const togglePick = (id: string) =>
@@ -162,7 +169,10 @@ export default function SavedView({ onChange, ratings, onRatingsChange }: Props)
                 key={f.id}
                 type="button"
                 className={`chip ${brief.form === f.id ? 'chip-on' : ''}`}
-                onClick={() => setBrief((p) => ({ ...p, form: f.id as BriefForm }))}
+                onClick={() => {
+                  setBrief((p) => ({ ...p, form: f.id as BriefForm }))
+                  setBriefText(null)
+                }}
                 title={f.note}
               >
                 {f.label}
@@ -180,7 +190,10 @@ export default function SavedView({ onChange, ratings, onRatingsChange }: Props)
                   key={mi}
                   type="button"
                   className={`chip ${brief.minutes === mi ? 'chip-on' : ''}`}
-                  onClick={() => setBrief((p) => ({ ...p, minutes: mi }))}
+                  onClick={() => {
+                    setBrief((p) => ({ ...p, minutes: mi }))
+                    setBriefText(null)
+                  }}
                 >
                   {mi === 0 ? '掲示板・SNS' : `${mi}分`}
                 </button>
@@ -191,7 +204,10 @@ export default function SavedView({ onChange, ratings, onRatingsChange }: Props)
             <input
               type="checkbox"
               checked={brief.otani}
-              onChange={(e) => setBrief((p) => ({ ...p, otani: e.target.checked }))}
+              onChange={(e) => {
+                setBrief((p) => ({ ...p, otani: e.target.checked }))
+                setBriefText(null)
+              }}
               className="h-4 w-4 accent-enji"
             />
             真宗大谷派の作法に合わせる
@@ -207,15 +223,15 @@ export default function SavedView({ onChange, ratings, onRatingsChange }: Props)
           onClick={() =>
             copyBrief(
               list.filter((x) => picked.includes(x.neta.id)),
-              `えらんだ${picked.length}件の指示書`,
+              `えらんだ${picked.length}件`,
             )
           }
         >
           {picked.length === 0
-            ? '〈組む〉で選ぶと、まとめて渡せます'
-            : `えらんだ${picked.length}件をAIに渡す`}
+            ? '〈組む〉で選ぶと、まとめて書き出せます'
+            : `えらんだ${picked.length}件で指示書をつくる`}
         </button>
-        <button type="button" className="btn-ghost" onClick={() => copyBrief(list, 'ネタ帳全部の指示書')}>
+        <button type="button" className="btn-ghost" onClick={() => copyBrief(list, `ネタ帳ぜんぶ${list.length}件`)}>
           ネタ帳ぜんぶ（{list.length}件）
         </button>
       </div>
@@ -225,6 +241,75 @@ export default function SavedView({ onChange, ratings, onRatingsChange }: Props)
         <span className="font-bold">AIはそれでも作り話を混ぜます。</span>
         返ってきた引用は、語る前に必ず原典でお確かめください。
       </p>
+
+      {briefText && (
+        <div ref={briefRef} className="mt-3 scroll-mt-3 rounded-lg border border-matcha/40 bg-matcha/5 px-3 py-2.5">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span className="text-sm font-bold text-matcha">
+              {briefText.copied
+                ? `${briefText.what}の指示書をコピーしました`
+                : `${briefText.what}の指示書です`}
+            </span>
+            <span className="text-xs text-stone-500">約{briefText.body.length}字</span>
+            <button
+              type="button"
+              className="btn-ghost ml-auto text-xs"
+              onClick={() => setBriefText(null)}
+            >
+              閉じる
+            </button>
+          </div>
+
+          <ol className="mt-1.5 list-decimal pl-5 text-xs leading-relaxed text-stone-600">
+            <li>
+              {briefText.copied
+                ? 'この下の文は、もうクリップボードに入っています。'
+                : 'この下の文を、長押しなどで選んでコピーしてください。'}
+            </li>
+            <li>ChatGPTかClaudeを開いて、そのまま貼りつけます。</li>
+            <li>返ってきた下書きの引用は、語る前に原典でお確かめください。</li>
+          </ol>
+
+          <div className="mt-2 flex flex-wrap gap-2">
+            <a
+              className="btn-ghost text-xs"
+              href="https://claude.ai/new"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Claudeを開く
+            </a>
+            <a
+              className="btn-ghost text-xs"
+              href="https://chatgpt.com/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              ChatGPTを開く
+            </a>
+            <button
+              type="button"
+              className="btn-ghost text-xs"
+              onClick={async () => {
+                const ok = await copyText(briefText.body)
+                setBriefText((p) => (p ? { ...p, copied: ok } : p))
+              }}
+            >
+              もう一度コピー
+            </button>
+          </div>
+
+          <textarea
+            readOnly
+            value={briefText.body}
+            onFocus={(e) => e.currentTarget.select()}
+            className="mt-2 h-40 w-full resize-y rounded-md border border-stone-200 bg-white p-2 font-mono text-[11px] leading-relaxed text-stone-700"
+          />
+          <p className="mt-1 text-xs text-stone-500">
+            渡すのはここまでです。文章はこのアプリでは組み立てません。
+          </p>
+        </div>
+      )}
     </section>
   )
 
