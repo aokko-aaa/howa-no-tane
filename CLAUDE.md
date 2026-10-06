@@ -58,6 +58,13 @@ Agent(subagent_type: "kikite-checker")  … 聴いている人の側から見る
 
 - **一度に3〜5件まで。** 足りないと思っても増やさない。
 - **典拠係と聞き手係を、必ず両方呼ぶ。** 片方でも落ちたら、その回は書かない。
+  ただし**呼び方に注意**。`.claude/agents/` はセッションの主たる作業ディレクトリ
+  から読まれる。この環境の主ディレクトリは `howa-no-tane` ではないので、
+  `subagent_type: "tenkyo-checker"` は**通らない**。
+  `general-purpose` を二つ立てて、それぞれの冒頭で
+  `.claude/agents/tenkyo-checker.md` と `.claude/agents/kikite-checker.md` を
+  読ませ、そこに書かれた役どおりに振る舞わせること。
+  「係が呼べない」を理由に何もせず帰らない。それは係が落ちたのとは違う。
 - **「疑わしい」と言われた典拠は、その場で外す。** 判断を人に回さない。
 - **すでにある案の中身を、指摘なしに書き換えない。** 足すことだけする。
 - **`npm test`・`npm run typecheck`・`npm run build` が通らなければ、押さない。**
