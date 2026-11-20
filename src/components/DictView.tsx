@@ -65,6 +65,20 @@ export default function DictView() {
 
   const tab = TABS.find((t) => t.id === kind)!
 
+  // 棚ごとに探していたので、ほかの棚に当たりがあっても黙っていた。
+  // 「成仏」は manner の棚にしか無く、別の棚を開いたまま打つと0件に見えていた。
+  const counts: Record<Kind, number> = {
+    word: words.length,
+    concept: concepts.length,
+    story: stories.length,
+    figure: figures.length,
+    phrase: phrases.length,
+    manner: manners.length,
+  }
+  const searching = q.trim() !== ''
+  const elsewhere = searching ? TABS.filter((t) => t.id !== kind && counts[t.id] > 0) : []
+  const noneHere = searching && counts[kind] === 0
+
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap gap-1.5">
@@ -86,6 +100,35 @@ export default function DictView() {
         placeholder="言葉で探す（例：本願、御文、無常、我慢、がんばれば）"
         className="min-h-tap w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
       />
+
+      {searching && (elsewhere.length > 0 || noneHere) && (
+        <div className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-2">
+          <p className="text-xs leading-relaxed text-stone-600">
+            {noneHere ? (
+              <>
+                この棚に「{q.trim()}」はありません。
+                {elsewhere.length > 0 ? 'ほかの棚にはあります。' : 'ほかの棚にもありません。'}
+              </>
+            ) : (
+              <>ほかの棚にも「{q.trim()}」があります。</>
+            )}
+          </p>
+          {elsewhere.length > 0 && (
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              {elsewhere.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  className="chip"
+                  onClick={() => setKind(t.id)}
+                >
+                  {t.label}（{counts[t.id]}）
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {kind === 'phrase' && (
         <div className="flex flex-col gap-2">
